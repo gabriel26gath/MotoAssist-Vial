@@ -22,6 +22,7 @@ interface TicketDetailViewProps {
   onClose: () => void;
   onEdit: () => void;
   onDelete: (id: string) => void;
+  isAdmin?: boolean;
 }
 
 export default function TicketDetailView({ 
@@ -29,7 +30,8 @@ export default function TicketDetailView({
   motorizados, 
   onClose, 
   onEdit, 
-  onDelete 
+  onDelete,
+  isAdmin = true
 }: TicketDetailViewProps) {
 
   const getMotorizadoName = (id?: string) => {
@@ -246,13 +248,19 @@ export default function TicketDetailView({
 
       {/* BOTONES ACCION EDIT/DELETE */}
       <div className="flex justify-between items-center pt-5 border-t border-white/5 gap-3">
-        <button
-          onClick={() => invoice.id && onDelete(invoice.id)}
-          className="flex items-center gap-1 px-4 py-2 hover:bg-rose-950/30 text-rose-450 rounded-lg text-xs font-bold transition cursor-pointer"
-        >
-          <Trash2 className="h-3.5 w-3.5" />
-          Borrar de Biblioteca
-        </button>
+        {isAdmin ? (
+          <button
+            onClick={() => invoice.id && onDelete(invoice.id)}
+            className="flex items-center gap-1 px-4 py-2 hover:bg-rose-950/30 text-rose-450 rounded-lg text-xs font-bold transition cursor-pointer"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+            Borrar de Biblioteca
+          </button>
+        ) : (
+          <div className="text-[10px] text-slate-400 font-extrabold uppercase italic px-4 select-none">
+            Modo Visor (Eliminaciones Deshabilitadas)
+          </div>
+        )}
 
         <button
           onClick={onEdit}

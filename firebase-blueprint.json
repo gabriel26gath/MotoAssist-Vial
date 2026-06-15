@@ -60,6 +60,20 @@
         "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp" }
       },
       "required": ["name", "vehiclePlate", "status", "userId", "createdAt"]
+    },
+    "VehicleIncident": {
+      "title": "VehicleIncident",
+      "description": "Log of a mechanical or vehicle incident related to a rider's motorcycle",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "ID of the incident document" },
+        "motorizadoId": { "type": "string", "description": "Target motorized fleet rider ID" },
+        "date": { "type": "string", "description": "Date of the incident event" },
+        "description": { "type": "string", "description": "Explaining the incident detail" },
+        "severity": { "type": "string", "enum": ["baja", "media", "alta"], "description": "Severity of incident" },
+        "status": { "type": "string", "enum": ["pendiente", "resuelto"], "description": "Pendiente or resuelto status" }
+      },
+      "required": ["motorizadoId", "date", "description", "severity", "status"]
     }
   },
   "firestore": {
@@ -70,6 +84,10 @@
     "motorizados/{motorizadoId}": {
       "schema": "Motorizado",
       "description": "Collection of motorized fleet riders"
+    },
+    "incidents/{incidentId}": {
+      "schema": "VehicleIncident",
+      "description": "Log incidents and mechanical problems for rider vehicles"
     }
   }
 }

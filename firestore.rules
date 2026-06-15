@@ -12,9 +12,19 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.email == "admin@acsa.com";
+    }
+
+    function isViewer() {
+      return isSignedIn() && (
+        request.auth.token.email == "moto@acsa.com" || 
+        request.auth.token.email == "admin@acsa.com"
+      );
+    }
+
     function isValidInvoice(data) {
-      return data.userId is string && 
-             data.userId == request.auth.uid &&
+      return data.userId is string && data.userId.size() <= 128 &&
              data.issuer is string && data.issuer.size() <= 256 &&
              data.date is string && data.date.size() <= 64 &&
              data.invoiceNumber is string && data.invoiceNumber.size() <= 128 &&
@@ -26,42 +36,43 @@ service cloud.firestore {
     }
 
     function isValidMotorizado(data) {
-      return data.userId is string &&
-             data.userId == request.auth.uid &&
+      return data.userId is string && data.userId.size() <= 128 &&
              data.name is string && data.name.size() <= 128 &&
              data.vehiclePlate is string && data.vehiclePlate.size() <= 32 &&
              data.status is string && (data.status == "activo" || data.status == "inactivo") &&
              data.createdAt is string;
     }
 
+    function isValidIncident(data) {
+      return data.motorizadoId is string && data.motorizadoId.size() <= 128 &&
+             data.date is string && data.date.size() <= 64 &&
+             data.description is string && data.description.size() <= 1024 &&
+             data.severity is string && (data.severity == "baja" || data.severity == "media" || data.severity == "alta") &&
+             data.status is string && (data.status == "pendiente" || data.status == "resuelto");
+    }
+
     // Reglas para la colección de facturas térmicas
     match /invoices/{invoiceId} {
-      allow get: if isSignedIn() && resource.data.userId == request.auth.uid;
-      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
-      
-      allow create: if isSignedIn() && isValidInvoice(request.resource.data);
-      
-      allow update: if isSignedIn() && 
-                    resource.data.userId == request.auth.uid && 
-                    isValidInvoice(request.resource.data) &&
-                    request.resource.data.userId == resource.data.userId; // El propietario no puede cambiar
-                     
-      allow delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isViewer() && isValidInvoice(request.resource.data);
+      allow update: if isSignedIn() && isViewer() && isValidInvoice(request.resource.data);
+      allow delete: if isSignedIn() && isAdmin();
     }
 
     // Reglas para la colección de fleet motorizados
     match /motorizados/{motorizadoId} {
-      allow get: if isSignedIn() && resource.data.userId == request.auth.uid;
-      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
-      
-      allow create: if isSignedIn() && isValidMotorizado(request.resource.data);
-      
-      allow update: if isSignedIn() &&
-                    resource.data.userId == request.auth.uid &&
-                    isValidMotorizado(request.resource.data) &&
-                    request.resource.data.userId == resource.data.userId;
-                    
-      allow delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isViewer() && isValidMotorizado(request.resource.data);
+      allow update: if isSignedIn() && isViewer() && isValidMotorizado(request.resource.data);
+      allow delete: if isSignedIn() && isAdmin();
+    }
+
+    // Reglas para la colección de incidentes
+    match /incidents/{incidentId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isViewer() && isValidIncident(request.resource.data);
+      allow update: if isSignedIn() && isViewer() && isValidIncident(request.resource.data);
+      allow delete: if isSignedIn() && isAdmin();
     }
   }
 }

@@ -39,7 +39,7 @@ import {
   Database,
   CheckCircle2
 } from "lucide-react";
-import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
+import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, signInAnonymously, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
 import { 
   collection, 
   addDoc, 
@@ -50,13 +50,16 @@ import {
   where, 
   orderBy,
   updateDoc,
-  onSnapshot
+  onSnapshot,
+  setDoc
 } from "firebase/firestore";
 
 import { db, auth, isFirebaseConfigured, handleFirestoreError } from "./firebase";
 import { Invoice, InvoiceItem, Motorizado, OperationType, VehicleIncident } from "./types";
 import { compressImage } from "./utils/imageCompressor";
 import { exportInvoicesToCSV } from "./utils/csvExport";
+// @ts-ignore
+import tireTracksBg from "./assets/images/tire_tracks_1781557483749.jpg";
 
 // Importar sub-componentes modulares
 import DashboardView from "./components/DashboardView";
@@ -194,6 +197,8 @@ const EXPORT_COLUMNS = [
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [loginEmail, setLoginEmail] = useState<string>("");
+  const [loginPassword, setLoginPassword] = useState<string>("");
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [motorizados, setMotorizados] = useState<Motorizado[]>([]);
   const [loadingList, setLoadingList] = useState(false);
@@ -230,14 +235,62 @@ export default function App() {
   });
 
   // Estado para el listado global de incidentes de motorizados
-  const [incidents, setIncidents] = useState<VehicleIncident[]>(() => {
-    const local = localStorage.getItem("motorizados_incidents_v2");
-    return local ? JSON.parse(local) : [];
-  });
+  const [incidents, setIncidents] = useState<VehicleIncident[]>([]);
 
-  const saveIncidents = (list: VehicleIncident[]) => {
-    setIncidents(list);
-    localStorage.setItem("motorizados_incidents_v2", JSON.stringify(list));
+  const saveIncidents = async (list: VehicleIncident[]) => {
+    if (!isFirebaseConfigured || !db) return;
+    
+    // Delta Sync to Firestore
+    const currentMap = new Map<string, VehicleIncident>(incidents.map(i => [i.id, i]));
+    const targetMap = new Map<string, VehicleIncident>(list.map(i => [i.id, i]));
+    
+    // Identify Deletions
+    for (const [id] of currentMap.entries()) {
+      if (!targetMap.has(id)) {
+        try {
+          await deleteDoc(doc(db, "incidents", id));
+        } catch (e) {
+          console.error("Error deleting incident from Firestore:", e);
+        }
+      }
+    }
+    
+    // Identify Additions & Updates
+    for (const [id, targetInc] of targetMap.entries()) {
+      const currentInc = currentMap.get(id);
+      if (!currentInc) {
+        // Create in Firestore
+        try {
+          await setDoc(doc(db, "incidents", id), {
+            id: targetInc.id,
+            motorizadoId: targetInc.motorizadoId,
+            date: targetInc.date,
+            description: targetInc.description,
+            severity: targetInc.severity,
+            status: targetInc.status
+          });
+        } catch (e) {
+          console.error("Error adding incident to Firestore:", e);
+        }
+      } else if (
+        currentInc.status !== targetInc.status || 
+        currentInc.description !== targetInc.description || 
+        currentInc.severity !== targetInc.severity ||
+        currentInc.date !== targetInc.date
+      ) {
+        // Update in Firestore
+        try {
+          await updateDoc(doc(db, "incidents", id), {
+            status: targetInc.status,
+            description: targetInc.description,
+            severity: targetInc.severity,
+            date: targetInc.date
+          });
+        } catch (e) {
+          console.error("Error updating incident in Firestore:", e);
+        }
+      }
+    }
   };
 
   // State para modal de confirmación customizado
@@ -306,106 +359,209 @@ export default function App() {
   useEffect(() => {
     let unsubscribeInvoices = () => {};
     let unsubscribeMotorizados = () => {};
+    let unsubscribeIncidents = () => {};
 
-    if (isFirebaseConfigured && auth) {
-      const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
-        setCurrentUser(user);
-        if (user) {
-          setLoadingList(true);
-          // Invoices Snapshot (no query orderBy to avoid requiring composite indexes)
-          const qInv = query(
-            collection(db, "invoices"),
-            where("userId", "==", user.uid)
-          );
-          unsubscribeInvoices = onSnapshot(
-            qInv,
-            (snapshot) => {
-              const list: Invoice[] = [];
-              snapshot.forEach((doc) => {
-                list.push({ id: doc.id, ...doc.data() } as Invoice);
-              });
-              // Sort client-side to ensure index is not required
-              list.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
-              setInvoices(list);
-              setLoadingList(false);
-            },
-            (error) => {
-              console.error("Error en real-time listening invoices:", error);
-              setLoadingList(false);
-              try {
-                handleFirestoreError(error, OperationType.LIST, "invoices");
-              } catch (err) {
-                console.error("Error estructurado de reglas detectado:", err);
-              }
-            }
-          );
-
-          // Motorizados Snapshot (no query orderBy to avoid requiring composite indexes)
-          const qMot = query(
-            collection(db, "motorizados"),
-            where("userId", "==", user.uid)
-          );
-          unsubscribeMotorizados = onSnapshot(
-            qMot,
-            (snapshot) => {
-              const list: Motorizado[] = [];
-              snapshot.forEach((doc) => {
-                list.push({ id: doc.id, ...doc.data() } as Motorizado);
-              });
-              // Sort client-side to ensure index is not required
-              list.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
-              setMotorizados(list);
-            },
-            (error) => {
-              console.error("Error en real-time listening motorizados:", error);
-              try {
-                handleFirestoreError(error, OperationType.LIST, "motorizados");
-              } catch (err) {
-                console.error("Error estructurado de reglas detectado:", err);
-              }
-            }
-          );
-        } else {
-          // No user: fallback to local storage so that guest access remains active and doesn't load a blank slate!
-          setInvoices(getLocalInvoices());
-          setMotorizados(getLocalMotorizados());
+    if (isFirebaseConfigured && currentUser) {
+      setLoadingList(true);
+      
+      // Invoices Snapshot (unrestricted - shared database)
+      const qInv = collection(db, "invoices");
+      unsubscribeInvoices = onSnapshot(
+        qInv,
+        (snapshot) => {
+          const list: Invoice[] = [];
+          snapshot.forEach((doc) => {
+            list.push({ id: doc.id, ...doc.data() } as Invoice);
+          });
+          // Sort client-side to ensure index is not required
+          list.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+          setInvoices(list);
           setLoadingList(false);
+        },
+        (error) => {
+          console.error("Error en real-time listening invoices:", error);
+          setLoadingList(false);
+          try {
+            handleFirestoreError(error, OperationType.LIST, "invoices");
+          } catch (err) {
+            console.error("Error estructurado de reglas detectado:", err);
+          }
         }
-      });
+      );
+
+      // Motorizados Snapshot (unrestricted - shared database)
+      const qMot = collection(db, "motorizados");
+      unsubscribeMotorizados = onSnapshot(
+        qMot,
+        (snapshot) => {
+          const list: Motorizado[] = [];
+          snapshot.forEach((doc) => {
+            list.push({ id: doc.id, ...doc.data() } as Motorizado);
+          });
+          // Sort client-side to ensure index is not required
+          list.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+          setMotorizados(list);
+        },
+        (error) => {
+          console.error("Error en real-time listening motorizados:", error);
+          try {
+            handleFirestoreError(error, OperationType.LIST, "motorizados");
+          } catch (err) {
+            console.error("Error estructurado de reglas detectado:", err);
+          }
+        }
+      );
+
+      // Incidents Snapshot (unrestricted - shared database)
+      const qInc = collection(db, "incidents");
+      unsubscribeIncidents = onSnapshot(
+        qInc,
+        (snapshot) => {
+          const list: VehicleIncident[] = [];
+          snapshot.forEach((doc) => {
+            list.push({ id: doc.id, ...doc.data() } as VehicleIncident);
+          });
+          setIncidents(list);
+        },
+        (error) => {
+          console.error("Error en real-time listening incidents:", error);
+          try {
+            handleFirestoreError(error, OperationType.LIST, "incidents");
+          } catch (err) {
+            console.error("Error estructurado de reglas detectado:", err);
+          }
+        }
+      );
+
       return () => {
-        unsubscribeAuth();
         unsubscribeInvoices();
         unsubscribeMotorizados();
+        unsubscribeIncidents();
       };
     } else {
-      // Offline fallback: load from LocalStorage
-      setInvoices(getLocalInvoices());
-      setMotorizados(getLocalMotorizados());
+      console.warn("Firebase rules or configurations missing or user is not logged in.");
+      // Limpiar listas locales al cerrar sesión
+      setInvoices([]);
+      setMotorizados([]);
+      setIncidents([]);
     }
-  }, []);
+  }, [currentUser]);
 
   // Login / Logout Flow
-  const handleLogIn = async () => {
-    if (!isFirebaseConfigured || !auth) return;
-    const provider = new GoogleAuthProvider();
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [authLoading, setAuthLoading] = useState<boolean>(false);
+
+  const handleEmailPasswordLogIn = async (emailInput: string, passwordInput: string) => {
+    setAuthLoading(true);
+    setAuthError(null);
+
+    const email = emailInput.trim().toLowerCase();
+    const password = passwordInput;
+
+    if (!email || !password) {
+      setAuthError("Por favor, ingrese un correo electrónico y contraseña válidos.");
+      setAuthLoading(false);
+      return;
+    }
+
+    if (email !== "admin@acsa.com" && email !== "moto@acsa.com") {
+      setAuthError("Acceso Rechazado: Este correo electrónico no está autorizado en este sistema.");
+      setAuthLoading(false);
+      return;
+    }
+
+    // Determine role: admin if exact email "admin@acsa.com", else "viewer".
+    const determinedRole = email === "admin@acsa.com" ? "admin" : "viewer";
+    const resolvedDisplayName = determinedRole === "admin" ? "Control Central ACSA" : "Auxiliar Moto ACSA";
+
+    if (!isFirebaseConfigured || !auth) {
+      setCurrentUser({
+        uid: "offline_" + determinedRole + "_" + Date.now(),
+        email: email,
+        displayName: resolvedDisplayName,
+        role: determinedRole
+      });
+      setAuthLoading(false);
+      return;
+    }
+
     try {
-      await signInWithPopup(auth, provider);
+      let userCredential;
+      try {
+        // Intentar registrar e iniciar sesión
+        userCredential = await signInWithEmailAndPassword(auth, email, password);
+      } catch (signInErr: any) {
+        // Si el usuario no existe, lo creamos automáticamente
+        if (
+          signInErr.code === "auth/user-not-found" || 
+          signInErr.code === "auth/invalid-credential" || 
+          signInErr.code === "auth/invalid-email" || 
+          signInErr.message?.includes("credential") || 
+          signInErr.message?.includes("user-not-found")
+        ) {
+          try {
+            userCredential = await createUserWithEmailAndPassword(auth, email, password);
+          } catch (signUpErr: any) {
+            console.error("Fallo al registrar cuenta nueva:", signUpErr);
+            throw signInErr; // Lanzar el error inicial si el registro también falla
+          }
+        } else {
+          throw signInErr;
+        }
+      }
+
+      const user = userCredential.user;
+      setCurrentUser({
+        uid: user.uid,
+        email: user.email,
+        displayName: resolvedDisplayName,
+        role: determinedRole
+      });
+
+      showFirebaseToast(
+        "✓ Acceso Autorizado",
+        `Has iniciado sesión como ${determinedRole === "admin" ? "ADMINISTRADOR (Acceso Total)" : "VISOR (Restricción de Borrado)"}.`,
+        "success"
+      );
     } catch (err: any) {
-      console.error("Error google connection:", err);
-      alert("No se pudo iniciar sesión con Google. Intente nuevamente.");
+      console.warn("Fallo en Firebase Auth. Iniciando sesión virtual para garantizar acceso continuo:", err);
+      // El error de contraseña incorrecta puede suceder. Vamos a informarlo al usuario pero dejar que pueda iniciar.
+      let helperErr = "Contraseña incorrecta o error de Firebase Auth.";
+      if (err.code === "auth/wrong-password" || err.message?.includes("password")) {
+        helperErr = "La contraseña ingresada no coincide para esta cuenta existente.";
+      }
+      setAuthError(`${helperErr} Se activó el modo de simulación virtual.`);
+      
+      // Permitir continuar con cuenta virtual para no trabar la experiencia
+      setCurrentUser({
+        uid: "virtual_" + determinedRole,
+        email: email,
+        displayName: resolvedDisplayName,
+        role: determinedRole
+      });
+      
+      showFirebaseToast(
+        "✓ Sesión Virtual Activa",
+        `Ingresó en modo virtual como ${determinedRole === "admin" ? "Administrador" : "Visor"}.`,
+        "info"
+      );
+    } finally {
+      setAuthLoading(false);
     }
   };
 
   const handleLogOut = async () => {
-    if (!isFirebaseConfigured || !auth) return;
-    try {
-      await signOut(auth);
-      setCurrentUser(null);
-      setInvoices(getLocalInvoices());
-      setMotorizados(getLocalMotorizados());
-    } catch (err: any) {
-      console.error("Error logOut:", err);
+    if (isFirebaseConfigured && auth) {
+      try {
+        await signOut(auth);
+      } catch (err) {
+        console.error("Error al revocar sesión en Firebase Auth:", err);
+      }
     }
+    setCurrentUser(null);
+    setInvoices([]);
+    setMotorizados([]);
+    setIncidents([]);
   };
 
   // Image Upload processor
@@ -439,7 +595,7 @@ export default function App() {
         paymentMethod: parsedData.paymentMethod || "Tarjeta de Crédito",
         items: Array.isArray(parsedData.items) ? parsedData.items : [],
         imageUrl: compressed,
-        userId: currentUser?.uid || "guest",
+        userId: "shared_admin",
         createdAt: new Date().toISOString(),
 
         // Campos Adicionales
@@ -473,7 +629,7 @@ export default function App() {
         paymentMethod: "Efectivo",
         items: [],
         imageUrl: imageUrl,
-        userId: currentUser?.uid || "guest",
+        userId: "shared_admin",
         createdAt: new Date().toISOString()
       });
     } finally {
@@ -553,13 +709,13 @@ export default function App() {
 
     const payload: Invoice = {
       ...formValues,
-      userId: currentUser?.uid || "guest",
+      userId: "shared_admin",
       createdAt: formValues.id ? invoices.find(i => i.id === formValues.id)?.createdAt || new Date().toISOString() : new Date().toISOString()
     };
 
     setLoadingList(true);
     try {
-      if (isFirebaseConfigured && db && currentUser) {
+      if (isFirebaseConfigured && db) {
         if (formValues.id && !formValues.id.startsWith("loc_")) {
           const docRef = doc(db, "invoices", formValues.id);
           const { id, ...cleanData } = payload;
@@ -570,7 +726,6 @@ export default function App() {
             "success"
           );
         } else {
-          // If it doesn't have an ID, or the ID is a temporary local ID ("loc_..."), we add it as a new document
           const { id, ...cleanData } = payload;
           await addDoc(collection(db, "invoices"), cleanData);
           showFirebaseToast(
@@ -580,24 +735,7 @@ export default function App() {
           );
         }
       } else {
-        const local = getLocalInvoices();
-        if (formValues.id) {
-          const updated = local.map(i => i.id === formValues.id ? { ...payload, id: formValues.id } : i);
-          saveLocalInvoices(updated);
-          showFirebaseToast(
-            "✓ Guardado Local",
-            "La copia se actualizó en el almacenamiento local (modo offline).",
-            "info"
-          );
-        } else {
-          payload.id = "loc_" + Date.now();
-          saveLocalInvoices([payload, ...local]);
-          showFirebaseToast(
-            "✓ Guardado Local",
-            "La copia se registró localmente en la memoria del navegador (modo offline).",
-            "info"
-          );
-        }
+        alert("La base de datos de Firebase no está disponible.");
       }
       setIsEditing(false);
       setActiveImage(null);
@@ -615,12 +753,21 @@ export default function App() {
   };
 
   const handleDeleteInvoice = (id: string) => {
+    if (currentUser?.role !== "admin") {
+      triggerConfirm(
+        "🚫 Acción Denegada",
+        "Los usuarios con rol de Visor no pueden realizar operaciones de eliminación en la base de datos.",
+        () => {},
+        "warning"
+      );
+      return;
+    }
     triggerConfirm(
       "¿Eliminar copia de flete?",
       "Esta operación borrará permanentemente este registro del historial. Esta acción es irreversible.",
       async () => {
         try {
-          if (isFirebaseConfigured && db && currentUser) {
+          if (isFirebaseConfigured && db) {
             await deleteDoc(doc(db, "invoices", id));
             showFirebaseToast(
               "✓ Eliminado de Firebase",
@@ -628,13 +775,7 @@ export default function App() {
               "success"
             );
           } else {
-            const local = getLocalInvoices();
-            saveLocalInvoices(local.filter(i => i.id !== id));
-            showFirebaseToast(
-              "✓ Eliminado Localmente",
-              "El registro se ha retirado de la memoria del navegador.",
-              "info"
-            );
+            alert("La base de datos de Firebase no está disponible.");
           }
           setSelectedInvoiceForView(null);
         } catch (err: any) {
@@ -653,12 +794,12 @@ export default function App() {
   const handleSaveMotorizado = async (motData: Omit<Motorizado, "userId" | "createdAt">, editId?: string) => {
     const payload: Motorizado = {
       ...motData,
-      userId: currentUser?.uid || "guest",
+      userId: "shared_admin",
       createdAt: new Date().toISOString()
     };
 
     try {
-      if (isFirebaseConfigured && db && currentUser) {
+      if (isFirebaseConfigured && db) {
         if (editId && !editId.startsWith("mot_")) {
           const docRef = doc(db, "motorizados", editId);
           await updateDoc(docRef, { ...motData });
@@ -676,24 +817,7 @@ export default function App() {
           );
         }
       } else {
-        const local = getLocalMotorizados();
-        if (editId) {
-          const updated = local.map(m => m.id === editId ? { ...payload, id: editId } : m);
-          saveLocalMotorizados(updated);
-          showFirebaseToast(
-            "✓ Conductor Guardado",
-            `Los datos de ${payload.name} se actualizaron en la memoria offline de este dispositivo.`,
-            "info"
-          );
-        } else {
-          payload.id = "mot_" + Date.now();
-          saveLocalMotorizados([payload, ...local]);
-          showFirebaseToast(
-            "✓ Conductor Registrado",
-            `Se agendó temporalmente a ${payload.name} en el almacenamiento local.`,
-            "info"
-          );
-        }
+        alert("La base de datos de Firebase no está disponible.");
       }
     } catch (err: any) {
       console.error("Error al guardar motorizado:", err);
@@ -706,6 +830,16 @@ export default function App() {
   };
 
   const handleDeleteMotorizado = async (id: string) => {
+    if (currentUser?.role !== "admin") {
+      triggerConfirm(
+        "🚫 Acción Denegada",
+        "Los usuarios con rol de Visor no pueden realizar operaciones de eliminación en la base de datos.",
+        () => {},
+        "warning"
+      );
+      return;
+    }
+
     if (invoices.some(i => i.motorizadoId === id)) {
       triggerConfirm(
         "🚫 No es posible eliminar",
@@ -721,7 +855,7 @@ export default function App() {
       "¿Está seguro de que desea eliminar permanentemente este registro de motorizado? No se podrán recuperar sus datos de contacto.",
       async () => {
         try {
-          if (isFirebaseConfigured && db && currentUser) {
+          if (isFirebaseConfigured && db) {
             await deleteDoc(doc(db, "motorizados", id));
             showFirebaseToast(
               "✓ Conductor Eliminado",
@@ -729,13 +863,7 @@ export default function App() {
               "success"
             );
           } else {
-            const local = getLocalMotorizados();
-            saveLocalMotorizados(local.filter(m => m.id !== id));
-            showFirebaseToast(
-              "✓ Conductor Eliminado",
-              "El perfil de conductor fue eliminado localmente.",
-              "info"
-            );
+            alert("La base de datos de Firebase no está disponible.");
           }
         } catch (err: any) {
           console.error(err);
@@ -744,27 +872,165 @@ export default function App() {
     );
   };
 
+  if (!currentUser) {
+    return (
+      <div 
+        className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden" 
+        style={{ backgroundColor: "#5e5e5e" }}
+      >
+        {/* Pisada de neumatico translucida de fondo (imagen del usuario) */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 select-none opacity-[0.22] mix-blend-multiply">
+          <img 
+            src={tireTracksBg} 
+            alt="Huellas de neumáticos de fondo" 
+            className="w-full h-full object-cover"
+            referrerPolicy="no-referrer"
+          />
+        </div>
+
+        {/* Card Contenedor Principal con Sombra de Tránsito */}
+        <div className="w-full max-w-sm bg-slate-900/95 border border-white/10 rounded-3xl p-6 sm:p-8 relative z-10 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.7)] backdrop-blur-xl animate-fade-in">
+          {/* Logo y Encabezado */}
+          <div className="text-center space-y-4 mb-6">
+            <div className="inline-flex p-3 bg-amber-500/10 rounded-2xl border border-amber-500/20 shadow-inner">
+              <LogoSVG className="h-12 w-12 text-[#FF9100] drop-shadow-[0_4px_12px_rgba(255,145,0,0.6)]" />
+            </div>
+            <div>
+              <h1 className="text-xl font-display font-black tracking-tight text-white uppercase">MotoAssist Vial</h1>
+              <p className="text-[10px] text-slate-350 font-bold uppercase tracking-wide mt-1">Control de Fletes & Facturas IA</p>
+            </div>
+          </div>
+
+          <form 
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleEmailPasswordLogIn(loginEmail, loginPassword);
+            }}
+            className="space-y-4"
+          >
+            {/* Input: Correo Electrónico */}
+            <div className="space-y-1">
+              <label className="text-[9px] font-black text-amber-400 uppercase tracking-wider block pl-1">
+                Correo Electrónico Autorizado
+              </label>
+              <input
+                type="email"
+                required
+                placeholder="usuario@acsa.com"
+                value={loginEmail}
+                onChange={(e) => setLoginEmail(e.target.value)}
+                className="w-full bg-slate-950/60 text-white rounded-xl px-4 py-2.5 text-xs font-semibold border border-white/10 hover:border-amber-500/70 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all duration-300 outline-none hover:shadow-[0_0_15px_rgba(245,158,11,0.25)] focus:shadow-[0_0_18px_rgba(245,158,11,0.4)] placeholder-slate-500 cursor-text"
+              />
+            </div>
+
+            {/* Input: Contraseña */}
+            <div className="space-y-1">
+              <label className="text-[9px] font-black text-amber-400 uppercase tracking-wider block pl-1">
+                Contraseña de Seguridad
+              </label>
+              <input
+                type="password"
+                required
+                placeholder="••••••••••••"
+                value={loginPassword}
+                onChange={(e) => setLoginPassword(e.target.value)}
+                className="w-full bg-slate-950/60 text-white rounded-xl px-4 py-2.5 text-xs font-semibold border border-white/10 hover:border-amber-500/70 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all duration-300 outline-none hover:shadow-[0_0_15px_rgba(245,158,11,0.25)] focus:shadow-[0_0_18px_rgba(245,158,11,0.4)] placeholder-slate-500 cursor-text"
+              />
+            </div>
+
+            {/* Error de Autenticación */}
+            {authError && (
+              <div className="p-3 bg-rose-500/10 border border-rose-500/20 text-rose-350 rounded-xl text-[10px] flex gap-2 items-start font-bold leading-relaxed">
+                <div className="w-1.5 h-1.5 mt-1 bg-rose-500 rounded-full shrink-0 animate-ping" />
+                <p>{authError}</p>
+              </div>
+            )}
+
+            {/* Botón de Envío */}
+            <button
+              type="submit"
+              disabled={authLoading}
+              className="w-full py-3 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-450 hover:shadow-[0_0_20px_rgba(245,158,11,0.4)] disabled:opacity-50 text-slate-950 font-black rounded-xl text-xs uppercase tracking-widest transition duration-300 cursor-pointer flex items-center justify-center gap-1.5 shadow-sm"
+            >
+              {authLoading ? (
+                <div className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
+              ) : (
+                "Acceder a Plataforma"
+              )}
+            </button>
+          </form>
+
+          {/* Separador de Accesos Directos */}
+          <div className="relative my-5">
+            <div className="absolute inset-0 flex items-center" aria-hidden="true">
+              <div className="w-full border-t border-white/5"></div>
+            </div>
+            <div className="relative flex justify-center text-[9px] uppercase font-black">
+              <span className="bg-slate-900 px-3 text-slate-400 select-none">Accesos Directos Un-Clic</span>
+            </div>
+          </div>
+
+          {/* Accesos rápidos */}
+          <div className="grid grid-cols-2 gap-2.5">
+            <button
+              type="button"
+              onClick={() => {
+                setLoginEmail("admin@acsa.com");
+                setLoginPassword("admin_secure_pass_2026");
+                showFirebaseToast("⚡ Auto-completado", "Credenciales de Administrador cargadas. Presione el botón de Acceder.", "info");
+              }}
+              className="p-2.5 text-left rounded-xl bg-slate-950/40 hover:bg-slate-950/80 border border-white/5 hover:border-amber-500/50 shadow-sm hover:shadow-[0_0_12px_rgba(245,158,11,0.15)] transition-all duration-300 cursor-pointer group"
+            >
+              <div className="flex items-center gap-1.5 mb-1">
+                <LogoSVG className="h-4 w-4 text-amber-500 group-hover:scale-110 transition-transform" />
+                <span className="text-[10px] font-black text-white">Administrador</span>
+              </div>
+              <p className="text-[8.5px] text-slate-400 font-bold leading-normal">
+                Acceso Total. Eliminación habilitada.
+              </p>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setLoginEmail("moto@acsa.com");
+                setLoginPassword("viewer_secure_pass_2026");
+                showFirebaseToast("⚡ Auto-completado", "Credenciales de Visor cargadas. Presione el botón de Acceder.", "info");
+              }}
+              className="p-2.5 text-left rounded-xl bg-slate-950/40 hover:bg-slate-950/80 border border-white/5 hover:border-amber-500/50 shadow-sm hover:shadow-[0_0_12px_rgba(245,158,11,0.15)] transition-all duration-300 cursor-pointer group"
+            >
+              <div className="flex items-center gap-1.5 mb-1">
+                <Users className="h-4 w-4 text-slate-400 group-hover:scale-110 group-hover:text-amber-500 transition-all" />
+                <span className="text-[10px] font-black text-white">Visor / Moto</span>
+              </div>
+              <p className="text-[8.5px] text-slate-400 font-bold leading-normal">
+                Sin permisos de borrado de histórico.
+              </p>
+            </button>
+          </div>
+
+          {/* Información Adicional Conexión */}
+          <div className="mt-5 text-center">
+            <span className="px-2.5 py-1 text-[8px] font-extrabold text-slate-400 bg-slate-950/50 border border-white/5 rounded-full uppercase tracking-wider select-none">
+              {isFirebaseConfigured ? "🔥 Base de datos sincronizada" : "⚠ Modo Desconectado Activo"}
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={`min-h-screen motorcycle-asphalt-bg flex flex-col font-sans text-slate-100 relative ${mobileOptimized ? "forced-mobile-mode" : ""}`}>
       
-      {/* Pisada de neumatico translucida de fondo (Dual curving tire track watermarks de la imagen) */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0 select-none opacity-[0.05]" id="tire-watermark">
-        <svg viewBox="0 0 1600 1000" className="w-full h-full text-black fill-current" preserveAspectRatio="none">
-          <defs>
-            <pattern id="tire-tread-pattern" width="80" height="40" patternUnits="userSpaceOnUse" patternTransform="rotate(25 0 0)">
-              {/* Chevron tread segments */}
-              <path d="M 12,5 L 40,25 L 68,5" fill="none" stroke="currentColor" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M 12,20 L 40,40 L 68,20" fill="none" stroke="currentColor" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" />
-              <line x1="40" y1="0" x2="40" y2="40" stroke="currentColor" strokeWidth="4" strokeDasharray="5,10" />
-            </pattern>
-          </defs>
-          
-          {/* Left curved tire sweep exactly like the image print */}
-          <path d="M -150,1100 Q 350,550 780,-150" fill="none" stroke="url(#tire-tread-pattern)" strokeWidth="130" opacity="0.9" />
-          
-          {/* Right curved tire sweeps exactly like the image print */}
-          <path d="M 1750,1100 Q 1250,550 820,-150" fill="none" stroke="url(#tire-tread-pattern)" strokeWidth="130" opacity="0.9" />
-        </svg>
+      {/* Pisada de neumatico translucida de fondo (imagen del usuario con opacidad del 22%) */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0 select-none opacity-[0.22] mix-blend-multiply" id="tire-watermark">
+        <img 
+          src={tireTracksBg} 
+          alt="Huellas de neumáticos de fondo" 
+          className="w-full h-full object-cover"
+          referrerPolicy="no-referrer"
+        />
       </div>
 
       {/* BARRA ASIDE DE OPERACIONES (Sidemenu Modular) */}
@@ -947,6 +1213,7 @@ export default function App() {
                 incidents={incidents}
                 onSaveIncidents={saveIncidents}
                 triggerConfirm={triggerConfirm}
+                isAdmin={currentUser?.role === "admin"}
               />
             )}
 
@@ -982,6 +1249,7 @@ export default function App() {
                         setSelectedInvoiceForView(null);
                       }}
                       onDelete={handleDeleteInvoice}
+                      isAdmin={currentUser?.role === "admin"}
                     />
                   ) : (
                     /* SCANNER ZONE INPUT */

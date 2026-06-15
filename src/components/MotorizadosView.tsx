@@ -32,6 +32,7 @@ interface MotorizadosViewProps {
   incidents: VehicleIncident[];
   onSaveIncidents: (list: VehicleIncident[]) => void;
   triggerConfirm: (title: string, message: string, onConfirm: () => void, variant?: "danger" | "warning") => void;
+  isAdmin?: boolean;
 }
 
 export default function MotorizadosView({ 
@@ -42,7 +43,8 @@ export default function MotorizadosView({
   localLoading = false,
   incidents,
   onSaveIncidents,
-  triggerConfirm
+  triggerConfirm,
+  isAdmin = true
 }: MotorizadosViewProps) {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -374,21 +376,23 @@ export default function MotorizadosView({
                     <Edit3 className="h-3 w-3" />
                     Editar
                   </button>
-                  <button
-                    onClick={() => {
-                      if (mot.id) {
-                        triggerConfirm(
-                          "¿Eliminar Motorizado?",
-                          `¿Está seguro de que desea eliminar a "${mot.name}" de la lista de conductores activos? Esta acción es irreversible.`,
-                          () => onDelete(mot.id!)
-                        );
-                      }
-                    }}
-                    className="p-1 px-2.5 text-red-400 hover:text-red-300 text-[10px] font-bold uppercase transition flex items-center gap-1 cursor-pointer"
-                  >
-                    <Trash2 className="h-3 w-3" />
-                    Eliminar
-                  </button>
+                  {isAdmin && (
+                    <button
+                      onClick={() => {
+                        if (mot.id) {
+                          triggerConfirm(
+                            "¿Eliminar Motorizado?",
+                            `¿Está seguro de que desea eliminar a "${mot.name}" de la lista de conductores activos? Esta acción es irreversible.`,
+                            () => onDelete(mot.id!)
+                          );
+                        }
+                      }}
+                      className="p-1 px-2.5 text-red-400 hover:text-red-300 text-[10px] font-bold uppercase transition flex items-center gap-1 cursor-pointer"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                      Eliminar
+                    </button>
+                  )}
                 </div>
               </div>
             );
@@ -562,12 +566,14 @@ export default function MotorizadosView({
                           <div key={inc.id} className="p-3 bg-slate-950/30 hover:bg-slate-950/50 transition-colors font-semibold text-xs text-slate-300 flex flex-col gap-2.5">
                             <div className="flex items-start justify-between gap-3">
                               <p className="text-[11px] font-black text-white leading-relaxed truncate">{inc.description}</p>
-                              <button
-                                onClick={() => handleDeleteIncident(inc.id)}
-                                className="text-[10px] text-red-400 hover:text-red-300 font-extrabold pr-1 cursor-pointer transition uppercase"
-                              >
-                                Borrar
-                              </button>
+                              {isAdmin && (
+                                <button
+                                  onClick={() => handleDeleteIncident(inc.id)}
+                                  className="text-[10px] text-red-400 hover:text-red-300 font-extrabold pr-1 cursor-pointer transition uppercase"
+                                >
+                                  Borrar
+                                </button>
+                              )}
                             </div>
                             
                             <div className="flex items-center gap-2 flex-wrap font-bold">
