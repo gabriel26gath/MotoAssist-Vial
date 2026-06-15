@@ -448,7 +448,7 @@ export default function MotorizadosView({
             onClick={() => setSelectedMotDetails(null)}
           >
             <div 
-              className="bg-slate-900 border border-white/10 rounded-xl max-w-3xl w-full p-5 sm:p-6 space-y-6 shadow-2xl relative max-h-[90vh] overflow-y-auto"
+              className="motorcycle-asphalt-bg border border-white/15 rounded-2xl max-w-3xl w-full p-5 sm:p-6 space-y-6 shadow-[0_20px_50px_rgba(0,0,0,0.6)] relative max-h-[90vh] overflow-y-auto"
               onClick={e => e.stopPropagation()}
             >
               {/* Encabezado */}
@@ -483,43 +483,43 @@ export default function MotorizadosView({
                 
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-3.5">
                   {/* CALL CENTER */}
-                  <div className="bg-slate-950/40 border border-white/5 rounded-lg p-2.5 text-center flex flex-col justify-between">
+                  <div className="glass-card rounded-xl p-2.5 text-center flex flex-col justify-between">
                     <span className="text-[9px] font-black uppercase text-amber-500 tracking-wider">Call Center</span>
                     <p className="text-lg font-black font-mono text-white mt-1">{statsByType["CALL CENTER"]}</p>
-                    <span className="text-[9px] text-slate-450 font-bold">instalados</span>
+                    <span className="text-[9px] text-slate-400 font-bold">instalados</span>
                   </div>
 
                   {/* SUCURSAL */}
-                  <div className="bg-slate-950/40 border border-white/5 rounded-lg p-2.5 text-center flex flex-col justify-between">
+                  <div className="glass-card rounded-xl p-2.5 text-center flex flex-col justify-between">
                     <span className="text-[9px] font-black uppercase text-emerald-400 tracking-wider">Sucursal</span>
                     <p className="text-lg font-black font-mono text-white mt-1">{statsByType["SUCURSAL"]}</p>
-                    <span className="text-[9px] text-slate-450 font-bold">instalados</span>
+                    <span className="text-[9px] text-slate-400 font-bold">instalados</span>
                   </div>
 
                   {/* FLOTA */}
-                  <div className="bg-slate-950/40 border border-white/5 rounded-lg p-2.5 text-center flex flex-col justify-between">
+                  <div className="glass-card rounded-xl p-2.5 text-center flex flex-col justify-between">
                     <span className="text-[9px] font-black uppercase text-orange-400 tracking-wider">Flota</span>
                     <p className="text-lg font-black font-mono text-white mt-1">{statsByType["FLOTA"]}</p>
-                    <span className="text-[9px] text-slate-450 font-bold">instalados</span>
+                    <span className="text-[9px] text-slate-400 font-bold">instalados</span>
                   </div>
 
                   {/* GERENTE DE LINEA */}
-                  <div className="bg-slate-950/40 border border-white/5 rounded-lg p-2.5 text-center flex flex-col justify-between">
+                  <div className="glass-card rounded-xl p-2.5 text-center flex flex-col justify-between">
                     <span className="text-[9px] font-black uppercase text-rose-400 tracking-wider">Gerente</span>
                     <p className="text-lg font-black font-mono text-white mt-1">{statsByType["GERENTE DE LINEA"]}</p>
-                    <span className="text-[9px] text-slate-450 font-bold">instalados</span>
+                    <span className="text-[9px] text-slate-400 font-bold">instalados</span>
                   </div>
 
                   {/* OMITIDO */}
-                  <div className="bg-slate-950/40 border border-white/5 rounded-lg p-2.5 text-center flex flex-col justify-between col-span-2 sm:col-span-1">
+                  <div className="glass-card rounded-xl p-2.5 text-center flex flex-col justify-between col-span-2 sm:col-span-1">
                     <span className="text-[9px] font-black uppercase text-slate-400 tracking-wider">Omitido</span>
                     <p className="text-lg font-black font-mono text-white mt-1">{statsByType["OMITIDO"]}</p>
-                    <span className="text-[9px] text-slate-450 font-bold">omitidos</span>
+                    <span className="text-[9px] text-slate-400 font-bold">omitidos</span>
                   </div>
                 </div>
 
                 {/* KPI de Ganancia por Asistencia Vial BAT */}
-                <div className="bg-slate-950/40 border border-white/5 rounded-xl p-4 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xl mt-3">
+                <div className="glass-card rounded-2xl p-4 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xl mt-3">
                   <div className="space-y-1">
                     <div className="flex items-center gap-1.5 text-amber-400 font-black uppercase text-[10px] tracking-wider">
                       <Coins className="h-4 w-4" />
@@ -530,7 +530,7 @@ export default function MotorizadosView({
                       Monto total proveniente de los fletes que en su descripción o comentarios digan: <strong className="text-amber-400 underline font-mono">"asistencia vial bat"</strong>.
                     </p>
                   </div>
-                  <div className="text-right shrink-0 bg-slate-950 p-3 rounded-xl border border-white/5">
+                  <div className="text-right shrink-0 bg-slate-950/55 p-3 rounded-xl border border-white/10 shadow-inner">
                     <span className="text-[9px] uppercase font-black tracking-widest text-slate-400">Total Ganado</span>
                     <p className="text-2xl font-black font-mono text-[#FFB300] mt-0.5">${totalVialBat.toLocaleString("es-PA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                   </div>
@@ -550,7 +550,7 @@ export default function MotorizadosView({
                     <p className="text-[10px] text-slate-400 font-bold uppercase">Consigna aquí desperfectos viales, mecánicos o reparaciones.</p>
                   </div>
 
-                  <div className="border border-white/5 rounded-lg overflow-hidden flex-grow max-h-[220px] overflow-y-auto bg-slate-950/30">
+                  <div className="border border-white/10 rounded-xl overflow-hidden flex-grow max-h-[220px] overflow-y-auto bg-slate-950/40">
                     {motIncidents.length === 0 ? (
                       <div className="p-8 text-center text-xs font-bold text-slate-400 space-y-2">
                         <CheckCircle className="h-7 w-7 text-emerald-400 mx-auto" />
@@ -559,7 +559,7 @@ export default function MotorizadosView({
                     ) : (
                       <div className="divide-y divide-white/5">
                         {motIncidents.map((inc) => (
-                          <div key={inc.id} className="p-3 bg-slate-900/40 hover:bg-slate-900 font-semibold text-xs text-slate-300 flex flex-col gap-2.5">
+                          <div key={inc.id} className="p-3 bg-slate-950/30 hover:bg-slate-950/50 transition-colors font-semibold text-xs text-slate-300 flex flex-col gap-2.5">
                             <div className="flex items-start justify-between gap-3">
                               <p className="text-[11px] font-black text-white leading-relaxed truncate">{inc.description}</p>
                               <button
@@ -615,32 +615,32 @@ export default function MotorizadosView({
                 </div>
 
                 {/* Formulario para registrar incidente */}
-                <div className="lg:col-span-5 bg-slate-950/40 border border-white/5 rounded-xl p-4 space-y-3.5">
+                <div className="lg:col-span-5 glass-card rounded-2xl p-4.5 space-y-3.5">
                   <div className="space-y-0.5">
                     <span className="text-[9px] font-black uppercase text-slate-400 tracking-wider">Registrar Evento</span>
-                    <h5 className="text-[11px] font-bold text-slate-200 uppercase">Nuevo Incidente con la Moto</h5>
+                    <h5 className="text-[11px] font-bold text-slate-250 uppercase">Nuevo Incidente con la Moto</h5>
                   </div>
 
                   <form onSubmit={handleAddIncident} className="space-y-3 font-semibold text-xs text-slate-300">
                     <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase">Detalle del Incidente</label>
+                      <label className="text-[10px] font-bold text-slate-450 uppercase">Detalle del Incidente</label>
                       <textarea
                         rows={2}
                         placeholder="Ej. Cambio de bujía, pinchazo, mantenimiento..."
                         value={incidentDesc}
                         onChange={(e) => setIncidentDesc(e.target.value)}
-                        className="w-full px-2.5 py-1.5 bg-slate-950 border border-white/10 rounded-lg text-xs font-semibold focus:outline-none focus:border-blue-500 resize-none text-white placeholder-slate-550"
+                        className="w-full px-2.5 py-1.5 bg-slate-950/60 border border-white/10 rounded-lg text-xs font-semibold focus:outline-none focus:border-amber-500/60 resize-none text-white placeholder-slate-550"
                         required
                       />
                     </div>
 
                     <div className="grid grid-cols-2 gap-2">
                       <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Gravedad</label>
+                        <label className="text-[10px] font-bold text-slate-450 uppercase tracking-wider">Gravedad</label>
                         <select
                           value={incidentSeverity}
                           onChange={(e) => setIncidentSeverity(e.target.value as any)}
-                          className="w-full px-2 py-1.5 bg-slate-950 border border-white/10 rounded-lg text-[10.5px] font-bold focus:outline-none focus:border-blue-500 cursor-pointer text-white"
+                          className="w-full px-2 py-1.5 bg-slate-950/60 border border-white/10 rounded-lg text-[10.5px] font-bold focus:outline-none focus:border-amber-500/60 cursor-pointer text-white"
                         >
                           <option className="bg-slate-950 text-white" value="baja">Baja</option>
                           <option className="bg-slate-950 text-white" value="media">Media</option>
@@ -649,12 +649,12 @@ export default function MotorizadosView({
                       </div>
 
                       <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Fecha</label>
+                        <label className="text-[10px] font-bold text-slate-450 uppercase tracking-wider">Fecha</label>
                         <input
                           type="date"
                           value={incidentDate}
                           onChange={(e) => setIncidentDate(e.target.value)}
-                          className="w-full px-2 py-1 bg-slate-950 border border-white/10 rounded-lg text-[10.5px] font-bold focus:outline-none focus:border-blue-500 text-white"
+                          className="w-full px-2 py-1 bg-slate-950/60 border border-white/10 rounded-lg text-[10.5px] font-bold focus:outline-none focus:border-amber-500/60 text-white"
                           required
                         />
                       </div>

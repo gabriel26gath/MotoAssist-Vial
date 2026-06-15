@@ -165,7 +165,7 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
   return (
     <div id="reports-module-view" className="space-y-6 animate-fade-in">
       {/* PANEL DE CONFIGURACIÓN DE FILTROS */}
-      <div className="bg-slate-950/45 backdrop-blur-md rounded-xl border border-white/5 p-5 shadow-2xl space-y-4">
+      <div className="glass-card rounded-2xl p-5.5 shadow-2xl space-y-4">
         <div>
           <h4 className="text-xs font-black uppercase text-amber-400 tracking-wider">Filtros Avanzados del Reporte de Ventas</h4>
           <p className="text-[11px] text-slate-400 mt-0.5 font-semibold">Restringe las copias de ventas para exportar o auditar sus valores de instalaciones</p>
@@ -182,7 +182,7 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="w-full px-2.5 py-1.5 text-xs bg-slate-950 border border-white/10 rounded-lg focus:outline-none focus:border-amber-500/60 font-semibold text-white cursor-pointer"
+              className="w-full px-2.5 py-1.5 text-xs bg-slate-950/60 border border-white/10 rounded-lg focus:outline-none focus:border-amber-500/60 font-semibold text-white cursor-pointer"
             />
           </div>
 
@@ -196,7 +196,7 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="w-full px-2.5 py-1.5 text-xs bg-slate-950 border border-white/10 rounded-lg focus:outline-none focus:border-amber-500/60 font-semibold text-white cursor-pointer"
+              className="w-full px-2.5 py-1.5 text-xs bg-slate-950/60 border border-white/10 rounded-lg focus:outline-none focus:border-amber-500/60 font-semibold text-white cursor-pointer"
             />
           </div>
 
@@ -206,7 +206,7 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
             <select
               value={selectedMotorizado}
               onChange={(e) => setSelectedMotorizado(e.target.value)}
-              className="w-full px-2.5 py-1.5 text-xs bg-slate-950 border border-white/10 rounded-lg focus:outline-none focus:border-amber-500/60 font-semibold text-white cursor-pointer"
+              className="w-full px-2.5 py-1.5 text-xs bg-slate-950/60 border border-white/10 rounded-lg focus:outline-none focus:border-amber-500/60 font-semibold text-white cursor-pointer"
             >
               <option className="bg-slate-950 text-white" value="all">Ver Todos</option>
               <option className="bg-slate-950 text-white" value="none">Sin Motorizado</option>
@@ -222,7 +222,7 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
             <select
               value={selectedPayment}
               onChange={(e) => setSelectedPayment(e.target.value)}
-              className="w-full px-2.5 py-1.5 text-xs bg-slate-950 border border-white/10 rounded-lg focus:outline-none focus:border-amber-500/60 font-semibold text-white cursor-pointer"
+              className="w-full px-2.5 py-1.5 text-xs bg-slate-950/60 border border-white/10 rounded-lg focus:outline-none focus:border-amber-500/60 font-semibold text-white cursor-pointer"
             >
               <option className="bg-slate-950 text-white" value="all">Ver Todos</option>
               <option className="bg-slate-950 text-white" value="pago contra entrega">Contrareembolso / Brisas</option>
@@ -240,7 +240,7 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
                 placeholder="Ej. Auto Centro"
                 value={searchIssuer}
                 onChange={(e) => setSearchIssuer(e.target.value)}
-                className="w-full pl-7 pr-2.5 py-1.5 text-xs bg-slate-950 border border-white/10 rounded-lg focus:outline-none focus:border-amber-500/60 font-semibold text-white placeholder-slate-550"
+                className="w-full pl-7 pr-2.5 py-1.5 text-xs bg-slate-950/60 border border-white/10 rounded-lg focus:outline-none focus:border-amber-500/60 font-semibold text-white placeholder-slate-550"
               />
               <Search className="h-3 w-3 text-slate-400 absolute left-2.5 top-2.5" />
             </div>
@@ -350,21 +350,21 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
       {/* METRICAS DEL RESUMEN FILTRADO */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Total Venta Filtrado */}
-        <div className="bg-slate-950/45 backdrop-blur-md p-4.5 rounded-xl border border-white/5 shadow-2xl">
+        <div className="glass-card p-5 rounded-2xl shadow-2xl">
           <span className="text-[9px] font-black uppercase text-slate-400 tracking-wider">Monto Filtrado de Ventas</span>
           <p className="text-xl font-black font-mono text-[#FFB300] mt-0.5">${filteredTotal.toLocaleString("es-PA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
           <p className="text-[10px] text-slate-400 mt-1">{filteredInvoices.length} copias registradas</p>
         </div>
 
         {/* Subtotal Gasto Filtrado */}
-        <div className="bg-slate-950/45 backdrop-blur-md p-4.5 rounded-xl border border-white/5 shadow-2xl">
+        <div className="glass-card p-5 rounded-2xl shadow-2xl">
           <span className="text-[9px] font-black uppercase text-slate-400 tracking-wider">Base Gravable (Subtotal)</span>
           <p className="text-xl font-black font-mono text-white mt-0.5">${filteredSubtotal.toLocaleString("es-PA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
           <p className="text-[10px] text-slate-400 mt-1">Excluye impuestos ITBMS</p>
         </div>
 
         {/* Total ITBMS Filtrado */}
-        <div className="bg-slate-950/45 backdrop-blur-md p-4.5 rounded-xl border border-white/5 shadow-2xl">
+        <div className="glass-card p-5 rounded-2xl shadow-2xl">
           <span className="text-[9px] font-black uppercase text-slate-400 tracking-wider">Impuestos Acumulados (ITBMS)</span>
           <p className="text-xl font-black font-mono text-amber-500 mt-0.5">${filteredTax.toLocaleString("es-PA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
           <p className="text-[10px] text-slate-400 mt-1">Impuestos de venta estimados</p>
@@ -373,7 +373,7 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 pb-6">
         {/* DESGLOSE FISCAL DE ITBMS (7% / 10% / 15% / Exento) */}
-        <div className="lg:col-span-5 bg-slate-950/45 backdrop-blur-md p-5 rounded-xl border border-white/5 shadow-2xl space-y-4">
+        <div className="lg:col-span-5 glass-card p-5.5 rounded-2xl shadow-2xl space-y-4">
           <div className="flex items-center gap-2">
             <Calculator className="h-4 w-4 text-amber-400" />
             <h4 className="font-black text-white text-xs uppercase tracking-wider font-display">Tabla Desglose ITBMS (Filtrado)</h4>
@@ -382,7 +382,7 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
 
           <div className="divide-y divide-white/5 font-semibold text-xs text-slate-300 space-y-2.5">
             {/* Exento */}
-            <div className="flex justify-between items-center bg-slate-900/40 p-2.5 rounded-lg border border-white/5 pt-2.5">
+            <div className="flex justify-between items-center bg-slate-950/30 p-2.5 rounded-xl border border-white/10 shadow-inner mt-2.5">
               <div>
                 <p className="font-extrabold text-white">0% Exento</p>
                 <p className="text-[10px] text-slate-400 font-medium">Bases No Gravadas</p>
@@ -394,7 +394,7 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
             </div>
 
             {/* 7% */}
-            <div className="flex justify-between items-center bg-slate-900/40 p-2.5 rounded-lg border border-white/5 pt-2.5">
+            <div className="flex justify-between items-center bg-slate-950/30 p-2.5 rounded-xl border border-white/10 shadow-inner pt-2.5">
               <div>
                 <p className="font-extrabold text-white">7% ITBMS</p>
                 <p className="text-[10px] text-slate-400 font-medium">Equipos e Instalaciones</p>
@@ -406,7 +406,7 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
             </div>
 
             {/* 10% */}
-            <div className="flex justify-between items-center bg-slate-900/40 p-2.5 rounded-lg border border-white/5 pt-2.5">
+            <div className="flex justify-between items-center bg-slate-950/30 p-2.5 rounded-xl border border-white/10 shadow-inner pt-2.5">
               <div>
                 <p className="font-extrabold text-white">10% ITBMS</p>
                 <p className="text-[10px] text-slate-400 font-medium">Alcohol o Tabaco</p>
@@ -418,7 +418,7 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
             </div>
 
             {/* 15% */}
-            <div className="flex justify-between items-center bg-slate-900/40 p-2.5 rounded-lg border border-white/5 pt-2.5">
+            <div className="flex justify-between items-center bg-slate-950/30 p-2.5 rounded-xl border border-white/10 shadow-inner pt-2.5">
               <div>
                 <p className="font-extrabold text-white">15% ITBMS</p>
                 <p className="text-[10px] text-slate-400 font-medium">Hospedajes o Especiales</p>
@@ -432,19 +432,19 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
         </div>
 
         {/* TABLA DE TICKET DETALLES FILTRADOS */}
-        <div className="lg:col-span-7 bg-slate-950/45 backdrop-blur-md p-5 rounded-xl border border-white/5 shadow-2xl space-y-4 flex flex-col justify-between">
+        <div className="lg:col-span-7 glass-card p-5.5 rounded-2xl shadow-2xl space-y-4 flex flex-col justify-between">
           <div>
             <h4 className="text-xs font-black uppercase text-amber-400 tracking-wider">Bitácora de Ventas Filtradas</h4>
             <p className="text-[11px] text-slate-400 mt-0.5">Historial directo de copias que cumplen con los filtros ({filteredInvoices.length})</p>
           </div>
 
-          <div className="border border-white/5 rounded-lg overflow-hidden flex-grow max-h-[280px] overflow-y-auto bg-slate-950/20">
+          <div className="border border-white/10 rounded-xl overflow-hidden flex-grow max-h-[280px] overflow-y-auto bg-slate-950/40">
             {filteredInvoices.length === 0 ? (
               <div className="p-10 text-center text-xs font-bold text-slate-400">Sin copias de ventas que coincidan con los filtros colocados.</div>
             ) : (
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
-                  <tr className="bg-slate-900 border-b border-white/5 text-[10px] uppercase font-black text-slate-300 tracking-wider">
+                  <tr className="bg-slate-950/50 border-b border-white/10 text-[10px] uppercase font-black text-slate-300 tracking-wider">
                     <th className="p-2.5">Comercio</th>
                     <th className="p-2.5">Fecha</th>
                     <th className="p-2.5">Chofer</th>
@@ -453,7 +453,7 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
                 </thead>
                 <tbody className="divide-y divide-white/5 font-semibold text-slate-200">
                   {filteredInvoices.map(inv => (
-                    <tr key={inv.id} className="hover:bg-white/5 transition">
+                    <tr key={inv.id} className="hover:bg-amber-500/10 transition">
                       <td className="p-2.5">
                         <p className="truncate max-w-[120px] font-bold text-white text-[11px]" title={inv.issuer}>{inv.issuer}</p>
                         <p className="text-[9px] text-slate-400 font-mono">#{inv.invoiceNumber}</p>

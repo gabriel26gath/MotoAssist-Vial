@@ -34,7 +34,10 @@ import {
   Percent,
   RefreshCw,
   FolderOpen,
-  Settings
+  Settings,
+  Smartphone,
+  Database,
+  CheckCircle2
 } from "lucide-react";
 import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
 import { 
@@ -195,6 +198,7 @@ export default function App() {
   const [motorizados, setMotorizados] = useState<Motorizado[]>([]);
   const [loadingList, setLoadingList] = useState(false);
   const [activeTab, setActiveTab ] = useState<"dashboard" | "tickets" | "fleet" | "reports">("tickets");
+  const [mobileOptimized, setMobileOptimized] = useState<boolean>(false);
   
   // Custom columns configuration for main Tickets list export
   const [selectedExportFields, setSelectedExportFields] = useState<string[]>(EXPORT_COLUMNS);
@@ -244,6 +248,25 @@ export default function App() {
     onConfirm: () => void;
     variant?: "danger" | "warning";
   } | null>(null);
+
+  const [firebaseNotification, setFirebaseNotification] = useState<{
+    show: boolean;
+    title: string;
+    message: string;
+    type: "success" | "error" | "info";
+  } | null>(null);
+
+  const showFirebaseToast = (title: string, message: string, type: "success" | "error" | "info" = "success") => {
+    setFirebaseNotification({
+      show: true,
+      title,
+      message,
+      type
+    });
+    setTimeout(() => {
+      setFirebaseNotification(prev => prev && prev.title === title ? null : prev);
+    }, 5000);
+  };
 
   const triggerConfirm = (title: string, message: string, onConfirm: () => void, variant: "danger" | "warning" = "danger") => {
     setConfirmState({
@@ -541,19 +564,39 @@ export default function App() {
           const docRef = doc(db, "invoices", formValues.id);
           const { id, ...cleanData } = payload;
           await updateDoc(docRef, cleanData);
+          showFirebaseToast(
+            "✓ ¡Guardado en Firebase!",
+            `La factura #${payload.invoiceNumber || ""} fue actualizada exitosamente en Firebase Cloud Firestore.`,
+            "success"
+          );
         } else {
           // If it doesn't have an ID, or the ID is a temporary local ID ("loc_..."), we add it as a new document
           const { id, ...cleanData } = payload;
           await addDoc(collection(db, "invoices"), cleanData);
+          showFirebaseToast(
+            "✓ ¡Guardado en Firebase!",
+            `El nuevo ticket #${payload.invoiceNumber || ""} fue transmitido y guardado exitosamente en la base de datos de Firebase.`,
+            "success"
+          );
         }
       } else {
         const local = getLocalInvoices();
         if (formValues.id) {
           const updated = local.map(i => i.id === formValues.id ? { ...payload, id: formValues.id } : i);
           saveLocalInvoices(updated);
+          showFirebaseToast(
+            "✓ Guardado Local",
+            "La copia se actualizó en el almacenamiento local (modo offline).",
+            "info"
+          );
         } else {
           payload.id = "loc_" + Date.now();
           saveLocalInvoices([payload, ...local]);
+          showFirebaseToast(
+            "✓ Guardado Local",
+            "La copia se registró localmente en la memoria del navegador (modo offline).",
+            "info"
+          );
         }
       }
       setIsEditing(false);
@@ -579,9 +622,19 @@ export default function App() {
         try {
           if (isFirebaseConfigured && db && currentUser) {
             await deleteDoc(doc(db, "invoices", id));
+            showFirebaseToast(
+              "✓ Eliminado de Firebase",
+              "La factura de flete fue eliminada permanentemente del servidor Firebase Cloud Firestore.",
+              "success"
+            );
           } else {
             const local = getLocalInvoices();
             saveLocalInvoices(local.filter(i => i.id !== id));
+            showFirebaseToast(
+              "✓ Eliminado Localmente",
+              "El registro se ha retirado de la memoria del navegador.",
+              "info"
+            );
           }
           setSelectedInvoiceForView(null);
         } catch (err: any) {
@@ -609,17 +662,37 @@ export default function App() {
         if (editId && !editId.startsWith("mot_")) {
           const docRef = doc(db, "motorizados", editId);
           await updateDoc(docRef, { ...motData });
+          showFirebaseToast(
+            "✓ Conductor Guardado",
+            `Los datos de ${motData.name} se han actualizado correctamente en Firebase Cloud Firestore.`,
+            "success"
+          );
         } else {
           await addDoc(collection(db, "motorizados"), payload);
+          showFirebaseToast(
+            "✓ Conductor Registrado",
+            `El perfil del motorizado ${payload.name} ha sido sincronizado en Firebase Cloud Firestore.`,
+            "success"
+          );
         }
       } else {
         const local = getLocalMotorizados();
         if (editId) {
           const updated = local.map(m => m.id === editId ? { ...payload, id: editId } : m);
           saveLocalMotorizados(updated);
+          showFirebaseToast(
+            "✓ Conductor Guardado",
+            `Los datos de ${payload.name} se actualizaron en la memoria offline de este dispositivo.`,
+            "info"
+          );
         } else {
           payload.id = "mot_" + Date.now();
           saveLocalMotorizados([payload, ...local]);
+          showFirebaseToast(
+            "✓ Conductor Registrado",
+            `Se agendó temporalmente a ${payload.name} en el almacenamiento local.`,
+            "info"
+          );
         }
       }
     } catch (err: any) {
@@ -650,9 +723,19 @@ export default function App() {
         try {
           if (isFirebaseConfigured && db && currentUser) {
             await deleteDoc(doc(db, "motorizados", id));
+            showFirebaseToast(
+              "✓ Conductor Eliminado",
+              "El conductor ha sido eliminado permanentemente de Firebase Cloud Firestore.",
+              "success"
+            );
           } else {
             const local = getLocalMotorizados();
             saveLocalMotorizados(local.filter(m => m.id !== id));
+            showFirebaseToast(
+              "✓ Conductor Eliminado",
+              "El perfil de conductor fue eliminado localmente.",
+              "info"
+            );
           }
         } catch (err: any) {
           console.error(err);
@@ -662,7 +745,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen motorcycle-asphalt-bg flex flex-col font-sans text-slate-100 relative">
+    <div className={`min-h-screen motorcycle-asphalt-bg flex flex-col font-sans text-slate-100 relative ${mobileOptimized ? "forced-mobile-mode" : ""}`}>
       
       {/* Pisada de neumatico translucida de fondo (Dual curving tire track watermarks de la imagen) */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0 select-none opacity-[0.05]" id="tire-watermark">
@@ -685,10 +768,12 @@ export default function App() {
       </div>
 
       {/* BARRA ASIDE DE OPERACIONES (Sidemenu Modular) */}
-      <div className="flex flex-col md:flex-row min-h-screen">
+      <div className={`flex flex-col min-h-screen ${mobileOptimized ? "" : "md:flex-row"}`}>
         
         {/* SIDEBAR ADAPTATIVO PREMIUM (Con estilo Glass Asfalto y Ámbar de Tránsito) */}
-        <aside className="w-full md:w-64 bg-slate-950/60 backdrop-blur-lg text-white flex flex-col shrink-0 border-b border-amber-500/10 md:border-r md:border-b-0 shadow-2xl relative z-10">
+        <aside className={`w-full bg-slate-950/60 backdrop-blur-lg text-white flex flex-col shrink-0 border-b border-amber-500/10 shadow-2xl relative z-10 ${
+          mobileOptimized ? "" : "md:w-64 md:border-r md:border-b-0"
+        }`}>
           <div className="p-6 border-b border-amber-500/10 flex items-center gap-3">
             <div className="p-1.5 bg-amber-500/10 rounded-xl flex items-center justify-center shadow-inner shrink-0 border border-amber-500/20">
               <LogoSVG className="h-10 w-10 text-[#FF9100] drop-shadow-[0_2px_8px_rgba(255,145,0,0.6)] shrink-0" />
@@ -699,7 +784,9 @@ export default function App() {
             </div>
           </div>
 
-          <nav className="flex-row md:flex-col md:flex-grow p-4 gap-1.5 pt-6 flex overflow-x-auto md:overflow-x-visible scrollbar-none shrink-0 md:space-y-1.5">
+          <nav className={`p-4 gap-1.5 pt-6 flex overflow-x-auto scrollbar-none shrink-0 ${
+            mobileOptimized ? "flex-row" : "md:flex-col md:flex-grow md:overflow-x-visible md:space-y-1.5"
+          }`}>
             
             {/* Tab Tickets */}
             <button
@@ -755,7 +842,9 @@ export default function App() {
           </nav>
 
           {/* SESIÓN USUARIO PIE */}
-          <div className="p-4 border-t border-amber-500/10 bg-slate-950/70 text-amber-200 hidden md:block">
+          <div className={`p-4 border-t border-amber-500/10 bg-slate-950/70 text-amber-200 ${
+            mobileOptimized ? "hidden" : "hidden md:block"
+          }`}>
             {isFirebaseConfigured ? (
               currentUser ? (
                 <div className="space-y-3">
@@ -815,14 +904,30 @@ export default function App() {
                 </p>
               </div>
 
-              {(isEditing || selectedInvoiceForView) && activeTab === "tickets" && (
+              <div className="flex flex-wrap items-center gap-3">
                 <button
-                  onClick={() => { setIsEditing(false); setSelectedInvoiceForView(null); }}
-                  className="px-4 py-2 bg-white/10 hover:bg-white/15 text-white rounded-xl text-xs font-black transition border border-white/10 cursor-pointer self-start backdrop-blur-xs shadow-xs"
+                  onClick={() => setMobileOptimized(!mobileOptimized)}
+                  className={`px-4 py-2 rounded-xl text-xs font-black transition-all duration-300 flex items-center gap-2 border shadow-lg cursor-pointer ${
+                    mobileOptimized 
+                      ? "bg-amber-500 text-slate-950 border-amber-400 font-extrabold scale-105 shadow-amber-500/20" 
+                      : "bg-slate-950/70 text-amber-400 border-amber-500/20 hover:border-amber-500/50 hover:bg-slate-900"
+                  }`}
+                  id="toggle-layout-density"
+                  title="Optimiza el espacio de las tarjetas y cuadrículas para evitar elementos amontonados"
                 >
-                  Regresar a la Entrada
+                  <Smartphone className="h-4 w-4 shrink-0" />
+                  <span>{mobileOptimized ? "Vista Ajustada" : "Ajustar Móvil"}</span>
                 </button>
-              )}
+
+                {(isEditing || selectedInvoiceForView) && activeTab === "tickets" && (
+                  <button
+                    onClick={() => { setIsEditing(false); setSelectedInvoiceForView(null); }}
+                    className="px-4 py-2 bg-white/10 hover:bg-white/15 text-white rounded-xl text-xs font-black transition border border-white/10 cursor-pointer backdrop-blur-xs shadow-xs"
+                  >
+                    Regresar a la Entrada
+                  </button>
+                )}
+              </div>
             </div>
           </header>
 
@@ -850,10 +955,10 @@ export default function App() {
             )}
 
             {activeTab === "tickets" && (
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+              <div className={`grid gap-8 ${mobileOptimized ? "grid-cols-1" : "grid-cols-1 lg:grid-cols-12"}`}>
                 
                 {/* COL IZQUIERDA: FORM O AREA DE CARGA */}
-                <div className="lg:col-span-7 space-y-6">
+                <div className={`${mobileOptimized ? "grid-cols-1" : "lg:col-span-7"} space-y-6`}>
                   
                   {isEditing ? (
                     <TicketEditForm
@@ -939,7 +1044,7 @@ export default function App() {
                 </div>
 
                 {/* COL DERECHA: BIBLIOTECA LISTA */}
-                <div className="lg:col-span-5 space-y-6">
+                <div className={`${mobileOptimized ? "grid-cols-1" : "lg:col-span-5"} space-y-6`}>
                   
                   {invoices.length > 0 && (
                     <div className="bg-slate-950/40 backdrop-blur-md rounded-xl border border-amber-500/10 p-4.5 shadow-sm space-y-3">
@@ -1188,6 +1293,44 @@ export default function App() {
               >
                 Cerrar Imagen
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* NOTIFICACIÓN FLOTANTE DE CONFIRMACIÓN DE OPERACIONES EN FIREBASE/LOCAL */}
+      {firebaseNotification?.show && (
+        <div 
+          className="fixed bottom-6 right-6 z-[110] max-w-sm w-full bg-slate-950/95 border border-amber-500/30 text-white rounded-xl shadow-2xl p-4 flex gap-3 items-start backdrop-blur-md border-l-4 border-l-amber-500" 
+          id="firebase-realtime-toast"
+        >
+          <div className="p-2 bg-amber-500/10 rounded-lg text-amber-500 shrink-0">
+            {firebaseNotification.type === "success" ? (
+              <CheckCircle2 className="h-5 w-5 text-[#FF9100] animate-bounce" />
+            ) : firebaseNotification.type === "info" ? (
+              <Database className="h-5 w-5 text-blue-400" />
+            ) : (
+              <AlertTriangle className="h-5 w-5 text-red-500" />
+            )}
+          </div>
+          <div className="flex-grow space-y-1 min-w-0">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-black uppercase tracking-wider text-amber-400 font-mono">
+                {firebaseNotification.title}
+              </span>
+              <button 
+                onClick={() => setFirebaseNotification(null)}
+                className="text-slate-400 hover:text-white transition p-0.5 ml-2 shrink-0 cursor-pointer"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+            <p className="text-slate-300 text-xs leading-relaxed font-semibold break-words">
+              {firebaseNotification.message}
+            </p>
+            <div className="flex items-center gap-1.5 pt-1 text-[9.5px] text-[#FF9100]/70 font-mono">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+              <span>Sincronización Cloud Firebase activa</span>
             </div>
           </div>
         </div>

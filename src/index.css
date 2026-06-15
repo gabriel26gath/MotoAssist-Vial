@@ -76,5 +76,31 @@
     border-color: rgba(245, 158, 11, 0.75) !important;
     outline: none !important;
   }
+
+  /* Optimizador de Densidad Móvil: Fuerza a colapsar grillas anchas para no apretar elementos */
+  .forced-mobile-mode .grid-cols-1.sm:grid-cols-2.lg:grid-cols-5,
+  .forced-mobile-mode .grid-cols-1.md:grid-cols-2.lg:grid-cols-5,
+  .forced-mobile-mode .grid-cols-2.sm:grid-cols-5,
+  .forced-mobile-mode .lg:grid-cols-5,
+  .forced-mobile-mode .lg:grid-cols-3,
+  .forced-mobile-mode .lg:grid-cols-2,
+  .forced-mobile-mode .md:grid-cols-2,
+  .forced-mobile-mode .lg:grid-cols-12,
+  .forced-mobile-mode .md:grid-cols-3,
+  .forced-mobile-mode .grid-cols-2:not(.gap-2) {
+    grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+  }
+
+  /* Expandir paneles de información y listas que normalmente usan divisiones anchas */
+  .forced-mobile-mode .lg:col-span-12,
+  .forced-mobile-mode .lg:col-span-7,
+  .forced-mobile-mode .lg:col-span-5 {
+    grid-column: span 12 / span 12 !important;
+  }
+
+  /* Ajustar tamaño de textos y botones para modo amigable */
+  .forced-mobile-mode h2 {
+    font-size: 1.15rem !important;
+  }
 }
 
