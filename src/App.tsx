@@ -33,7 +33,8 @@ import {
   FileCheck,
   Percent,
   RefreshCw,
-  FolderOpen
+  FolderOpen,
+  Settings
 } from "lucide-react";
 import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
 import { 
@@ -190,19 +191,6 @@ const EXPORT_COLUMNS = [
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState<any>(null);
-  
-  // Selector de entorno de datos activo: Local (Modo Demo/Desarrollo) o Firebase (Cloud de Producción)
-  const [dataEnvironment, setDataEnvironment] = useState<"local" | "firebase">(() => {
-    if (!isFirebaseConfigured) return "local";
-    const saved = localStorage.getItem("preferred_data_environment");
-    return (saved as "local" | "firebase") || "firebase";
-  });
-
-  const handleSetEnvironment = (env: "local" | "firebase") => {
-    setDataEnvironment(env);
-    localStorage.setItem("preferred_data_environment", env);
-  };
-
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [motorizados, setMotorizados] = useState<Motorizado[]>([]);
   const [loadingList, setLoadingList] = useState(false);
@@ -296,7 +284,7 @@ export default function App() {
     let unsubscribeInvoices = () => {};
     let unsubscribeMotorizados = () => {};
 
-    if (isFirebaseConfigured && auth && dataEnvironment === "firebase") {
+    if (isFirebaseConfigured && auth) {
       const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
         setCurrentUser(user);
         if (user) {
@@ -367,13 +355,11 @@ export default function App() {
         unsubscribeMotorizados();
       };
     } else {
-      // Offline fallback or Local Mode selected: load from LocalStorage and reset active auth state
-      setCurrentUser(null);
+      // Offline fallback: load from LocalStorage
       setInvoices(getLocalInvoices());
       setMotorizados(getLocalMotorizados());
-      setLoadingList(false);
     }
-  }, [dataEnvironment]);
+  }, []);
 
   // Login / Logout Flow
   const handleLogIn = async () => {
@@ -550,7 +536,7 @@ export default function App() {
 
     setLoadingList(true);
     try {
-      if (isFirebaseConfigured && db && currentUser && dataEnvironment === "firebase") {
+      if (isFirebaseConfigured && db && currentUser) {
         if (formValues.id && !formValues.id.startsWith("loc_")) {
           const docRef = doc(db, "invoices", formValues.id);
           const { id, ...cleanData } = payload;
@@ -587,11 +573,11 @@ export default function App() {
 
   const handleDeleteInvoice = (id: string) => {
     triggerConfirm(
-      "📄 ¿Eliminar copia de flete?",
+      "¿Eliminar copia de flete?",
       "Esta operación borrará permanentemente este registro del historial. Esta acción es irreversible.",
       async () => {
         try {
-          if (isFirebaseConfigured && db && currentUser && dataEnvironment === "firebase") {
+          if (isFirebaseConfigured && db && currentUser) {
             await deleteDoc(doc(db, "invoices", id));
           } else {
             const local = getLocalInvoices();
@@ -619,7 +605,7 @@ export default function App() {
     };
 
     try {
-      if (isFirebaseConfigured && db && currentUser && dataEnvironment === "firebase") {
+      if (isFirebaseConfigured && db && currentUser) {
         if (editId && !editId.startsWith("mot_")) {
           const docRef = doc(db, "motorizados", editId);
           await updateDoc(docRef, { ...motData });
@@ -658,11 +644,11 @@ export default function App() {
     }
 
     triggerConfirm(
-      "🛵 ¿Desvincular conductor?",
+      "¿Desvincular conductor?",
       "¿Está seguro de que desea eliminar permanentemente este registro de motorizado? No se podrán recuperar sus datos de contacto.",
       async () => {
         try {
-          if (isFirebaseConfigured && db && currentUser && dataEnvironment === "firebase") {
+          if (isFirebaseConfigured && db && currentUser) {
             await deleteDoc(doc(db, "motorizados", id));
           } else {
             const local = getLocalMotorizados();
@@ -676,72 +662,55 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#02050f] via-[#091125] to-[#010307] flex flex-col font-sans text-slate-100">
+    <div className="min-h-screen motorcycle-asphalt-bg flex flex-col font-sans text-slate-100 relative">
       
+      {/* Pisada de neumatico translucida de fondo (Dual curving tire track watermarks de la imagen) */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0 select-none opacity-[0.05]" id="tire-watermark">
+        <svg viewBox="0 0 1600 1000" className="w-full h-full text-black fill-current" preserveAspectRatio="none">
+          <defs>
+            <pattern id="tire-tread-pattern" width="80" height="40" patternUnits="userSpaceOnUse" patternTransform="rotate(25 0 0)">
+              {/* Chevron tread segments */}
+              <path d="M 12,5 L 40,25 L 68,5" fill="none" stroke="currentColor" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M 12,20 L 40,40 L 68,20" fill="none" stroke="currentColor" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" />
+              <line x1="40" y1="0" x2="40" y2="40" stroke="currentColor" strokeWidth="4" strokeDasharray="5,10" />
+            </pattern>
+          </defs>
+          
+          {/* Left curved tire sweep exactly like the image print */}
+          <path d="M -150,1100 Q 350,550 780,-150" fill="none" stroke="url(#tire-tread-pattern)" strokeWidth="130" opacity="0.9" />
+          
+          {/* Right curved tire sweeps exactly like the image print */}
+          <path d="M 1750,1100 Q 1250,550 820,-150" fill="none" stroke="url(#tire-tread-pattern)" strokeWidth="130" opacity="0.9" />
+        </svg>
+      </div>
+
       {/* BARRA ASIDE DE OPERACIONES (Sidemenu Modular) */}
       <div className="flex flex-col md:flex-row min-h-screen">
         
-        {/* SIDEBAR ADAPTATIVO PREMIUM (Con estilo Glass Azul Marino y Negro) */}
-        <aside className="w-full md:w-64 bg-slate-950/50 backdrop-blur-lg text-white flex flex-col shrink-0 border-b border-white/5 md:border-r md:border-b-0 shadow-2xl relative z-10">
-          <div className="p-6 border-b border-white/5 flex items-center gap-3">
-            <div className="p-1.5 bg-blue-500/10 rounded-xl flex items-center justify-center shadow-inner shrink-0 border border-white/10">
-              <LogoSVG className="h-10 w-10 text-[#FFB300] drop-shadow-[0_2px_8px_rgba(255,179,0,0.55)] shrink-0" />
+        {/* SIDEBAR ADAPTATIVO PREMIUM (Con estilo Glass Asfalto y Ámbar de Tránsito) */}
+        <aside className="w-full md:w-64 bg-slate-950/60 backdrop-blur-lg text-white flex flex-col shrink-0 border-b border-amber-500/10 md:border-r md:border-b-0 shadow-2xl relative z-10">
+          <div className="p-6 border-b border-amber-500/10 flex items-center gap-3">
+            <div className="p-1.5 bg-amber-500/10 rounded-xl flex items-center justify-center shadow-inner shrink-0 border border-amber-500/20">
+              <LogoSVG className="h-10 w-10 text-[#FF9100] drop-shadow-[0_2px_8px_rgba(255,145,0,0.6)] shrink-0" />
             </div>
             <div>
               <h1 className="text-sm font-display font-black tracking-tight text-white leading-none">MotoAssist Vial</h1>
-              <p className="text-[9px] text-blue-400 font-extrabold uppercase tracking-widest mt-1.5 leading-none">Monitoreo Vial Activo</p>
+              <p className="text-[9px] text-amber-400 font-extrabold uppercase tracking-widest mt-1.5 leading-none">Monitoreo Vial Activo</p>
             </div>
           </div>
 
-          {/* CONTROL DE SELECCIÓN DE ENTORNO */}
-          <div className="p-4 border-b border-white/5 bg-slate-950/40 space-y-2">
-            <p className="text-[9px] text-slate-450 uppercase font-black tracking-widest pl-1">Entorno de Datos</p>
-            <div className="grid grid-cols-2 p-0.5 bg-slate-900/80 rounded-xl border border-white/5 shadow-inner">
-              <button
-                onClick={() => handleSetEnvironment("local")}
-                className={`py-1.5 rounded-lg text-[10px] font-black transition flex items-center justify-center gap-1 cursor-pointer ${
-                  dataEnvironment === "local"
-                    ? "bg-amber-500/20 text-amber-350 border border-amber-500/30 font-black shadow-xs"
-                    : "text-slate-400 hover:text-white hover:bg-white/5"
-                }`}
-                title="Datos locales guardados en su navegador (Modo Demo/Cache)"
-              >
-                <span>🏠</span>
-                <span>Local</span>
-              </button>
-              <button
-                onClick={() => {
-                  if (!isFirebaseConfigured) {
-                    alert("Firebase no está configurado en este momento.");
-                    return;
-                  }
-                  handleSetEnvironment("firebase");
-                }}
-                className={`py-1.5 rounded-lg text-[10px] font-black transition flex items-center justify-center gap-1 cursor-pointer ${
-                  dataEnvironment === "firebase"
-                    ? "bg-blue-600/35 text-white border border-blue-500/30 font-black shadow-lg"
-                    : "text-slate-400 hover:text-white hover:bg-white/5"
-                }`}
-                title="Datos compartidos en la nube conectados a Firestore de Firebase"
-              >
-                <span>☁️</span>
-                <span>Nube</span>
-              </button>
-            </div>
-          </div>
-
-          <nav className="flex-row md:flex-col md:flex-grow p-4 gap-1.5 pt-4 flex overflow-x-auto md:overflow-x-visible scrollbar-none shrink-0 md:space-y-1.5">
+          <nav className="flex-row md:flex-col md:flex-grow p-4 gap-1.5 pt-6 flex overflow-x-auto md:overflow-x-visible scrollbar-none shrink-0 md:space-y-1.5">
             
             {/* Tab Tickets */}
             <button
               onClick={() => { setActiveTab("tickets"); setSelectedInvoiceForView(null); setIsEditing(false); }}
               className={`flex items-center gap-2.5 px-4 py-2.5 sm:py-3 rounded-xl text-xs font-black whitespace-nowrap transition duration-200 cursor-pointer shrink-0 ${
                 activeTab === "tickets" 
-                  ? "bg-blue-600/35 text-white shadow-lg shadow-blue-500/15 scale-[1.02] border border-blue-500/40" 
+                  ? "bg-amber-500/20 text-amber-300 shadow-xl shadow-amber-500/5 scale-[1.02] border border-amber-500/40" 
                   : "text-slate-300 hover:bg-white/5 hover:text-white font-bold"
               }`}
             >
-              <Receipt className={`h-4 w-4 shrink-0 transition-colors ${activeTab === "tickets" ? "text-blue-450" : "text-slate-400"}`} />
+              <Receipt className={`h-4 w-4 shrink-0 transition-colors ${activeTab === "tickets" ? "text-amber-400" : "text-slate-400"}`} />
               <span>Registro de Ventas</span>
             </button>
 
@@ -750,11 +719,11 @@ export default function App() {
               onClick={() => { setActiveTab("fleet"); setSelectedInvoiceForView(null); setIsEditing(false); }}
               className={`flex items-center gap-2.5 px-4 py-2.5 sm:py-3 rounded-xl text-xs font-black whitespace-nowrap transition duration-200 cursor-pointer shrink-0 ${
                 activeTab === "fleet" 
-                  ? "bg-blue-600/35 text-white shadow-lg shadow-blue-500/15 scale-[1.02] border border-blue-500/40" 
+                  ? "bg-amber-500/20 text-amber-300 shadow-xl shadow-amber-500/5 scale-[1.02] border border-amber-500/40" 
                   : "text-slate-300 hover:bg-white/5 hover:text-white font-bold"
               }`}
             >
-              <Users className={`h-4 w-4 shrink-0 transition-colors ${activeTab === "fleet" ? "text-blue-450" : "text-slate-400"}`} />
+              <Users className={`h-4 w-4 shrink-0 transition-colors ${activeTab === "fleet" ? "text-amber-400" : "text-slate-400"}`} />
               <span>Flota Motorizados</span>
             </button>
 
@@ -763,11 +732,11 @@ export default function App() {
               onClick={() => { setActiveTab("reports"); setSelectedInvoiceForView(null); setIsEditing(false); }}
               className={`flex items-center gap-2.5 px-4 py-2.5 sm:py-3 rounded-xl text-xs font-black whitespace-nowrap transition duration-200 cursor-pointer shrink-0 ${
                 activeTab === "reports" 
-                  ? "bg-blue-600/35 text-white shadow-lg shadow-blue-500/15 scale-[1.02] border border-blue-500/40" 
+                  ? "bg-amber-500/20 text-amber-300 shadow-xl shadow-amber-500/5 scale-[1.02] border border-amber-500/40" 
                   : "text-slate-300 hover:bg-white/5 hover:text-white font-bold"
               }`}
             >
-              <Filter className={`h-4 w-4 shrink-0 transition-colors ${activeTab === "reports" ? "text-blue-450" : "text-slate-400"}`} />
+              <Filter className={`h-4 w-4 shrink-0 transition-colors ${activeTab === "reports" ? "text-amber-400" : "text-slate-400"}`} />
               <span>Reportes & Filtros</span>
             </button>
 
@@ -776,57 +745,40 @@ export default function App() {
               onClick={() => { setActiveTab("dashboard"); setSelectedInvoiceForView(null); setIsEditing(false); }}
               className={`flex items-center gap-2.5 px-4 py-2.5 sm:py-3 rounded-xl text-xs font-black whitespace-nowrap transition duration-200 cursor-pointer shrink-0 ${
                 activeTab === "dashboard" 
-                  ? "bg-blue-600/35 text-white shadow-lg shadow-blue-500/15 scale-[1.02] border border-blue-500/40" 
+                  ? "bg-amber-500/20 text-amber-300 shadow-xl shadow-amber-500/5 scale-[1.02] border border-amber-500/40" 
                   : "text-slate-300 hover:bg-white/5 hover:text-white font-bold"
               }`}
             >
-              <BarChart3 className={`h-4 w-4 shrink-0 transition-colors ${activeTab === "dashboard" ? "text-blue-450" : "text-slate-400"}`} />
+              <BarChart3 className={`h-4 w-4 shrink-0 transition-colors ${activeTab === "dashboard" ? "text-amber-400" : "text-slate-400"}`} />
               <span>Dashboard General</span>
             </button>
           </nav>
 
           {/* SESIÓN USUARIO PIE */}
-          <div className="p-4 border-t border-white/5 bg-slate-950/70 text-blue-200 hidden md:block">
+          <div className="p-4 border-t border-amber-500/10 bg-slate-950/70 text-amber-200 hidden md:block">
             {isFirebaseConfigured ? (
-              dataEnvironment === "firebase" ? (
-                currentUser ? (
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-blue-600/30 text-blue-350 flex items-center justify-center border border-blue-500/30 font-black text-xs shadow-md shrink-0">
-                        {currentUser.displayName ? currentUser.displayName[0] : "U"}
-                      </div>
-                      <div className="overflow-hidden">
-                        <p className="text-[11px] font-black text-white truncate">{currentUser.displayName || currentUser.email}</p>
-                        <p className="text-[8px] text-emerald-400 uppercase font-black tracking-wide">Firebase Conectado</p>
-                      </div>
+              currentUser ? (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-amber-500/20 text-amber-300 flex items-center justify-center border border-amber-500/30 font-black text-xs shadow-md shrink-0">
+                      {currentUser.displayName ? currentUser.displayName[0] : "U"}
                     </div>
-                    <button 
-                      onClick={handleLogOut}
-                      className="w-full py-2 bg-rose-600/80 hover:bg-rose-700 text-[10px] font-black uppercase rounded-xl text-white transition flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
-                    >
-                      <LogOut className="h-3 w-3" />
-                      Cerrar Sesión
-                    </button>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    <div className="text-center p-2 bg-white/5 border border-white/10 rounded-xl space-y-1">
-                      <p className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">Nube / Firebase</p>
-                      <p className="text-[8px] text-slate-450 font-semibold leading-tight">Inicie sesión para guardar</p>
+                    <div className="overflow-hidden">
+                      <p className="text-[11px] font-black text-white truncate">{currentUser.displayName || currentUser.email}</p>
+                      <p className="text-[8px] text-emerald-400 uppercase font-black tracking-wide">Firebase Conectado</p>
                     </div>
-                    <button
-                      onClick={handleLogIn}
-                      className="w-full py-1.8 bg-blue-600/20 hover:bg-blue-600/30 text-[9.5px] font-black uppercase text-blue-300 border border-blue-500/25 rounded-lg transition flex items-center justify-center gap-1 cursor-pointer"
-                    >
-                      <LogIn className="h-3 w-3" />
-                      Iniciar Sesión
-                    </button>
                   </div>
-                )
+                  <button 
+                    onClick={handleLogOut}
+                    className="w-full py-2 bg-rose-600/85 hover:bg-rose-700 text-[10px] font-black uppercase rounded-xl text-white transition flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+                  >
+                    <LogOut className="h-3 w-3" />
+                    Cerrar Sesión
+                  </button>
+                </div>
               ) : (
-                <div className="text-center p-2.5 bg-amber-500/5 border border-amber-500/10 rounded-xl">
-                  <p className="text-[9.5px] font-bold text-amber-300 uppercase tracking-widest">Modo Local Activo</p>
-                  <p className="text-[8px] text-slate-400 mt-1">Guardando en caché offline local</p>
+                <div className="text-center p-2.5 bg-white/5 border border-white/10 rounded-xl">
+                  <p className="text-[9.5px] font-bold text-slate-300 uppercase tracking-widest pl-0.5">Base de Datos Activa</p>
                 </div>
               )
             ) : (
@@ -834,7 +786,7 @@ export default function App() {
                 <AlertTriangle className="h-4 w-4 shrink-0" />
                 <div>
                   <p className="font-extrabold text-[9px] uppercase leading-none">Cache Offline</p>
-                  <p className="text-[8px] text-blue-200 mt-1">Sincronizado localmente</p>
+                  <p className="text-[8px] text-amber-300 mt-1">Sincronizado localmente</p>
                 </div>
               </div>
             )}
@@ -928,12 +880,12 @@ export default function App() {
                     />
                   ) : (
                     /* SCANNER ZONE INPUT */
-                    <div className="bg-white rounded-xl border border-slate-200 p-6 md:p-8 shadow-sm space-y-6">
+                    <div className="bg-slate-950/40 backdrop-blur-md rounded-xl border border-amber-500/10 p-6 md:p-8 shadow-sm space-y-6">
                       <div className="text-center max-w-sm mx-auto space-y-2">
-                        <span className="px-3 py-1.5 text-[9px] font-bold text-blue-700 bg-blue-50 rounded-full border border-blue-105 uppercase tracking-wide">
+                        <span className="px-3 py-1.5 text-[9px] font-bold text-amber-400 bg-amber-500/10 rounded-full border border-amber-500/20 uppercase tracking-wide">
                           Registro de Ventas IA
                         </span>
-                        <h3 className="text-base font-black text-slate-800 pt-1">Cargar Copia de Venta Instalada</h3>
+                        <h3 className="text-base font-black text-white pt-1">Cargar Copia de Venta Instalada</h3>
                         <p className="text-xs text-slate-400 font-medium leading-relaxed">
                           Arrastra la factura instalada por el motorizado, selecciona una foto o activa la cámara web para procesar la copia con Gemini IA y guardarla en tiempo real.
                         </p>
@@ -945,8 +897,8 @@ export default function App() {
                         onDrop={handleDrop}
                         className={`border-2 border-dashed rounded-xl p-8 text-center transition duration-200 flex flex-col items-center justify-center min-h-[220px] ${
                           dragOver 
-                            ? "border-blue-500 bg-blue-50/20" 
-                            : "border-slate-300 bg-slate-50 hover:bg-slate-100/70"
+                            ? "border-amber-500 bg-amber-500/10" 
+                            : "border-slate-800 bg-slate-950/20 hover:bg-slate-900/40"
                         }`}
                       >
                         <input 
@@ -957,24 +909,24 @@ export default function App() {
                           className="hidden" 
                         />
                         
-                        <div className="rounded-full bg-white p-3.5 shadow-sm border border-slate-200 text-blue-600 mb-4 cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+                        <div className="rounded-full bg-amber-500/10 p-3.5 shadow-sm border border-amber-500/20 text-amber-400 mb-4 cursor-pointer" onClick={() => fileInputRef.current?.click()}>
                           <Upload className="h-6 w-6" />
                         </div>
                         
-                        <p className="text-xs font-bold text-slate-700">Arrastra tu ticket térmico aquí</p>
-                        <p className="text-[10px] text-slate-400 mt-1 mb-5">JPEG, PNG, WEBP Soportados</p>
+                        <p className="text-xs font-bold text-slate-300">Arrastra tu ticket térmico aquí</p>
+                        <p className="text-[10px] text-slate-500 mt-1 mb-5">JPEG, PNG, WEBP Soportados</p>
                         
                         <div className="flex flex-wrap items-center justify-center gap-3">
                           <button
                             onClick={() => fileInputRef.current?.click()}
-                            className="px-4 py-1.8 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-lg text-xs font-bold transition shadow-xs cursor-pointer"
+                            className="px-4 py-1.8 bg-slate-900 border border-slate-800 text-slate-300 hover:bg-slate-800 rounded-lg text-xs font-bold transition shadow-xs cursor-pointer"
                           >
                             Seleccionar Archivo
                           </button>
                           
                           <button
                             onClick={() => setShowCamera(true)}
-                            className="flex items-center gap-1.5 px-4 py-1.8 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition shadow-sm cursor-pointer"
+                            className="flex items-center gap-1.5 px-4 py-1.8 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-450 text-slate-950 rounded-lg text-xs font-black transition shadow-sm cursor-pointer"
                           >
                             <Camera className="h-3.5 w-3.5" />
                             Usar Cámara
@@ -990,18 +942,18 @@ export default function App() {
                 <div className="lg:col-span-5 space-y-6">
                   
                   {invoices.length > 0 && (
-                    <div className="bg-white rounded-xl border border-slate-200 p-4.5 shadow-sm space-y-3">
-                      <h3 className="text-[9px] font-bold text-slate-400 uppercase tracking-widest pl-0.5">Resumen de Periodo</h3>
+                    <div className="bg-slate-950/40 backdrop-blur-md rounded-xl border border-amber-500/10 p-4.5 shadow-sm space-y-3">
+                      <h3 className="text-[9px] font-bold text-slate-500 uppercase tracking-widest pl-0.5">Resumen de Periodo</h3>
                       <div className="grid grid-cols-2 gap-3">
-                        <div className="p-3 bg-blue-50/50 rounded-lg border border-blue-105">
+                        <div className="p-3 bg-amber-500/5 rounded-lg border border-amber-500/25">
                           <span className="text-[9px] font-bold text-slate-400 uppercase block leading-none">Monto Gasto</span>
-                          <span className="text-base font-black font-mono text-slate-800 block mt-1">
+                          <span className="text-base font-black font-mono text-amber-300 block mt-1">
                             ${invoices.reduce((a, b) => a + (b.total || 0), 0).toLocaleString("es-PA", { minimumFractionDigits: 2 })}
                           </span>
                         </div>
-                        <div className="p-3 bg-slate-50 rounded-lg border border-slate-150">
+                        <div className="p-3 bg-slate-900/60 rounded-lg border border-slate-800">
                           <span className="text-[9px] font-bold text-slate-400 uppercase block leading-none">Comprobantes</span>
-                          <span className="text-base font-black font-mono text-slate-800 block mt-1">
+                          <span className="text-base font-black font-mono text-white block mt-1">
                             {invoices.length} un.
                           </span>
                         </div>
@@ -1009,11 +961,11 @@ export default function App() {
                     </div>
                   )}
 
-                  <div className="bg-white rounded-xl border border-slate-200 p-4.5 shadow-sm space-y-4">
-                    <div className="flex flex-col gap-2 border-b border-slate-100 pb-3">
+                  <div className="bg-slate-950/40 backdrop-blur-md rounded-xl border border-amber-500/10 p-4.5 shadow-sm space-y-4">
+                    <div className="flex flex-col gap-2 border-b border-white/5 pb-3">
                       <div className="flex items-center justify-between flex-wrap gap-2">
                         <div>
-                          <h3 className="font-bold text-slate-800 text-sm">Biblioteca de Tickets</h3>
+                          <h3 className="font-bold text-slate-200 text-sm">Biblioteca de Tickets</h3>
                           <p className="text-[10px] text-slate-400">Total registrados ({invoices.length})</p>
                         </div>
 
@@ -1021,12 +973,12 @@ export default function App() {
                           <div className="flex items-center gap-1.5">
                             <button
                               onClick={() => setShowExportFieldsConfig(!showExportFieldsConfig)}
-                              className={`p-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1 transition ${
-                                showExportFieldsConfig ? "bg-amber-100 text-amber-700 border-amber-300" : "bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100"
+                              className={`p-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition ${
+                                showExportFieldsConfig ? "bg-amber-500/20 text-amber-300 border-amber-500/30" : "bg-slate-900 border-slate-800 text-slate-400 hover:bg-slate-800"
                               }`}
                               title="Editar Campos a Exportar"
                             >
-                              <span>⚙️</span>
+                              <Settings className="h-3.5 w-3.5 shrink-0" />
                               <span className="hidden sm:inline">Columnas</span>
                             </button>
                             <button
@@ -1042,27 +994,27 @@ export default function App() {
                       </div>
 
                       {showExportFieldsConfig && invoices.length > 0 && (
-                        <div className="mt-3 p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-2 animate-fade-in">
+                        <div className="mt-3 p-3 bg-slate-900 border border-slate-800 rounded-lg space-y-2 animate-fade-in">
                           <p className="text-[9px] font-extrabold uppercase text-slate-400 tracking-wider">Configurar Columnas de Exportación ({selectedExportFields.length} seleccionadas)</p>
                           <div className="flex flex-wrap gap-1.5 pb-2">
                             <button
                               type="button"
                               onClick={() => setSelectedExportFields(EXPORT_COLUMNS)}
-                              className="px-2 py-0.5 bg-white border border-slate-200 hover:bg-slate-100 text-[8.5px] font-bold text-slate-600 rounded"
+                              className="px-2 py-0.5 bg-slate-900 border border-slate-800 hover:bg-slate-800 text-[8.5px] font-bold text-slate-400 rounded"
                             >
                               Todo
                             </button>
                             <button
                               type="button"
                               onClick={() => setSelectedExportFields(["Establecimiento", "Tipo Factura", "Nº Ticket/Factura", "Asignado a (Motorizado)", "Total Ticket", "Fecha Emisión"])}
-                              className="px-2 py-0.5 bg-white border border-slate-200 hover:bg-slate-100 text-[8.5px] font-bold text-slate-600 rounded"
+                              className="px-2 py-0.5 bg-slate-900 border border-slate-800 hover:bg-slate-800 text-[8.5px] font-bold text-slate-400 rounded"
                             >
                               Básico
                             </button>
                             <button
                               type="button"
                               onClick={() => setSelectedExportFields([])}
-                              className="px-2 py-0.5 bg-white border border-slate-200 hover:bg-slate-100 text-[8.5px] font-bold text-slate-600 rounded"
+                              className="px-2 py-0.5 bg-slate-900 border border-slate-800 hover:bg-slate-800 text-[8.5px] font-bold text-slate-400 rounded"
                             >
                               Limpiar
                             </button>
@@ -1074,7 +1026,7 @@ export default function App() {
                                 <label
                                   key={col}
                                   className={`flex items-center gap-1.5 p-1.5 text-[9.5px] rounded border cursor-pointer select-none transition ${
-                                    isSel ? "bg-blue-50 text-blue-700 border-blue-250 font-bold" : "bg-white border-slate-200 text-slate-500"
+                                    isSel ? "bg-amber-500/10 text-amber-300 border-amber-500/30 font-bold" : "bg-slate-900 border-slate-850 text-slate-400"
                                   }`}
                                 >
                                   <input
@@ -1087,7 +1039,7 @@ export default function App() {
                                         setSelectedExportFields([...selectedExportFields, col]);
                                       }
                                     }}
-                                    className="rounded text-blue-600 focus:ring-0 scale-75"
+                                    className="rounded text-amber-500 focus:ring-0 scale-75 border-slate-700 bg-slate-950"
                                   />
                                   <span className="truncate">{col}</span>
                                 </label>
@@ -1100,16 +1052,16 @@ export default function App() {
 
                     {loadingList ? (
                       <div className="flex flex-col items-center justify-center py-8 space-y-2">
-                        <Loader2 className="h-6 w-6 text-blue-600 animate-spin" />
+                        <Loader2 className="h-6 w-6 text-amber-500 animate-spin" />
                         <p className="text-[10px] text-slate-400 font-bold">Actualizando con Firestore real-time...</p>
                       </div>
                     ) : invoices.length === 0 ? (
                       <div className="text-center py-10 px-4 space-y-3">
-                        <div className="rounded-full bg-slate-50 border p-3 w-10 h-10 flex items-center justify-center mx-auto text-slate-400">
+                        <div className="rounded-full bg-slate-900 border border-slate-800 p-3 w-10 h-10 flex items-center justify-center mx-auto text-slate-400">
                           <Receipt className="h-5 w-5" />
                         </div>
                         <div className="max-w-xs mx-auto space-y-1">
-                          <p className="text-xs font-bold text-slate-700">Sin copias registradas</p>
+                          <p className="text-xs font-bold text-slate-300">Sin copias registradas</p>
                           <p className="text-[10.5px] text-slate-400 leading-normal font-semibold">
                             Toma una captura o sube la factura de ventas instaladas por los motorizados para sincronizarlas en tu panel.
                           </p>
@@ -1125,19 +1077,19 @@ export default function App() {
                               onClick={() => setSelectedInvoiceForView(inv)}
                               className={`p-3 rounded-lg border transition duration-150 cursor-pointer flex items-center justify-between gap-3 text-left ${
                                 isSelected 
-                                  ? "bg-blue-50/50 border-blue-200 shadow-xxs" 
-                                  : "bg-white border-slate-200/80 hover:border-slate-300 hover:bg-slate-50/40"
+                                  ? "bg-amber-500/10 border-amber-500/30 shadow-xxs" 
+                                  : "bg-slate-900/40 border-slate-800/40 hover:border-amber-500/20 hover:bg-slate-900/60"
                               }`}
                             >
                               <div className="flex items-center gap-3 overflow-hidden">
                                 <div className={`rounded-lg p-2 ${
-                                  isSelected ? "bg-blue-105 text-blue-700" : "bg-slate-50 text-slate-500 border border-slate-150"
+                                  isSelected ? "bg-amber-500/20 text-amber-300" : "bg-slate-900 text-slate-400 border border-slate-800"
                                 }`}>
                                   <FileText className="h-4 w-4" />
                                 </div>
                                 <div className="overflow-hidden">
-                                  <p className="text-xs font-black text-slate-800 truncate" title={inv.issuer}>{inv.issuer}</p>
-                                  <p className="text-[10px] text-slate-400 mt-0.5 font-bold space-x-1">
+                                  <p className="text-xs font-black text-slate-200 truncate" title={inv.issuer}>{inv.issuer}</p>
+                                  <p className="text-[10px] text-slate-450 mt-0.5 font-bold space-x-1">
                                     <span>{inv.date}</span>
                                     <span>•</span>
                                     <span>#{inv.invoiceNumber}</span>
@@ -1147,11 +1099,11 @@ export default function App() {
 
                               <div className="flex items-center gap-2 shrink-0">
                                 <div className="text-right">
-                                  <p className="text-xs font-bold font-mono text-slate-900">${(inv.total || 0).toFixed(2)}</p>
+                                  <p className="text-xs font-bold font-mono text-slate-100">${(inv.total || 0).toFixed(2)}</p>
                                   {inv.motorizadoId ? (
-                                    <span className="text-[8px] bg-blue-50 text-blue-600 font-bold px-1 rounded block mt-0.5 uppercase">flota</span>
+                                    <span className="text-[8px] bg-amber-500/10 text-amber-300 font-bold px-1 rounded block mt-0.5 uppercase">flota</span>
                                   ) : (
-                                    <span className="text-[8px] text-slate-400 font-bold block mt-0.5">S/Chofer</span>
+                                    <span className="text-[8px] text-slate-550 font-bold block mt-0.5">S/Chofer</span>
                                   )}
                                 </div>
                                 <button
@@ -1161,7 +1113,7 @@ export default function App() {
                                       setOriginalImageInModal(inv.imageUrl);
                                     }
                                   }}
-                                  className="p-1 text-slate-400 hover:text-blue-600 transition"
+                                  className="p-1 text-slate-400 hover:text-amber-500 transition"
                                   title="Ver Factura Original"
                                   disabled={!inv.imageUrl}
                                 >

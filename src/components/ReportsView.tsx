@@ -167,36 +167,36 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
       {/* PANEL DE CONFIGURACIÓN DE FILTROS */}
       <div className="bg-slate-950/45 backdrop-blur-md rounded-xl border border-white/5 p-5 shadow-2xl space-y-4">
         <div>
-          <h4 className="text-xs font-black uppercase text-blue-400 tracking-wider">Filtros Avanzados del Reporte de Ventas</h4>
-          <p className="text-[11px] text-slate-400 mt-0.5">Restringe las copias de ventas para exportar o auditar sus valores de instalaciones</p>
+          <h4 className="text-xs font-black uppercase text-amber-400 tracking-wider">Filtros Avanzados del Reporte de Ventas</h4>
+          <p className="text-[11px] text-slate-400 mt-0.5 font-semibold">Restringe las copias de ventas para exportar o auditar sus valores de instalaciones</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           {/* Desde */}
           <div className="space-y-1">
             <label className="text-[10px] font-black text-slate-300 uppercase tracking-wider flex items-center gap-1">
-              <Calendar className="h-3 w-3 text-blue-400" />
+              <Calendar className="h-3 w-3 text-amber-400" />
               Desde Fecha
             </label>
             <input
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="w-full px-2.5 py-1.5 text-xs bg-slate-950 border border-white/10 rounded-lg focus:outline-none focus:border-blue-500 font-semibold text-white cursor-pointer"
+              className="w-full px-2.5 py-1.5 text-xs bg-slate-950 border border-white/10 rounded-lg focus:outline-none focus:border-amber-500/60 font-semibold text-white cursor-pointer"
             />
           </div>
 
           {/* Hasta */}
           <div className="space-y-1">
             <label className="text-[10px] font-black text-slate-300 uppercase tracking-wider flex items-center gap-1">
-              <Calendar className="h-3 w-3 text-blue-400" />
+              <Calendar className="h-3 w-3 text-amber-400" />
               Hasta Fecha
             </label>
             <input
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="w-full px-2.5 py-1.5 text-xs bg-slate-950 border border-white/10 rounded-lg focus:outline-none focus:border-blue-500 font-semibold text-white cursor-pointer"
+              className="w-full px-2.5 py-1.5 text-xs bg-slate-950 border border-white/10 rounded-lg focus:outline-none focus:border-amber-500/60 font-semibold text-white cursor-pointer"
             />
           </div>
 
@@ -206,7 +206,7 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
             <select
               value={selectedMotorizado}
               onChange={(e) => setSelectedMotorizado(e.target.value)}
-              className="w-full px-2.5 py-1.5 text-xs bg-slate-950 border border-white/10 rounded-lg focus:outline-none focus:border-blue-500 font-semibold text-white cursor-pointer"
+              className="w-full px-2.5 py-1.5 text-xs bg-slate-950 border border-white/10 rounded-lg focus:outline-none focus:border-amber-500/60 font-semibold text-white cursor-pointer"
             >
               <option className="bg-slate-950 text-white" value="all">Ver Todos</option>
               <option className="bg-slate-950 text-white" value="none">Sin Motorizado</option>
@@ -222,7 +222,7 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
             <select
               value={selectedPayment}
               onChange={(e) => setSelectedPayment(e.target.value)}
-              className="w-full px-2.5 py-1.5 text-xs bg-slate-950 border border-white/10 rounded-lg focus:outline-none focus:border-blue-500 font-semibold text-white cursor-pointer"
+              className="w-full px-2.5 py-1.5 text-xs bg-slate-950 border border-white/10 rounded-lg focus:outline-none focus:border-amber-500/60 font-semibold text-white cursor-pointer"
             >
               <option className="bg-slate-950 text-white" value="all">Ver Todos</option>
               <option className="bg-slate-950 text-white" value="pago contra entrega">Contrareembolso / Brisas</option>
@@ -240,7 +240,7 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
                 placeholder="Ej. Auto Centro"
                 value={searchIssuer}
                 onChange={(e) => setSearchIssuer(e.target.value)}
-                className="w-full pl-7 pr-2.5 py-1.5 text-xs bg-slate-950 border border-white/10 rounded-lg focus:outline-none focus:border-blue-500 font-semibold text-white placeholder-slate-550"
+                className="w-full pl-7 pr-2.5 py-1.5 text-xs bg-slate-950 border border-white/10 rounded-lg focus:outline-none focus:border-amber-500/60 font-semibold text-white placeholder-slate-550"
               />
               <Search className="h-3 w-3 text-slate-400 absolute left-2.5 top-2.5" />
             </div>
@@ -251,13 +251,13 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
         <div className="bg-slate-900/40 border border-white/5 rounded-xl p-4 space-y-3 mt-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Layers className="h-4 w-4 text-blue-400" />
+              <Layers className="h-4 w-4 text-amber-400" />
               <span className="text-xs font-black text-slate-200">Editar Campos del Reporte a Exportar ({selectedFields.length} Selección)</span>
             </div>
             <button
               type="button"
               onClick={() => setShowFieldsConfig(!showFieldsConfig)}
-              className="text-[11px] font-black text-blue-400 hover:text-blue-300 cursor-pointer"
+              className="text-[11px] font-black text-amber-400 hover:text-amber-300 cursor-pointer"
             >
               {showFieldsConfig ? "Ocultar Columnas" : "Personalizar Columnas o Campos"}
             </button>
@@ -289,7 +289,7 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
                 </button>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 text-[10.5px] font-bold text-slate-300">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 text-[10.5px] font-bold text-slate-300 font-mono">
                 {allHeaders.map((field) => {
                   const isChecked = selectedFields.includes(field);
                   return (
@@ -297,7 +297,7 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
                       key={field} 
                       className={`flex items-center gap-2 p-2 rounded-lg border cursor-pointer select-none transition ${
                         isChecked 
-                          ? "bg-blue-500/10 border-blue-500/30 text-blue-300" 
+                          ? "bg-amber-500/10 border-amber-500/30 text-amber-300" 
                           : "bg-slate-950 border-white/5 hover:bg-white/5 text-slate-400"
                       }`}
                     >
@@ -311,7 +311,7 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
                             setSelectedFields([...selectedFields, field]);
                           }
                         }}
-                        className="rounded border-white/10 text-blue-500 focus:ring-blue-500 h-3.5 w-3.5 cursor-pointer bg-slate-950"
+                        className="rounded border-white/10 text-amber-500 focus:ring-amber-500 h-3.5 w-3.5 cursor-pointer bg-slate-950"
                       />
                       <span className="truncate">{field}</span>
                     </label>
@@ -366,7 +366,7 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
         {/* Total ITBMS Filtrado */}
         <div className="bg-slate-950/45 backdrop-blur-md p-4.5 rounded-xl border border-white/5 shadow-2xl">
           <span className="text-[9px] font-black uppercase text-slate-400 tracking-wider">Impuestos Acumulados (ITBMS)</span>
-          <p className="text-xl font-black font-mono text-blue-400 mt-0.5">${filteredTax.toLocaleString("es-PA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+          <p className="text-xl font-black font-mono text-amber-500 mt-0.5">${filteredTax.toLocaleString("es-PA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
           <p className="text-[10px] text-slate-400 mt-1">Impuestos de venta estimados</p>
         </div>
       </div>
@@ -375,8 +375,8 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
         {/* DESGLOSE FISCAL DE ITBMS (7% / 10% / 15% / Exento) */}
         <div className="lg:col-span-5 bg-slate-950/45 backdrop-blur-md p-5 rounded-xl border border-white/5 shadow-2xl space-y-4">
           <div className="flex items-center gap-2">
-            <Calculator className="h-4 w-4 text-blue-400" />
-            <h4 className="font-black text-white text-xs uppercase tracking-wider">Tabla Desglose ITBMS (Filtrado)</h4>
+            <Calculator className="h-4 w-4 text-amber-400" />
+            <h4 className="font-black text-white text-xs uppercase tracking-wider font-display">Tabla Desglose ITBMS (Filtrado)</h4>
           </div>
           <p className="text-[11px] text-slate-400">Distribución de impuestos cobrados por fletes e instalaciones según tasa legal:</p>
 
@@ -401,7 +401,7 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
               </div>
               <div className="text-right">
                 <p className="font-mono text-white">Base: ${taxRatesBreakdown["7%"].base.toFixed(2)}</p>
-                <p className="text-[11px] font-mono text-blue-400">Imp: ${taxRatesBreakdown["7%"].tax.toFixed(2)}</p>
+                <p className="text-[11px] font-mono text-amber-500">Imp: ${taxRatesBreakdown["7%"].tax.toFixed(2)}</p>
               </div>
             </div>
 
@@ -413,7 +413,7 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
               </div>
               <div className="text-right">
                 <p className="font-mono text-white">Base: ${taxRatesBreakdown["10%"].base.toFixed(2)}</p>
-                <p className="text-[11px] font-mono text-blue-400 font-bold">Imp: ${taxRatesBreakdown["10%"].tax.toFixed(2)}</p>
+                <p className="text-[11px] font-mono text-amber-500 font-bold">Imp: ${taxRatesBreakdown["10%"].tax.toFixed(2)}</p>
               </div>
             </div>
 
@@ -425,7 +425,7 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
               </div>
               <div className="text-right">
                 <p className="font-mono text-white">Base: ${taxRatesBreakdown["15%"].base.toFixed(2)}</p>
-                <p className="text-[11px] font-mono text-blue-400 font-bold">Imp: ${taxRatesBreakdown["15%"].tax.toFixed(2)}</p>
+                <p className="text-[11px] font-mono text-amber-500 font-bold">Imp: ${taxRatesBreakdown["15%"].tax.toFixed(2)}</p>
               </div>
             </div>
           </div>
@@ -434,7 +434,7 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
         {/* TABLA DE TICKET DETALLES FILTRADOS */}
         <div className="lg:col-span-7 bg-slate-950/45 backdrop-blur-md p-5 rounded-xl border border-white/5 shadow-2xl space-y-4 flex flex-col justify-between">
           <div>
-            <h4 className="text-xs font-black uppercase text-blue-400 tracking-wider">Bitácora de Ventas Filtradas</h4>
+            <h4 className="text-xs font-black uppercase text-amber-400 tracking-wider">Bitácora de Ventas Filtradas</h4>
             <p className="text-[11px] text-slate-400 mt-0.5">Historial directo de copias que cumplen con los filtros ({filteredInvoices.length})</p>
           </div>
 

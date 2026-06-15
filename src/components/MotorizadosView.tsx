@@ -162,9 +162,9 @@ export default function MotorizadosView({
         {!showForm && (
           <button
             onClick={() => setShowForm(true)}
-            className="flex items-center gap-1.5 px-3.5 py-1.8 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-black transition shadow-lg cursor-pointer self-start"
+            className="flex items-center gap-1.5 px-3.5 py-1.8 bg-amber-550 hover:bg-amber-500 text-slate-950 rounded-lg text-xs font-black transition shadow-lg cursor-pointer self-start"
           >
-            <Plus className="h-3.5 w-3.5" />
+            <Plus className="h-3.5 w-3.5 text-slate-950" />
             <span>Agregar Motorizado</span>
           </button>
         )}
@@ -173,7 +173,7 @@ export default function MotorizadosView({
       {showForm && (
         <form onSubmit={handleSubmit} className="bg-slate-900/60 backdrop-blur-md rounded-xl border border-white/5 p-5 shadow-xl space-y-4">
           <div className="flex items-center justify-between border-b border-white/5 pb-3">
-            <h4 className="text-xs font-black uppercase text-blue-400 tracking-wider">
+            <h4 className="text-xs font-black uppercase text-amber-400 tracking-wider">
               {editingId ? "Editar Detalles del Motorizado" : "Registrar Nuevo Chofer / Motorizado"}
             </h4>
             <button 
@@ -193,7 +193,7 @@ export default function MotorizadosView({
                 placeholder="Ej. Juan Pérez"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-3 py-1.5 text-xs bg-slate-950/60 border border-white/10 rounded-md focus:outline-none focus:border-blue-500 font-semibold text-white placeholder-slate-550"
+                className="w-full px-3 py-1.5 text-xs bg-slate-950/60 border border-white/10 rounded-md focus:outline-none focus:border-amber-500/60 font-semibold text-white placeholder-slate-550"
                 required
               />
             </div>
@@ -205,7 +205,7 @@ export default function MotorizadosView({
                 placeholder="Ej. BA2903 o M-14902"
                 value={vehiclePlate}
                 onChange={(e) => setVehiclePlate(e.target.value)}
-                className="w-full px-3 py-1.5 text-xs bg-slate-950/60 border border-white/10 rounded-md focus:outline-none focus:border-blue-500 font-semibold uppercase text-white placeholder-slate-550"
+                className="w-full px-3 py-1.5 text-xs bg-slate-950/60 border border-white/10 rounded-md focus:outline-none focus:border-amber-500/60 font-semibold uppercase text-white placeholder-slate-550"
                 required
               />
             </div>
@@ -217,7 +217,7 @@ export default function MotorizadosView({
                 placeholder="Ej. Honda Cargo 150"
                 value={vehicleModel}
                 onChange={(e) => setVehicleModel(e.target.value)}
-                className="w-full px-3 py-1.5 text-xs bg-slate-950/60 border border-white/10 rounded-md focus:outline-none focus:border-blue-500 font-semibold text-white placeholder-slate-550"
+                className="w-full px-3 py-1.5 text-xs bg-slate-950/60 border border-white/10 rounded-md focus:outline-none focus:border-amber-500/60 font-semibold text-white placeholder-slate-550"
               />
             </div>
 
@@ -228,7 +228,7 @@ export default function MotorizadosView({
                 placeholder="Ej. +507 6291-3091"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="w-full px-3 py-1.5 text-xs bg-slate-950/60 border border-white/10 rounded-md focus:outline-none focus:border-blue-500 font-semibold text-white placeholder-slate-550"
+                className="w-full px-3 py-1.5 text-xs bg-slate-950/60 border border-white/10 rounded-md focus:outline-none focus:border-amber-500/60 font-semibold text-white placeholder-slate-550"
               />
             </div>
 
@@ -237,7 +237,7 @@ export default function MotorizadosView({
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value as any)}
-                className="w-full px-3 py-1.5 text-xs bg-slate-950/60 border border-white/10 rounded-lg focus:outline-none focus:border-blue-500 font-semibold text-white cursor-pointer"
+                className="w-full px-3 py-1.5 text-xs bg-slate-950/60 border border-white/10 rounded-lg focus:outline-none focus:border-amber-500/60 font-semibold text-white cursor-pointer"
               >
                 <option className="bg-slate-950 text-white" value="activo">Activo</option>
                 <option className="bg-slate-950 text-white" value="inactivo">Inactivo</option>
@@ -255,7 +255,7 @@ export default function MotorizadosView({
             </button>
             <button
               type="submit"
-              className="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-xs font-bold transition cursor-pointer shadow-md"
+              className="px-4 py-1.5 bg-amber-550 hover:bg-amber-500 text-slate-950 rounded-md text-xs font-black transition cursor-pointer shadow-md"
             >
               {editingId ? "Actualizar Chofer" : "Guardar Chofer"}
             </button>
@@ -266,7 +266,7 @@ export default function MotorizadosView({
       {/* LISTA EN REJILLA */}
       {motorizados.length === 0 ? (
         <div className="bg-slate-900/40 backdrop-blur-md rounded-xl border border-white/5 p-10 text-center space-y-3">
-          <div className="bg-blue-500/10 w-12 h-12 rounded-full flex items-center justify-center text-blue-400 mx-auto border border-blue-500/15">
+          <div className="bg-amber-500/10 w-12 h-12 rounded-full flex items-center justify-center text-amber-500 mx-auto border border-amber-500/15">
             <Users className="h-6 w-6" />
           </div>
           <div className="max-w-xs mx-auto space-y-1">
@@ -291,7 +291,7 @@ export default function MotorizadosView({
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-center gap-3">
                     <div className={`p-2.5 rounded-lg text-slate-300 font-bold shrink-0 ${
-                      mot.status === "inactivo" ? "bg-white/5" : "bg-blue-500/10 text-blue-400 border border-blue-500/15"
+                      mot.status === "inactivo" ? "bg-white/5" : "bg-amber-500/10 text-amber-400 border border-amber-500/15"
                     }`}>
                       <User className="h-4 w-4" />
                     </div>
@@ -362,7 +362,7 @@ export default function MotorizadosView({
                 <div className="flex justify-end gap-2.5 mt-3 border-t border-white/5 pt-2.5">
                   <button
                     onClick={() => setSelectedMotDetails(mot)}
-                    className="mr-auto p-1 px-2.5 text-blue-400 hover:text-blue-300 text-[10px] font-bold uppercase transition flex items-center gap-1 cursor-pointer bg-blue-500/10 hover:bg-blue-500/20 rounded-md border border-blue-500/15 text-center"
+                    className="mr-auto p-1 px-2.5 text-amber-400 hover:text-amber-300 text-[10px] font-bold uppercase transition flex items-center gap-1 cursor-pointer bg-amber-500/10 hover:bg-amber-500/20 rounded-md border border-amber-500/15 text-center"
                   >
                     <ClipboardList className="h-3 w-3" />
                     KPIs & Incidentes
@@ -378,7 +378,7 @@ export default function MotorizadosView({
                     onClick={() => {
                       if (mot.id) {
                         triggerConfirm(
-                          "🛵 ¿Eliminar Motorizado?",
+                          "¿Eliminar Motorizado?",
                           `¿Está seguro de que desea eliminar a "${mot.name}" de la lista de conductores activos? Esta acción es irreversible.`,
                           () => onDelete(mot.id!)
                         );
@@ -432,7 +432,7 @@ export default function MotorizadosView({
 
         const handleDeleteIncident = (incId: string) => {
           triggerConfirm(
-            "🗑️ ¿Borrar Registro de Incidente?",
+            "¿Borrar Registro de Incidente?",
             "Esta operación eliminará permanentemente la anotación de desperfecto de la motocicleta de la base de datos.",
             () => {
               const updated = incidents.filter(inc => inc.id !== incId);
@@ -454,7 +454,7 @@ export default function MotorizadosView({
               {/* Encabezado */}
               <div className="flex items-center justify-between border-b border-white/5 pb-3">
                 <div className="flex items-center gap-3">
-                  <div className="p-2.5 bg-blue-500/10 text-blue-400 border border-blue-500/15 rounded-lg shrink-0">
+                  <div className="p-2.5 bg-amber-500/10 text-amber-400 border border-amber-500/15 rounded-lg shrink-0">
                     <User className="h-5 w-5" />
                   </div>
                   <div>
@@ -462,7 +462,7 @@ export default function MotorizadosView({
                       <span>Monitoreo Operativo: {selectedMotDetails.name}</span>
                     </h3>
                     <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wide">
-                      Matrícula: <span className="font-extrabold text-blue-300">{selectedMotDetails.vehiclePlate}</span> • Moto: <span className="font-extrabold text-blue-300">{selectedMotDetails.vehicleModel || "Genérico o S/M"}</span>
+                      Matrícula: <span className="font-extrabold text-amber-300">{selectedMotDetails.vehiclePlate}</span> • Moto: <span className="font-extrabold text-amber-300">{selectedMotDetails.vehicleModel || "Genérico o S/M"}</span>
                     </p>
                   </div>
                 </div>
@@ -477,35 +477,35 @@ export default function MotorizadosView({
               {/* Grid Principal: KPIs de Instalación y Ganancia Asistencia BAT */}
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
-                  <LayoutGrid className="h-4 w-4 text-blue-400" />
-                  <h4 className="font-black text-white text-xs uppercase tracking-wide">KPIs de Instalación por Tipo de Factura</h4>
+                  <LayoutGrid className="h-4 w-4 text-amber-400" />
+                  <h4 className="font-black text-white text-xs uppercase tracking-wide font-display">KPIs de Instalación por Tipo de Factura</h4>
                 </div>
                 
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-3.5">
                   {/* CALL CENTER */}
                   <div className="bg-slate-950/40 border border-white/5 rounded-lg p-2.5 text-center flex flex-col justify-between">
-                    <span className="text-[9px] font-black uppercase text-blue-405 tracking-wider">Call Center</span>
+                    <span className="text-[9px] font-black uppercase text-amber-500 tracking-wider">Call Center</span>
                     <p className="text-lg font-black font-mono text-white mt-1">{statsByType["CALL CENTER"]}</p>
                     <span className="text-[9px] text-slate-450 font-bold">instalados</span>
                   </div>
 
                   {/* SUCURSAL */}
                   <div className="bg-slate-950/40 border border-white/5 rounded-lg p-2.5 text-center flex flex-col justify-between">
-                    <span className="text-[9px] font-black uppercase text-emerald-405 tracking-wider">Sucursal</span>
+                    <span className="text-[9px] font-black uppercase text-emerald-400 tracking-wider">Sucursal</span>
                     <p className="text-lg font-black font-mono text-white mt-1">{statsByType["SUCURSAL"]}</p>
                     <span className="text-[9px] text-slate-450 font-bold">instalados</span>
                   </div>
 
                   {/* FLOTA */}
                   <div className="bg-slate-950/40 border border-white/5 rounded-lg p-2.5 text-center flex flex-col justify-between">
-                    <span className="text-[9px] font-black uppercase text-purple-405 tracking-wider">Flota</span>
+                    <span className="text-[9px] font-black uppercase text-orange-400 tracking-wider">Flota</span>
                     <p className="text-lg font-black font-mono text-white mt-1">{statsByType["FLOTA"]}</p>
                     <span className="text-[9px] text-slate-450 font-bold">instalados</span>
                   </div>
 
                   {/* GERENTE DE LINEA */}
                   <div className="bg-slate-950/40 border border-white/5 rounded-lg p-2.5 text-center flex flex-col justify-between">
-                    <span className="text-[9px] font-black uppercase text-indigo-405 tracking-wider">Gerente</span>
+                    <span className="text-[9px] font-black uppercase text-rose-400 tracking-wider">Gerente</span>
                     <p className="text-lg font-black font-mono text-white mt-1">{statsByType["GERENTE DE LINEA"]}</p>
                     <span className="text-[9px] text-slate-450 font-bold">instalados</span>
                   </div>

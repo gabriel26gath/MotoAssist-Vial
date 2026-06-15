@@ -12,7 +12,8 @@ import {
   Clock,
   Sparkles,
   ShieldAlert,
-  Coins
+  Coins,
+  CreditCard
 } from "lucide-react";
 import { 
   ResponsiveContainer, 
@@ -102,7 +103,7 @@ export default function DashboardView({ invoices, motorizados, incidents }: Dash
     .map(([name, count]) => ({ name, count }))
     .sort((a, b) => b.count - a.count);
 
-  const COLORS = ["#0055FF", "#FFB300", "#00A3FF", "#10B981", "#6366F1", "#F43F5E"];
+  const COLORS = ["#FFB300", "#F97316", "#ECC94B", "#10B981", "#E2E8F0", "#3B82F6"];
 
   return (
     <div id="dashboard-module-view" className="space-y-6 animate-fade-in text-slate-100">
@@ -116,17 +117,18 @@ export default function DashboardView({ invoices, motorizados, incidents }: Dash
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-500 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
               </span>
-              <h4 className="font-extrabold text-xs uppercase tracking-wider text-amber-400 flex items-center gap-1">
-                <span>⚠️ ALERTA DE INCIDENTES ACTIVOS ({pendingIncidents.length}) 🚨</span>
+              <h4 className="font-extrabold text-xs uppercase tracking-wider text-amber-500 flex items-center gap-1.5">
+                <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0" />
+                <span>ALERTA DE INCIDENTES ACTIVOS ({pendingIncidents.length})</span>
               </h4>
               <span className="text-[10px] bg-amber-500/20 text-amber-300 uppercase px-2 py-0.5 rounded font-bold">
-                Monitoreo Vial 🛵
+                Monitoreo Vial
               </span>
             </div>
             <p className="text-xs text-slate-300 leading-normal font-semibold">
               ¡Precaución! Hay un total de <strong className="text-amber-300 font-black">{pendingIncidents.length} incidentes pendientes</strong> en las motocicletas de la flota. 
               {highSeverityIncidents.length > 0 && (
-                <span> De los cuales, <span className="text-rose-400 font-extrabold underline">{highSeverityIncidents.length} son de gravedad ALTA 🔥</span>. Por favor asista al equipo de inmediato.</span>
+                <span> De los cuales, <span className="text-rose-400 font-extrabold underline">{highSeverityIncidents.length} son de gravedad ALTA</span>. Por favor asista al equipo de inmediato.</span>
               )}
             </p>
 
@@ -142,7 +144,7 @@ export default function DashboardView({ invoices, motorizados, incidents }: Dash
                         inc.severity === "alta" ? "bg-rose-950 text-rose-300 border border-rose-500/30" : "bg-amber-950 text-amber-300 border border-amber-500/30"
                       }`}>{inc.severity}</span>
                     </div>
-                    <p className="font-semibold text-slate-300 line-clamp-1 italic">"{inc.description}"</p>
+                    <p className="font-semibold text-slate-300 line-clamp-1 italic text-[11px]">"{inc.description}"</p>
                     <p className="text-[9px] text-slate-400 mt-1 flex items-center gap-0.5 font-bold font-mono">
                       <Clock className="h-2.5 w-2.5 text-slate-400" />
                       {inc.date} • Placa: {mot?.vehiclePlate || "N/A"}
@@ -154,7 +156,9 @@ export default function DashboardView({ invoices, motorizados, incidents }: Dash
           </div>
 
           <div className="shrink-0 flex items-center gap-2.5">
-            <span className="text-3xl animate-bounce">🛠️</span>
+            <div className="p-2 bg-amber-500/10 border border-amber-500/30 rounded-full animate-bounce">
+              <Wrench className="h-5 w-5 text-amber-400" />
+            </div>
             <div className="text-left bg-slate-900/60 p-2.5 rounded-lg border border-white/5 shadow-inner">
               <p className="text-[8.5px] uppercase font-black text-amber-400 tracking-wider">Estado Flota</p>
               <p className="text-lg font-black font-mono text-amber-300">{(activeRiders / (motorizados.length || 1) * 100).toFixed(0)}% Ope.</p>
@@ -162,53 +166,56 @@ export default function DashboardView({ invoices, motorizados, incidents }: Dash
           </div>
         </div>
       ) : (
-        <div className="bg-gradient-to-r from-emerald-500/10 to-[#0055FF]/5 border-l-4 border-emerald-500 rounded-r-2xl p-4.5 shadow-xl glass-panel flex items-center justify-between">
+        <div className="bg-gradient-to-r from-emerald-500/10 to-amber-500/5 border-l-4 border-emerald-500 rounded-r-2xl p-4.5 shadow-xl glass-panel flex items-center justify-between">
           <div className="space-y-0.5">
-            <h4 className="font-extrabold text-xs uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
-              <span>✅ Flota en Perfectas Condiciones</span>
+            <h4 className="font-extrabold text-xs uppercase tracking-wider text-emerald-400 flex items-center gap-1.5 align-middle">
+              <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+              <span>Flota en Perfectas Condiciones</span>
             </h4>
             <p className="text-xs text-slate-350 leading-normal font-semibold">
-              ¡Excelente! No hay incidencias viales ni desperfectos mecánicos reportados en este momento. ¡Buen viaje del equipo de choferes! 🚀
+              ¡Excelente! No hay incidencias viales ni desperfectos mecánicos reportados en este momento. ¡Buen viaje del equipo de choferes!
             </p>
           </div>
-          <span className="text-2xl shrink-0">✨🛵</span>
+          <div className="p-2.5 bg-emerald-500/10 border border-emerald-500/20 rounded-xl shrink-0 flex items-center justify-center">
+            <Sparkles className="h-5 w-5 text-emerald-400" />
+          </div>
         </div>
       )}
 
       {/* TARJETAS DE MÉTRICAS PRINCIPALES */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {/* Total Ventas Instaladas */}
-        <div className="glass-card hover:bg-slate-900/70 p-5 rounded-2xl flex items-center justify-between hover:-translate-y-0.5 transition duration-200">
+        <div className="glass-card p-5 rounded-2xl flex items-center justify-between hover:-translate-y-0.5 hover:shadow-[0_0_25px_rgba(245,158,11,0.18)] hover:border-amber-500/35 hover:bg-slate-900/50 transition-all duration-300 cursor-pointer">
           <div className="space-y-1">
-            <span className="text-[9.5px] font-black uppercase text-slate-400 tracking-wider">Ventas Instaladas 💰</span>
+            <span className="text-[9.5px] font-black uppercase text-slate-400 tracking-wider">Ventas Instaladas</span>
             <p className="text-xl font-black font-mono text-white">${totalSalesVal.toLocaleString("es-PA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
             <p className="text-[9px] text-emerald-400 font-bold flex items-center gap-0.5">
               <CheckCircle2 className="h-3 w-3" />
               <span>Sincronizado</span>
             </p>
           </div>
-          <div className="p-3 bg-[#0055FF]/15 text-[#0055FF] rounded-xl shrink-0 border border-blue-500/25">
-            <DollarSign className="h-5.5 w-5.5 text-blue-400" />
+          <div className="p-3 bg-amber-500/15 text-amber-450 rounded-xl shrink-0 border border-amber-500/25">
+            <DollarSign className="h-5.5 w-5.5 text-amber-400" />
           </div>
         </div>
 
         {/* Total Tickets Registrados */}
-        <div className="glass-card hover:bg-slate-900/70 p-5 rounded-2xl flex items-center justify-between hover:-translate-y-0.5 transition duration-200">
+        <div className="glass-card p-5 rounded-2xl flex items-center justify-between hover:-translate-y-0.5 hover:shadow-[0_0_25px_rgba(245,158,11,0.15)] hover:border-amber-500/35 hover:bg-slate-900/50 transition-all duration-300 cursor-pointer">
           <div className="space-y-1">
-            <span className="text-[9.5px] font-black uppercase text-slate-400 tracking-wider">Tickets Totales 📄</span>
+            <span className="text-[9.5px] font-black uppercase text-slate-400 tracking-wider">Tickets Totales</span>
             <p className="text-xl font-black font-mono text-white">{totalInvoices}</p>
             <p className="text-[9px] text-slate-400 font-semibold">Copias Registradas</p>
           </div>
-          <div className="p-3 bg-[#00A3FF]/15 text-[#00A3FF] rounded-xl shrink-0 border border-sky-400/25">
-            <Receipt className="h-5.5 w-5.5 text-sky-400" />
+          <div className="p-3 bg-amber-500/10 text-amber-300 rounded-xl shrink-0 border border-amber-500/20">
+            <Receipt className="h-5.5 w-5.5 text-amber-400" />
           </div>
         </div>
 
         {/* Ganancia por Asistencias Vial BAT (20% del Ticket) */}
-        <div className="glass-card hover:bg-slate-900/70 p-5 rounded-2xl border-l-4 border-l-[#FFB300] flex items-center justify-between hover:-translate-y-0.5 transition duration-200">
+        <div className="glass-card p-5 rounded-2xl border-l-4 border-l-amber-500 flex items-center justify-between hover:-translate-y-0.5 hover:shadow-[0_0_25px_rgba(245,158,11,0.18)] hover:border-amber-500/35 hover:bg-slate-900/50 transition-all duration-300 cursor-pointer">
           <div className="space-y-1">
-            <span className="text-[9.5px] font-black uppercase text-[#FFB300] tracking-wider flex items-center gap-1">
-              <span>Ganancias BAT (20%) 🔋</span>
+            <span className="text-[9.5px] font-black uppercase text-amber-400 tracking-wider flex items-center gap-1">
+              <span>Ganancias BAT (20%)</span>
             </span>
             <p className="text-xl font-black font-mono text-white">${totalVialBatSum.toLocaleString("es-PA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
             <p className="text-[9px] text-slate-450 font-bold uppercase">Asistencias 20%</p>
@@ -219,26 +226,26 @@ export default function DashboardView({ invoices, motorizados, incidents }: Dash
         </div>
 
         {/* Flota Activa */}
-        <div className="glass-card hover:bg-slate-900/70 p-5 rounded-2xl flex items-center justify-between hover:-translate-y-0.5 transition duration-200">
+        <div className="glass-card p-5 rounded-2xl flex items-center justify-between hover:-translate-y-0.5 hover:shadow-[0_0_25px_rgba(245,158,11,0.15)] hover:border-amber-500/35 hover:bg-slate-900/50 transition-all duration-300 cursor-pointer">
           <div className="space-y-1">
-            <span className="text-[9.5px] font-black uppercase text-slate-400 tracking-wider">Flota Activa 🛵</span>
+            <span className="text-[9.5px] font-black uppercase text-slate-400 tracking-wider">Flota Activa</span>
             <p className="text-xl font-black font-mono text-white">{activeRiders} / {motorizados.length}</p>
             <p className="text-[9px] text-slate-400 font-semibold">Motorizados Activos</p>
           </div>
-          <div className="p-3 bg-violet-650/15 text-violet-400 rounded-xl shrink-0 border border-violet-500/25">
-            <Users className="h-5.5 w-5.5 text-violet-300" />
+          <div className="p-3 bg-amber-500/10 text-amber-300 rounded-xl shrink-0 border border-amber-500/20">
+            <Users className="h-5.5 w-5.5 text-amber-300" />
           </div>
         </div>
 
         {/* Valor Promedio de Venta */}
-        <div className="glass-card hover:bg-slate-900/70 p-5 rounded-2xl flex items-center justify-between hover:-translate-y-0.5 transition duration-200">
+        <div className="glass-card p-5 rounded-2xl flex items-center justify-between hover:-translate-y-0.5 hover:shadow-[0_0_25px_rgba(245,158,11,0.15)] hover:border-amber-500/35 hover:bg-slate-900/50 transition-all duration-300 cursor-pointer">
           <div className="space-y-1">
-            <span className="text-[9.5px] font-black uppercase text-slate-400 tracking-wider">Promedio Venta 📈</span>
+            <span className="text-[9.5px] font-black uppercase text-slate-400 tracking-wider">Promedio Venta</span>
             <p className="text-xl font-black font-mono text-white">${averageSaleValue.toLocaleString("es-PA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
             <p className="text-[9px] text-slate-400 font-semibold">Por Copia Guardada</p>
           </div>
-          <div className="p-3 bg-purple-650/15 text-purple-400 rounded-xl shrink-0 border border-purple-500/25">
-            <Activity className="h-5.5 w-5.5 text-purple-300" />
+          <div className="p-3 bg-amber-500/15 text-amber-350 rounded-xl shrink-0 border border-amber-500/25">
+            <Activity className="h-5.5 w-5.5 text-amber-400" />
           </div>
         </div>
       </div>
@@ -250,13 +257,14 @@ export default function DashboardView({ invoices, motorizados, incidents }: Dash
         <div className="lg:col-span-8 glass-card p-5.5 rounded-2xl space-y-4">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <h3 className="font-extrabold text-white text-sm flex items-center gap-1.5">
-                <span>🔥 Historial y Flujo de Ventas</span>
+              <h3 className="font-extrabold text-white text-sm flex items-center gap-2 font-display">
+                <TrendingUp className="h-4.5 w-4.5 text-amber-500 shrink-0" />
+                <span>Historial y Flujo de Ventas</span>
               </h3>
-              <p className="text-[11px] text-slate-400 font-medium">Tendencia acumulada por fechas de instalación</p>
+              <p className="text-[11px] text-slate-400 font-medium font-semibold">Tendencia acumulada por fechas de instalación</p>
             </div>
-            <span className="p-1 px-2.5 text-[9px] font-black uppercase text-blue-400 bg-blue-500/15 rounded-full border border-blue-500/20">
-              Línea Temporal 📉
+            <span className="p-1 px-2.5 text-[9px] font-black uppercase text-amber-400 bg-amber-500/10 rounded-full border border-amber-500/20">
+              Línea Temporal
             </span>
           </div>
 
@@ -266,18 +274,18 @@ export default function DashboardView({ invoices, motorizados, incidents }: Dash
                 <AreaChart data={salesTrendData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#0055FF" stopOpacity={0.45}/>
-                      <stop offset="95%" stopColor="#0055FF" stopOpacity={0}/>
+                      <stop offset="5%" stopColor="#F59E0B" stopOpacity={0.4}/>
+                      <stop offset="95%" stopColor="#F59E0B" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255, 255, 255, 0.05)" />
-                  <XAxis dataKey="date" tickStyle={{ fontSize: 9 }} stroke="rgba(255, 255, 255, 0.45)" />
-                  <YAxis tickStyle={{ fontSize: 9 }} stroke="rgba(255, 255, 255, 0.45)" />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255, 255, 255, 0.03)" />
+                  <XAxis dataKey="date" tickStyle={{ fontSize: 9 }} stroke="rgba(255, 255, 255, 0.3)" />
+                  <YAxis tickStyle={{ fontSize: 9 }} stroke="rgba(255, 255, 255, 0.3)" />
                   <Tooltip 
-                    contentStyle={{ fontSize: 11, borderRadius: 12, border: "1px solid rgba(255, 255, 255, 0.1)", background: "rgba(10, 18, 38, 0.95)", color: "#fff" }}
+                    contentStyle={{ fontSize: 11, borderRadius: 12, border: "1px solid rgba(255, 179, 0, 0.15)", background: "rgba(10, 12, 18, 0.95)", color: "#fff" }}
                     formatter={(value: any) => [`$${value}`, "Ventas"]}
                   />
-                  <Area type="monotone" dataKey="total" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorTotal)" />
+                  <Area type="monotone" dataKey="total" stroke="#F59E0B" strokeWidth={2.5} fillOpacity={1} fill="url(#colorTotal)" />
                 </AreaChart>
               </ResponsiveContainer>
             ) : (
@@ -291,8 +299,9 @@ export default function DashboardView({ invoices, motorizados, incidents }: Dash
         {/* DISTRIBUCIÓN DE TICKETS POR SUCURSAL */}
         <div className="lg:col-span-4 glass-card p-5.5 rounded-2xl lg:space-y-4 flex flex-col justify-between">
           <div>
-            <h3 className="font-extrabold text-white text-sm flex items-center gap-1.5">
-              <span>🏢 Tickets de Ventas por Sucursal</span>
+            <h3 className="font-extrabold text-white text-sm flex items-center gap-2">
+              <MapPin className="h-4 w-4 text-amber-500 shrink-0" />
+              <span>Tickets de Ventas por Sucursal</span>
             </h3>
             <p className="text-[11px] text-slate-400 font-semibold">Evaluación de volumen transaccional de instalaciones</p>
           </div>
@@ -309,7 +318,7 @@ export default function DashboardView({ invoices, motorizados, incidents }: Dash
                     </div>
                     <div className="w-full bg-slate-950/40 rounded-full h-1.5 overflow-hidden border border-white/5">
                       <div 
-                        className="bg-sky-500 h-full rounded-full transition-all duration-500" 
+                        className="bg-gradient-to-r from-amber-500 to-orange-500 h-full rounded-full transition-all duration-500" 
                         style={{ width: `${percentage}%` }}
                       ></div>
                     </div>
@@ -327,7 +336,10 @@ export default function DashboardView({ invoices, motorizados, incidents }: Dash
         {/* MÉTODOS DE PAGO DE VENTAS */}
         <div className="lg:col-span-4 glass-card p-5 rounded-2xl space-y-4">
           <div>
-            <h3 className="font-extrabold text-white text-sm">💳 Métodos de Pago</h3>
+            <h3 className="font-extrabold text-white text-sm flex items-center gap-2">
+              <CreditCard className="h-4 w-4 text-amber-500 shrink-0" />
+              <span>Métodos de Pago</span>
+            </h3>
             <p className="text-[11px] text-slate-400 font-semibold">Distribución por cobro de instalación</p>
           </div>
 
@@ -365,11 +377,14 @@ export default function DashboardView({ invoices, motorizados, incidents }: Dash
         <div className="lg:col-span-8 glass-card p-5 rounded-2xl space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-extrabold text-white text-sm">🏁 Copias de Ventas por Motorizado</h3>
+              <h3 className="font-extrabold text-white text-sm flex items-center gap-2">
+                <Users className="h-4.5 w-4.5 text-amber-500 shrink-0" />
+                <span>Copias de Ventas por Motorizado</span>
+              </h3>
               <p className="text-[11px] text-slate-400 font-medium font-semibold">Monto total acumulado de ventas instaladas por cada motorizado</p>
             </div>
             <span className="p-1 px-2.5 text-[9px] font-black uppercase text-emerald-450 bg-emerald-500/10 rounded-full border border-emerald-500/20">
-              Rendimiento 🚀
+              Rendimiento
             </span>
           </div>
 

@@ -39,16 +39,16 @@ export default function TicketDetailView({
   };
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-6 md:p-8 shadow-sm space-y-6">
+    <div className="bg-slate-950/40 backdrop-blur-md rounded-xl border border-amber-500/10 p-6 md:p-8 shadow-sm space-y-6 text-slate-100">
       
       {/* CABECERA */}
-      <div className="flex items-center justify-between border-b border-slate-150 pb-4">
+      <div className="flex items-center justify-between border-b border-white/5 pb-4">
         <div className="flex items-center gap-2.5">
-          <div className="bg-blue-50 text-blue-600 p-2.5 rounded-lg border border-blue-105 shrink-0">
+          <div className="bg-amber-500/10 text-amber-450 p-2.5 rounded-lg border border-amber-500/20 shrink-0">
             <FileText className="h-5 w-5" />
           </div>
           <div>
-            <h3 className="font-bold text-slate-800 text-sm md:text-base leading-tight truncate max-w-[200px]" title={invoice.issuer}>
+            <h3 className="font-bold text-slate-200 text-sm md:text-base leading-tight truncate max-w-[200px]" title={invoice.issuer}>
               {invoice.issuer}
             </h3>
             <p className="text-[10px] text-slate-400 font-semibold tracking-wider uppercase mt-1">ID: {invoice.id?.substring(0, 12)}</p>
@@ -56,7 +56,7 @@ export default function TicketDetailView({
         </div>
         <button 
           onClick={onClose}
-          className="p-1 px-3 text-[10px] bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-full transition font-semibold cursor-pointer"
+          className="p-1 px-3 text-[10px] bg-slate-905 border border-slate-800 hover:bg-slate-800 text-slate-350 rounded-full transition font-semibold cursor-pointer"
         >
           Cerrar Vista
         </button>
@@ -69,67 +69,67 @@ export default function TicketDetailView({
           <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest pl-0.5">Metadatos de la Factura</h4>
           
           <div className="grid grid-cols-2 gap-3">
-            <div className="p-3 bg-slate-50 border border-slate-200/80 rounded-lg">
-              <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Comercio RUC</span>
-              <p className="text-xs font-bold text-slate-700 mt-0.5 truncate">{invoice.issuerRuc || "No Registrado"}</p>
+            <div className="p-3 bg-slate-900/50 border border-slate-800 rounded-lg">
+              <span className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">Comercio RUC</span>
+              <p className="text-xs font-bold text-slate-200 mt-0.5 truncate">{invoice.issuerRuc || "No Registrado"}</p>
             </div>
 
-            <div className="p-3 bg-slate-50 border border-slate-200/80 rounded-lg">
-              <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider font-semibold">Tipo Documento</span>
-              <p className="text-xs font-bold text-slate-700 mt-0.5 truncate" title={invoice.invoiceType}>{invoice.invoiceType || "Factura de Venta"}</p>
+            <div className="p-3 bg-slate-900/50 border border-slate-800 rounded-lg">
+              <span className="text-[9px] uppercase font-bold text-slate-500 tracking-wider font-semibold">Tipo Documento</span>
+              <p className="text-xs font-bold text-slate-200 mt-0.5 truncate" title={invoice.invoiceType}>{invoice.invoiceType || "Factura de Venta"}</p>
             </div>
 
-            <div className="p-3 bg-slate-50 border border-slate-200/80 rounded-lg">
-              <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Fecha de Emisión</span>
-              <p className="text-xs font-bold text-slate-700 mt-0.5">{invoice.date}</p>
+            <div className="p-3 bg-slate-900/50 border border-slate-800 rounded-lg">
+              <span className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">Fecha de Emisión</span>
+              <p className="text-xs font-bold text-slate-200 mt-0.5">{invoice.date}</p>
             </div>
 
-            <div className="p-3 bg-slate-50 border border-slate-200/80 rounded-lg">
-              <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Nº Factura / Ticket</span>
-              <p className="text-xs font-bold text-slate-700 mt-0.5 truncate" title={invoice.invoiceNumber}>{invoice.invoiceNumber}</p>
+            <div className="p-3 bg-slate-900/50 border border-slate-800 rounded-lg">
+              <span className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">Nº Factura / Ticket</span>
+              <p className="text-xs font-bold text-slate-200 mt-0.5 truncate" title={invoice.invoiceNumber}>{invoice.invoiceNumber}</p>
             </div>
 
-            <div className="p-3 bg-slate-50 border border-slate-200/80 rounded-lg">
-              <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Serie / Consecutivo</span>
-              <p className="text-xs font-bold text-slate-700 mt-0.5">{invoice.serial || "S/S"}</p>
+            <div className="p-3 bg-slate-900/50 border border-slate-800 rounded-lg">
+              <span className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">Serie / Consecutivo</span>
+              <p className="text-xs font-bold text-slate-200 mt-0.5">{invoice.serial || "S/S"}</p>
             </div>
 
-            <div className="p-3 bg-slate-50 border border-slate-200/80 rounded-lg">
-              <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Lugar: Sucursal (Caja)</span>
-              <p className="text-xs font-bold text-slate-700 mt-0.5">Suc {invoice.sucursal || "001"} - Caja {invoice.ptoFact || "01"}</p>
+            <div className="p-3 bg-slate-900/50 border border-slate-800 rounded-lg">
+              <span className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">Lugar: Sucursal (Caja)</span>
+              <p className="text-xs font-bold text-slate-200 mt-0.5">Suc {invoice.sucursal || "001"} - Caja {invoice.ptoFact || "01"}</p>
             </div>
 
-            <div className="p-3 bg-slate-50 border border-slate-200/80 rounded-lg col-span-full">
-              <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Cliente Receptor</span>
-              <p className="text-xs font-bold text-slate-700 mt-0.5">
+            <div className="p-3 bg-slate-900/50 border border-slate-800 rounded-lg col-span-full">
+              <span className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">Cliente Receptor</span>
+              <p className="text-xs font-bold text-slate-200 mt-0.5">
                 {invoice.receiverName || "Consumidor Final"} {invoice.receiverRuc ? `(RUC/CIP: ${invoice.receiverRuc})` : ""}
               </p>
             </div>
 
-            <div className="p-3 bg-slate-50 border border-slate-200/80 rounded-lg">
-              <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Atendido por (Vendedor)</span>
-              <p className="text-xs font-bold text-slate-700 mt-0.5 truncate">{invoice.seller || "No Especificado"}</p>
+            <div className="p-3 bg-slate-900/50 border border-slate-800 rounded-lg">
+              <span className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">Atendido por (Vendedor)</span>
+              <p className="text-xs font-bold text-slate-200 mt-0.5 truncate">{invoice.seller || "No Especificado"}</p>
             </div>
 
-            <div className="p-3 bg-slate-50 border border-slate-200/80 rounded-lg">
-              <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Método de Pago</span>
-              <p className="text-xs font-bold text-slate-700 mt-0.5 font-sans flex items-center gap-1.5">
+            <div className="p-3 bg-slate-900/50 border border-slate-800 rounded-lg">
+              <span className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">Método de Pago</span>
+              <p className="text-xs font-bold text-slate-200 mt-0.5 font-sans flex items-center gap-1.5">
                 <CreditCard className="h-3.5 w-3.5 text-slate-400" />
                 {invoice.paymentMethod || "Efectivo"}
               </p>
             </div>
 
             {invoice.motorizadoId && (
-              <div className="p-3 bg-blue-50/40 border border-blue-100 rounded-lg col-span-full flex items-center justify-between">
+              <div className="p-3 bg-amber-500/5 border border-amber-500/20 rounded-lg col-span-full flex items-center justify-between">
                 <div>
-                  <span className="text-[9px] uppercase font-bold text-blue-500 tracking-wider block">Chofer de Flota Asignado</span>
-                  <span className="text-xs font-bold text-slate-800 mt-0.5 inline-flex items-center gap-1">
-                    <Users className="h-3.5 w-3.5 text-blue-500" />
+                  <span className="text-[9px] uppercase font-bold text-amber-400 tracking-wider block">Chofer de Flota Asignado</span>
+                  <span className="text-xs font-bold text-slate-250 mt-0.5 inline-flex items-center gap-1">
+                    <Users className="h-3.5 w-3.5 text-amber-400" />
                     {getMotorizadoName(invoice.motorizadoId)}
                   </span>
                 </div>
                 <div className="text-right">
-                  <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold rounded-full text-[9px] uppercase">
+                  <span className="px-2 py-0.5 bg-emerald-950 text-emerald-300 border border-emerald-800/40 font-bold rounded-full text-[9px] uppercase">
                     Completado
                   </span>
                 </div>
@@ -137,16 +137,16 @@ export default function TicketDetailView({
             )}
 
             {invoice.comments && (
-              <div className="p-3 bg-slate-50 border border-slate-200/80 rounded-lg col-span-full">
-                <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Comentarios de Entrega / Dirección Flete</span>
-                <p className="text-xs text-slate-650 mt-0.5 leading-relaxed font-semibold">{invoice.comments}</p>
+              <div className="p-3 bg-slate-900/50 border border-slate-800 rounded-lg col-span-full">
+                <span className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">Comentarios de Entrega / Dirección Flete</span>
+                <p className="text-xs text-slate-300 mt-0.5 leading-relaxed font-semibold">{invoice.comments}</p>
               </div>
             )}
 
             {invoice.accessKey && (
-              <div className="p-3 bg-amber-50/30 border border-amber-100 rounded-lg col-span-full">
-                <span className="text-[9px] uppercase font-bold text-amber-600 tracking-wider font-mono">Clave de Acceso Electrónica (CUFE)</span>
-                <p className="text-[10px] font-mono text-slate-500 mt-1 break-all select-all leading-tight">
+              <div className="p-3 bg-amber-500/5 border border-amber-500/25 rounded-lg col-span-full">
+                <span className="text-[9px] uppercase font-bold text-amber-400 tracking-wider font-mono">Clave de Acceso Electrónica (CUFE)</span>
+                <p className="text-[10px] font-mono text-slate-350 mt-1 break-all select-all leading-tight">
                   {invoice.accessKey}
                 </p>
               </div>
@@ -156,9 +156,9 @@ export default function TicketDetailView({
 
         {/* COLUMNA DERECHA: REPRESENTACIÓN GRÁFICA DEL TICKET FÍSICO */}
         <div className="lg:col-span-5 space-y-4">
-          <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest pl-0.5">Comprobante Impreso Estilizado</h4>
+          <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest pl-0.5">Comprobante Impreso Estilizado</h4>
           
-          <div className="border border-slate-300 rounded-xl bg-white shadow-md relative p-5 max-w-[340px] mx-auto text-[11px] font-mono text-black leading-normal select-none ring-8 ring-slate-100/50">
+          <div className="border border-slate-300 rounded-xl bg-white shadow-md relative p-5 max-w-[340px] mx-auto text-[11px] font-mono text-black leading-normal select-none ring-8 ring-slate-100/5">
             {/* Wavy paper top mockup effect */}
             <div className="absolute top-0 left-0 right-0 h-1 bg-repeat-x" style={{ backgroundImage: "linear-gradient(135deg, #CBD5E1 25%, transparent 25%), linear-gradient(225deg, #CBD5E1 25%, transparent 25%)", backgroundSize: "8px 8px" }}></div>
 
@@ -245,10 +245,10 @@ export default function TicketDetailView({
       </div>
 
       {/* BOTONES ACCION EDIT/DELETE */}
-      <div className="flex justify-between items-center pt-5 border-t border-slate-150 gap-3">
+      <div className="flex justify-between items-center pt-5 border-t border-white/5 gap-3">
         <button
           onClick={() => invoice.id && onDelete(invoice.id)}
-          className="flex items-center gap-1 px-4 py-2 hover:bg-red-50 text-red-600 rounded-lg text-xs font-bold transition cursor-pointer"
+          className="flex items-center gap-1 px-4 py-2 hover:bg-rose-950/30 text-rose-450 rounded-lg text-xs font-bold transition cursor-pointer"
         >
           <Trash2 className="h-3.5 w-3.5" />
           Borrar de Biblioteca
@@ -256,7 +256,7 @@ export default function TicketDetailView({
 
         <button
           onClick={onEdit}
-          className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition shadow-sm cursor-pointer"
+          className="px-5 py-2.5 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-450 text-slate-950 font-black rounded-lg text-xs transition shadow-sm cursor-pointer"
         >
           Editar Datos de Factura
         </button>
