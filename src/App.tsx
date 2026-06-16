@@ -582,12 +582,12 @@ export default function App() {
 
       const parsedData = await response.json();
       setFormValues({
-        issuer: parsedData.issuer || "AUTO CENTRO S.A.",
+        issuer: parsedData.issuer || "",
         date: parsedData.date || new Date().toISOString().split("T")[0],
         invoiceNumber: parsedData.invoiceNumber || "",
         total: Number(parsedData.total) || 0,
         tax: Number(parsedData.tax) || 0,
-        paymentMethod: parsedData.paymentMethod || "Tarjeta de Crédito",
+        paymentMethod: parsedData.paymentMethod || "",
         items: Array.isArray(parsedData.items) ? parsedData.items : [],
         imageUrl: compressed,
         userId: "shared_admin",
@@ -596,18 +596,18 @@ export default function App() {
         // Campos Adicionales
         issuerRuc: parsedData.issuerRuc || "",
         issuerAddress: parsedData.issuerAddress || "",
-        invoiceType: parsedData.invoiceType || "Comprobante Auxiliar de Factura Electrónica",
+        invoiceType: parsedData.invoiceType || "",
         serial: parsedData.serial || "",
         sucursal: parsedData.sucursal || "",
         ptoFact: parsedData.ptoFact || "",
         receiverName: parsedData.receiverName || "",
         receiverRuc: parsedData.receiverRuc || "",
-        receiverType: parsedData.receiverType || "Consumidor final",
+        receiverType: parsedData.receiverType || "",
         subtotal: parsedData.subtotal || 0,
         itbms: parsedData.itbms || parsedData.tax || 0,
         accessKey: parsedData.accessKey || "",
         qrUrl: parsedData.qrUrl || "",
-        seller: parsedData.seller || "VICTOR CRUZ",
+        seller: parsedData.seller || "",
         comments: parsedData.comments || "",
         motorizadoId: ""
       });

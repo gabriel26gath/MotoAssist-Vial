@@ -165,20 +165,20 @@ export default function TicketDetailView({
             <div className="absolute top-0 left-0 right-0 h-1 bg-repeat-x" style={{ backgroundImage: "linear-gradient(135deg, #CBD5E1 25%, transparent 25%), linear-gradient(225deg, #CBD5E1 25%, transparent 25%)", backgroundSize: "8px 8px" }}></div>
 
             <div className="pt-2 text-center select-text">
-              <p className="font-extrabold text-[12px] uppercase select-none tracking-tight">{invoice.issuer || "SUMINISTROS IND."}</p>
-              <p className="text-[9px] font-semibold text-slate-600 mt-0.5">{invoice.issuerAddress || "CIUDAD DE PANAMÁ"}</p>
+              <p className="font-extrabold text-[12px] uppercase select-none tracking-tight">{invoice.issuer || "(SIN NOMBRE)"}</p>
+              <p className="text-[9px] font-semibold text-slate-600 mt-0.5">{invoice.issuerAddress || "(SIN DIRECCIÓN)"}</p>
               <p className="text-[9px] font-bold text-slate-800">R.U.C.: {invoice.issuerRuc || "S/RUC"}</p>
               <p className="text-[8px] text-slate-500 mt-0.5">------------------------------------------</p>
               <p className="font-semibold text-slate-705">COMPROBANTE AUXILIAR DE FACTURA</p>
               <p className="font-bold">NRO FACTURA: {invoice.invoiceNumber}</p>
-              <p className="font-bold">SERIE: {invoice.serial || "A-2026"}</p>
+              <p className="font-bold">SERIE: {invoice.serial || "S/S"}</p>
               <p className="text-[8px] text-slate-550">------------------------------------------</p>
             </div>
 
             <div className="space-y-1 my-3 select-text text-slate-800">
               <p className="flex justify-between text-[10px]"><span>FECHA:</span> <span>{invoice.date}</span></p>
-              <p className="flex justify-between text-[10px]"><span>VENDEDOR:</span> <span>{(invoice.seller || "VICTOR CRUZ").toUpperCase()}</span></p>
-              <p className="flex justify-between text-[10px]"><span>MÉTODO:</span> <span>{(invoice.paymentMethod || "EFECTIVO").toUpperCase()}</span></p>
+              <p className="flex justify-between text-[10px]"><span>VENDEDOR:</span> <span>{(invoice.seller || "N/A").toUpperCase()}</span></p>
+              <p className="flex justify-between text-[10px]"><span>MÉTODO:</span> <span>{(invoice.paymentMethod || "N/A").toUpperCase()}</span></p>
               <p className="truncate max-w-full text-[9px]"><span>CLIENTE:</span> <span>{(invoice.receiverName || "Consumidor final").toUpperCase()}</span></p>
               {invoice.receiverRuc && <p className="text-[9px]"><span>RUC CTE:</span> <span>{invoice.receiverRuc}</span></p>}
             </div>
