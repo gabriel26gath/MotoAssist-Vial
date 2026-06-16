@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   Edit3, 
   Trash2, 
@@ -37,6 +37,44 @@ export default function TicketEditForm({
   scanError,
   activeImage
 }: TicketEditFormProps) {
+
+  const [scanProgress, setScanProgress] = useState(1);
+  const [currentStep, setCurrentStep] = useState(0);
+
+  const scanSteps = [
+    "Optimizando contraste y legibilidad de matriz...",
+    "Digitalizando caracteres bajo matriz térmica...",
+    "Reconociendo emisor, sucursal y registro RUC...",
+    "Asociando productos y tasas ITBMS comprobables...",
+    "Consolidando montos y validando totales sin ficción..."
+  ];
+
+  useEffect(() => {
+    let progressInterval: any;
+    let stepInterval: any;
+
+    if (isScanning) {
+      setScanProgress(1);
+      setCurrentStep(0);
+
+      progressInterval = setInterval(() => {
+        setScanProgress(prev => {
+          if (prev >= 98) return prev;
+          const inc = Math.random() > 0.75 ? Math.floor(Math.random() * 5) + 1 : 2;
+          return Math.min(prev + inc, 98);
+        });
+      }, 140);
+
+      stepInterval = setInterval(() => {
+        setCurrentStep(prev => (prev + 1) % scanSteps.length);
+      }, 2300);
+    }
+
+    return () => {
+      clearInterval(progressInterval);
+      clearInterval(stepInterval);
+    };
+  }, [isScanning]);
 
   // Controladores de ítems de productos
   const handleAddItem = () => {
@@ -132,13 +170,56 @@ export default function TicketEditForm({
       </div>
 
       {isScanning && (
-        <div className="flex flex-col items-center justify-center p-8 bg-slate-900/60 rounded-xl border border-amber-500/10 text-center space-y-3">
-          <div className="relative">
-            <div className="w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
-          </div>
-          <div>
-            <p className="text-xs font-bold text-slate-200 font-display">Gemini IA analizando ticket...</p>
-            <p className="text-[11px] text-slate-450 mt-1 max-w-xs mx-auto">Reconociendo estructuración, desgloses, importes, CUFE y sucursales del ticket físico...</p>
+        <div className="flex flex-col items-center justify-center p-6 md:p-8 bg-slate-900/60 rounded-xl border border-amber-500/15 text-center space-y-4 animate-pulse-subtle">
+          
+          {/* Visual ticket scanning preview with laser line overlay */}
+          {activeImage ? (
+            <div className="relative w-36 h-48 rounded-lg overflow-hidden border border-amber-500/30 shadow-lg shadow-amber-500/5 bg-slate-950 flex items-center justify-center">
+              <img 
+                src={activeImage} 
+                alt="Escaneando ticket..." 
+                className="w-full h-full object-cover opacity-60 filter contrast-125 brightness-90"
+                referrerPolicy="no-referrer"
+              />
+              {/* Laser line sweeping animation */}
+              <div className="absolute inset-x-0 h-1 bg-gradient-to-r from-transparent via-amber-400 to-transparent shadow-md shadow-amber-400/50 animate-bounce" style={{ animationDuration: '3s' }}></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-amber-500/10 to-transparent mix-blend-overlay"></div>
+            </div>
+          ) : (
+            <div className="relative">
+              <div className="w-10 h-10 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          )}
+
+          <div className="w-full max-w-sm space-y-3">
+            <div>
+              <div className="flex justify-between items-center text-[10px] md:text-[11px] font-bold text-slate-300 mb-1.5 px-0.5">
+                <span className="flex items-center gap-1.5 text-amber-400">
+                  <Sparkles className="h-3 w-3 animate-pulse" />
+                  Gemini IA Analizando
+                </span>
+                <span className="font-mono text-amber-300">{scanProgress}%</span>
+              </div>
+              
+              {/* Modern ProgressBar */}
+              <div className="h-2.5 w-full bg-slate-950/80 rounded-full border border-white/5 overflow-hidden p-[1px]">
+                <div 
+                  className="h-full bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-400 rounded-full transition-all duration-300 ease-out relative"
+                  style={{ width: `${scanProgress}%` }}
+                >
+                  <div className="absolute inset-0 bg-[linear-gradient(45deg,rgba(255,255,255,0.15)_25%,transparent_25%,transparent_50%,rgba(255,255,255,0.15)_50%,rgba(255,255,255,0.15)_75%,transparent_75%,transparent)] bg-[length:16px_16px] animate-[shimmer_1.5s_infinite_linear]"></div>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-0.5">
+              <p className="text-xs font-bold text-slate-200 font-display transition-all duration-500">
+                {scanProgress < 95 ? "Leyendo comprobante térmico..." : "Finalizando estructuración de datos..."}
+              </p>
+              <p className="text-[10px] text-amber-400/80 font-mono mt-1 min-h-[16px] animate-fade-in">
+                ⚡ {scanSteps[currentStep]}
+              </p>
+            </div>
           </div>
         </div>
       )}
@@ -162,46 +243,62 @@ export default function TicketEditForm({
             </div>
           )}
 
-          {/* CAMPOS EMISOR */}
+          {/* CAMPOS RECEPTOR - COMERCIALIZADOR Y COMPRADOR */}
           <div className="space-y-3 p-3.5 bg-slate-900/40 rounded-xl border border-white/5">
-            <h3 className="text-[10px] font-extrabold uppercase text-amber-400 tracking-wider">Datos del Comercio (Emisor)</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-1 md:col-span-2">
-                <label className="text-[10px] font-bold text-slate-450 uppercase">Establecimiento / Razón Social</label>
+            <h3 className="text-[10px] font-extrabold uppercase text-amber-400 tracking-wider">Comercializador y Comprador (Receptor)</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-455 uppercase">Nombre del Cliente (Receptor)</label>
                 <input
                   type="text"
-                  value={formValues.issuer}
-                  onChange={(e) => setFormValues(p => ({ ...p, issuer: e.target.value }))}
-                  className="w-full px-3 py-1.8 text-xs bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:border-amber-500/60 font-bold text-slate-100"
-                  placeholder="Ej. AUTO CENTRO, S.A."
+                  value={formValues.receiverName || ""}
+                  onChange={(e) => setFormValues(p => ({ ...p, receiverName: e.target.value }))}
+                  className="w-full px-3 py-1.8 text-xs bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:border-amber-500/60 font-semibold text-slate-200"
+                  placeholder="Nombre de cliente"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-450 uppercase">R.U.C. Emisor</label>
+                <label className="text-[10px] font-bold text-slate-455 uppercase">RUC / CIP Cliente</label>
                 <input
                   type="text"
-                  value={formValues.issuerRuc || ""}
-                  onChange={(e) => setFormValues(p => ({ ...p, issuerRuc: e.target.value }))}
+                  value={formValues.receiverRuc || ""}
+                  onChange={(e) => setFormValues(p => ({ ...p, receiverRuc: e.target.value }))}
                   className="w-full px-3 py-1.8 text-xs bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:border-amber-500/60 font-semibold text-slate-200"
-                  placeholder="Ej. 149204-1-659102"
+                  placeholder="RUC o Cédula"
                 />
               </div>
 
-              <div className="space-y-1 md:col-span-3">
-                <label className="text-[10px] font-bold text-slate-450 uppercase">Dirección de Sucursal</label>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-455 uppercase">Vendedor (Atendido por)</label>
                 <input
                   type="text"
-                  value={formValues.issuerAddress || ""}
-                  onChange={(e) => setFormValues(p => ({ ...p, issuerAddress: e.target.value }))}
+                  value={formValues.seller || ""}
+                  onChange={(e) => setFormValues(p => ({ ...p, seller: e.target.value }))}
                   className="w-full px-3 py-1.8 text-xs bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:border-amber-500/60 font-semibold text-slate-200"
-                  placeholder="Ej. Panama Brisas del Golf, Av. Principal"
+                  placeholder="Nombre del vendedor"
                 />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-455 uppercase">Tipo de Factura <span className="text-amber-400 font-extrabold">* Obligatorio</span></label>
+                <select
+                  value={formValues.invoiceType || ""}
+                  onChange={(e) => setFormValues(p => ({ ...p, invoiceType: e.target.value }))}
+                  className="w-full px-3 py-1.8 text-xs bg-slate-950 border border-slate-800 focus:border-amber-500/60 rounded-lg focus:outline-none font-bold text-white [color-scheme:dark]"
+                >
+                  <option value="">-- Seleccionar --</option>
+                  <option value="CALL CENTER">CALL CENTER</option>
+                  <option value="SUCURSAL">SUCURSAL</option>
+                  <option value="FLOTA">FLOTA</option>
+                  <option value="GERENTE DE LINEA">GERENTE DE LINEA</option>
+                  <option value="OMITIDO">OMITIDO</option>
+                </select>
               </div>
             </div>
           </div>
 
-          {/* CAMPOS DOCUMENTO */}
+          {/* CAMPOS DOCUMENTO - PARÁMETROS DEL DOCUMENTO */}
           <div className="space-y-3 p-3.5 bg-slate-900/40 rounded-xl border border-white/5">
             <h3 className="text-[10px] font-extrabold uppercase text-amber-400 tracking-wider">Parámetros del Documento</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -225,7 +322,7 @@ export default function TicketEditForm({
                   value={formValues.invoiceNumber}
                   onChange={(e) => setFormValues(p => ({ ...p, invoiceNumber: e.target.value }))}
                   className="w-full px-3 py-1.8 text-xs bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:border-amber-500/60 font-bold text-slate-100"
-                  placeholder="Ej. T-90412"
+                  placeholder="Número de Factura"
                 />
               </div>
 
@@ -236,7 +333,7 @@ export default function TicketEditForm({
                   value={formValues.serial || ""}
                   onChange={(e) => setFormValues(p => ({ ...p, serial: e.target.value }))}
                   className="w-full px-3 py-1.8 text-xs bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:border-amber-500/60 font-semibold text-slate-200"
-                  placeholder="Ej. SEC12204"
+                  placeholder="Número de Serie"
                 />
               </div>
 
@@ -247,7 +344,7 @@ export default function TicketEditForm({
                   value={formValues.sucursal || ""}
                   onChange={(e) => setFormValues(p => ({ ...p, sucursal: e.target.value }))}
                   className="w-full px-3 py-1.8 text-xs bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:border-amber-500/60 font-semibold text-slate-200"
-                  placeholder="Ej. 0001 (Brisas)"
+                  placeholder="Código o nombre sucursal"
                 />
               </div>
 
@@ -258,7 +355,7 @@ export default function TicketEditForm({
                   value={formValues.ptoFact || ""}
                   onChange={(e) => setFormValues(p => ({ ...p, ptoFact: e.target.value }))}
                   className="w-full px-3 py-1.8 text-xs bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:border-amber-500/60 font-semibold text-slate-200"
-                  placeholder="Ej. 02"
+                  placeholder="Número de caja"
                 />
               </div>
 
@@ -272,63 +369,8 @@ export default function TicketEditForm({
                   value={formValues.paymentMethod}
                   onChange={(e) => setFormValues(p => ({ ...p, paymentMethod: e.target.value }))}
                   className="w-full px-3 py-1.8 text-xs bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:border-amber-500/60 font-semibold text-slate-200"
-                  placeholder="Ej. Pago Contra Entrega / Tarjetas"
+                  placeholder="Método de pago"
                 />
-              </div>
-            </div>
-          </div>
-
-          {/* CAMPOS RECEPTOR */}
-          <div className="space-y-3 p-3.5 bg-slate-900/40 rounded-xl border border-white/5">
-            <h3 className="text-[10px] font-extrabold uppercase text-amber-400 tracking-wider">Comercializador y Comprador (Receptor)</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-455 uppercase">Nombre del Cliente (Receptor)</label>
-                <input
-                  type="text"
-                  value={formValues.receiverName || ""}
-                  onChange={(e) => setFormValues(p => ({ ...p, receiverName: e.target.value }))}
-                  className="w-full px-3 py-1.8 text-xs bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:border-amber-500/60 font-semibold text-slate-200"
-                  placeholder="Ej. Distribuidora Brisas"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-455 uppercase">RUC / CIP Cliente</label>
-                <input
-                  type="text"
-                  value={formValues.receiverRuc || ""}
-                  onChange={(e) => setFormValues(p => ({ ...p, receiverRuc: e.target.value }))}
-                  className="w-full px-3 py-1.8 text-xs bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:border-amber-500/60 font-semibold text-slate-200"
-                  placeholder="Ej. 8-NT-9201"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-455 uppercase">Vendedor (Atendido por)</label>
-                <input
-                  type="text"
-                  value={formValues.seller || ""}
-                  onChange={(e) => setFormValues(p => ({ ...p, seller: e.target.value }))}
-                  className="w-full px-3 py-1.8 text-xs bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:border-amber-500/60 font-semibold text-slate-200"
-                  placeholder="Ej. VICTOR CRUZ"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-455 uppercase">Tipo de Factura <span className="text-amber-400 font-extrabold">* Obligatorio</span></label>
-                <select
-                  value={formValues.invoiceType || ""}
-                  onChange={(e) => setFormValues(p => ({ ...p, invoiceType: e.target.value }))}
-                  className="w-full px-3 py-1.8 text-xs bg-slate-950 border border-slate-800 focus:border-amber-500/60 rounded-lg focus:outline-none font-bold text-white [color-scheme:dark]"
-                >
-                  <option value="">-- Seleccionar --</option>
-                  <option value="CALL CENTER">CALL CENTER</option>
-                  <option value="SUCURSAL">SUCURSAL</option>
-                  <option value="FLOTA">FLOTA</option>
-                  <option value="GERENTE DE LINEA">GERENTE DE LINEA</option>
-                  <option value="OMITIDO">OMITIDO</option>
-                </select>
               </div>
             </div>
           </div>
@@ -361,7 +403,7 @@ export default function TicketEditForm({
                   value={formValues.comments || ""}
                   onChange={(e) => setFormValues(p => ({ ...p, comments: e.target.value }))}
                   className="w-full px-3 py-2 text-xs bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:border-amber-500/60 font-semibold"
-                  placeholder="Ej. Domicilio Brisas del Golf, calle principal"
+                  placeholder="Dirección del flete o comentarios"
                 />
               </div>
             </div>
@@ -466,7 +508,7 @@ export default function TicketEditForm({
               value={formValues.accessKey || ""}
               onChange={(e) => setFormValues(p => ({ ...p, accessKey: e.target.value }))}
               className="w-full px-3 py-1.5 text-[10px] font-mono bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:border-amber-500/60 font-semibold"
-              placeholder="Ej. 149204A2-92104-FE-2026-9210492104..."
+              placeholder="Clave de acceso electrónica o código CUFE"
             />
           </div>
 

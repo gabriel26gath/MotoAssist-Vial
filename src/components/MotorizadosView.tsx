@@ -192,7 +192,7 @@ export default function MotorizadosView({
               <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Nombre Completo</label>
               <input
                 type="text"
-                placeholder="Ej. Juan Pérez"
+                placeholder="Nombre del conductor"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="w-full px-3 py-1.5 text-xs bg-slate-950/60 border border-white/10 rounded-md focus:outline-none focus:border-amber-500/60 font-semibold text-white placeholder-slate-550"
@@ -204,7 +204,7 @@ export default function MotorizadosView({
               <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Placa del Vehículo</label>
               <input
                 type="text"
-                placeholder="Ej. BA2903 o M-14902"
+                placeholder="Número de placa o registro"
                 value={vehiclePlate}
                 onChange={(e) => setVehiclePlate(e.target.value)}
                 className="w-full px-3 py-1.5 text-xs bg-slate-950/60 border border-white/10 rounded-md focus:outline-none focus:border-amber-500/60 font-semibold uppercase text-white placeholder-slate-550"
@@ -216,7 +216,7 @@ export default function MotorizadosView({
               <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Modelo de Moto</label>
               <input
                 type="text"
-                placeholder="Ej. Honda Cargo 150"
+                placeholder="Modelo / Marca del vehículo"
                 value={vehicleModel}
                 onChange={(e) => setVehicleModel(e.target.value)}
                 className="w-full px-3 py-1.5 text-xs bg-slate-950/60 border border-white/10 rounded-md focus:outline-none focus:border-amber-500/60 font-semibold text-white placeholder-slate-550"
@@ -227,7 +227,7 @@ export default function MotorizadosView({
               <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Celular / Contacto</label>
               <input
                 type="tel"
-                placeholder="Ej. +507 6291-3091"
+                placeholder="Número celular o teléfono"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 className="w-full px-3 py-1.5 text-xs bg-slate-950/60 border border-white/10 rounded-md focus:outline-none focus:border-amber-500/60 font-semibold text-white placeholder-slate-550"
@@ -632,7 +632,7 @@ export default function MotorizadosView({
                       <label className="text-[10px] font-bold text-slate-450 uppercase">Detalle del Incidente</label>
                       <textarea
                         rows={2}
-                        placeholder="Ej. Cambio de bujía, pinchazo, mantenimiento..."
+                        placeholder="Detalle de reparación, daño o mantenimiento..."
                         value={incidentDesc}
                         onChange={(e) => setIncidentDesc(e.target.value)}
                         className="w-full px-2.5 py-1.5 bg-slate-950/60 border border-white/10 rounded-lg text-xs font-semibold focus:outline-none focus:border-amber-500/60 resize-none text-white placeholder-slate-550"

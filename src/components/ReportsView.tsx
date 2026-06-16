@@ -266,7 +266,7 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
             <div className="relative">
               <input
                 type="text"
-                placeholder="Ej. Auto Centro"
+                placeholder="Buscar por comercio..."
                 value={searchIssuer}
                 onChange={(e) => setSearchIssuer(e.target.value)}
                 className="w-full pl-7 pr-2.5 py-1.5 text-xs bg-slate-950/60 border border-white/10 rounded-lg focus:outline-none focus:border-amber-500/60 font-semibold text-white placeholder-slate-550"

@@ -91,7 +91,7 @@ export default async function handler(req: any, res: any) {
           },
         },
         {
-          text: "Analiza detenidamente esta imagen de un ticket o factura térmica y extrae su información detallada. Extrae con precisión el RUC del emisor, RUC/CIP del cliente, Dirección, Tipo de Factura, Serie/Consecutivo, Sucursal, Punto de Factura, Receptor, Subtotal, ITBMS, Desglose de ITBMS (Exentos, 7%, 10%, 15%), URL de verificación del QR, Clave de Acceso/CUFE, Vendedor, Cuenta de cliente, Comentarios/Fletes, y desglose de items con precio y tasa ITBMS. Si falta algún valor, calcúlalo de manera que los totales coincidan con la suma de los productos. Devuelve solo un objeto JSON estructurado según el esquema.",
+          text: "INSTRUCCIÓN CRÍTICA DE PRECISION: Analiza minuciosamente la imagen de este comprobante o ticket térmico físico. EXTRAE ÚNICAMENTE datos reales que sean claramente legibles y estén explícitamente impresos en el ticket. Está TOTALMENTE PROHIBIDO inventar, predecir, estimar o rellenar campos con valores ficticios, falsos, genéricos o demostrativos. Si un dato (como RUC/CIP del receptor, nombre, vendedor, clave de acceso/CUFE, URL del QR, número de cuenta, o desglose específico) NO está impreso en la imagen, debes dejarlo como una cadena vacía (\"\") o un arreglo vacío ([]) según corresponda. No uses bajo ningún concepto nombres de ejemplos/ficticios como 'VICTOR CRUZ', 'DORA GUERRA', 'AUTO CENTRO S.A.', 'Brisas del Golf', ni números de prueba. Todo el contenido extraído debe corresponder estrictamente al ticket analizado. Si el total e impuestos no están impresos, déjalos en 0, no inventes montos.",
         },
       ],
       config: {
