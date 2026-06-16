@@ -19,7 +19,8 @@ import {
   Coins,
   LayoutGrid,
   ClipboardList,
-  Info
+  Info,
+  Calculator
 } from "lucide-react";
 import { Motorizado, Invoice, VehicleIncident } from "../types";
 
@@ -147,11 +148,16 @@ export default function MotorizadosView({
 
   // Calcular estadísticas por motorizado
   const getMotorizadoStats = (id?: string) => {
-    if (!id) return { count: 0, total: 0 };
+    if (!id) return { count: 0, subtotal: 0, total: 0 };
     const filtered = invoices.filter(inv => inv.motorizadoId === id);
+    const subtotal = filtered.reduce((sum, inv) => {
+      const sub = inv.subtotal || (inv.total - (inv.tax || 0)) || 0;
+      return sum + sub;
+    }, 0);
     const total = filtered.reduce((sum, inv) => sum + (inv.total || 0), 0);
     return {
       count: filtered.length,
+      subtotal: Number(subtotal.toFixed(2)),
       total: Number(total.toFixed(2))
     };
   };
@@ -329,7 +335,14 @@ export default function MotorizadosView({
                       </span>
                     </div>
                   )}
-                  <div className="flex items-center justify-between bg-slate-950/40 p-1.5 rounded border border-white/5 mt-1.5">
+                  <div className="flex items-center justify-between bg-slate-950/30 p-1.5 rounded border border-white/5 mt-1.5">
+                    <div className="flex items-center gap-1">
+                      <Calculator className="h-3.5 w-3.5 text-slate-400" />
+                      <span className="text-[10px] text-slate-350 uppercase font-black">{stats.count} Tickets (sub)</span>
+                    </div>
+                    <span className="font-semibold text-slate-200 font-mono">${stats.subtotal.toFixed(2)}</span>
+                  </div>
+                  <div className="flex items-center justify-between bg-slate-950/40 p-1.5 rounded border border-white/5 mt-1">
                     <div className="flex items-center gap-1">
                       <FileText className="h-3.5 w-3.5 text-slate-400" />
                       <span className="text-[10px] text-slate-300 uppercase font-black">{stats.count} Ventas</span>
