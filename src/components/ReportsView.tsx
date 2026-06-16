@@ -140,6 +140,43 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
 
   const sucursalStatsList = Object.values(sucursalStatsMap).sort((a, b) => b.ventasTotal - a.ventasTotal);
 
+  // Obtener todos los tipos de factura únicos presentes
+  const allInvoiceTypes = Array.from(
+    new Set(
+      filteredInvoices.map(inv => inv.invoiceType && inv.invoiceType.trim() !== "" ? inv.invoiceType.trim() : "Otros / Sin Especificar")
+    )
+  ).sort();
+
+  // Obtener todas las sucursales únicas presentes
+  const allSucursalesList = Array.from(
+    new Set(
+      filteredInvoices.map(inv => inv.sucursal && inv.sucursal.trim() !== "" ? inv.sucursal.trim() : "Principal / Matriz")
+    )
+  ).sort();
+
+  // Calcular la relación matricial: sucursal -> { [tipoFactura]: count }
+  const matrixStats: { [sucursal: string]: { [tipoFactura: string]: number } } = {};
+  
+  // Totales por tipo de factura (para mostrar una fila de resumen / barra de distribución)
+  const totalByInvoiceType: { [tipoFactura: string]: number } = {};
+
+  allSucursalesList.forEach(suc => {
+    matrixStats[suc] = {};
+    allInvoiceTypes.forEach(t => {
+      matrixStats[suc][t] = 0;
+    });
+  });
+
+  filteredInvoices.forEach(inv => {
+    const rawBranch = inv.sucursal && inv.sucursal.trim() !== "" ? inv.sucursal.trim() : "Principal / Matriz";
+    const type = inv.invoiceType && inv.invoiceType.trim() !== "" ? inv.invoiceType.trim() : "Otros / Sin Especificar";
+
+    if (matrixStats[rawBranch]) {
+      matrixStats[rawBranch][type] = (matrixStats[rawBranch][type] || 0) + 1;
+    }
+    totalByInvoiceType[type] = (totalByInvoiceType[type] || 0) + 1;
+  });
+
   const getMotorizadoName = (id?: string) => {
     if (!id) return "Sin asignar";
     const mot = motorizados.find(m => m.id === id);
@@ -361,6 +398,97 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
           <p className="text-xl font-black font-mono text-amber-500 mt-0.5">${filteredTax.toLocaleString("es-PA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
           <p className="text-[10px] text-slate-400 mt-1">Impuestos de venta estimados</p>
         </div>
+      </div>
+
+      {/* SECTOR DASHBOARD: CANTIDAD DE TICKET POR SUCURSAL Y TIPO DE FACTURA */}
+      <div className="glass-card p-5.5 rounded-2xl shadow-2xl space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <Layers className="h-4.5 w-4.5 text-amber-400 animate-pulse" />
+            <div>
+              <h4 className="font-black text-white text-xs uppercase tracking-wider font-display">KPI: Tipos de Facturación por Sucursal</h4>
+              <p className="text-[11px] text-slate-400 mt-0.5 font-medium">Distribución de cantidad de tickets según tipo de comprobante y punto de venta</p>
+            </div>
+          </div>
+          <span className="self-start sm:self-auto px-2.5 py-1 text-[10px] bg-amber-500/15 text-amber-300 font-mono font-bold rounded-lg border border-amber-500/20 shadow-xs">
+            {allInvoiceTypes.length} Categorías de Comprobante
+          </span>
+        </div>
+
+        {filteredInvoices.length === 0 ? (
+          <div className="p-10 text-center text-xs text-slate-400 font-bold bg-slate-950/20 rounded-xl border border-white/5">
+            Sin datos para generar la distribución matricial de sucursales.
+          </div>
+        ) : (
+          <div className="overflow-x-auto rounded-xl border border-white/10 shadow-inner bg-slate-950/40">
+            <table className="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr className="bg-slate-950/70 border-b border-white/10 text-[10px] uppercase font-black text-slate-300 tracking-wider">
+                  <th className="p-3">Sucursal / Punto de Emisión</th>
+                  {allInvoiceTypes.map(type => (
+                    <th key={type} className="p-3 text-center whitespace-nowrap min-w-[150px]">
+                      📂 {type}
+                    </th>
+                  ))}
+                  <th className="p-3 text-center font-black text-amber-400 whitespace-nowrap">Total Tickets</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5 font-semibold text-slate-200">
+                {allSucursalesList.map(sucName => {
+                  const sStats = sucursalStatsMap[sucName];
+                  const totalForThisBranch = allInvoiceTypes.reduce((sum, t) => sum + (matrixStats[sucName]?.[t] || 0), 0);
+                  return (
+                    <tr key={sucName} className="hover:bg-amber-500/10 transition">
+                      <td className="p-3 font-bold text-white flex items-center gap-2 whitespace-nowrap">
+                        <span className="text-slate-400">📍</span> {sucName}
+                      </td>
+                      {allInvoiceTypes.map(type => {
+                        const count = matrixStats[sucName]?.[type] || 0;
+                        return (
+                          <td key={type} className="p-3 text-center font-mono">
+                            {count > 0 ? (
+                              <div className="inline-flex items-center justify-center gap-1.5 px-2.5 py-0.5 bg-amber-500/15 border border-amber-500/30 text-[#FFB300] text-[11px] font-black rounded-full shadow-xxs">
+                                <span>{count}</span>
+                                <span className="text-[9px] text-slate-400 font-normal">({((count / totalForThisBranch) * 100).toFixed(0)}%)</span>
+                              </div>
+                            ) : (
+                              <span className="text-slate-600">-</span>
+                            )}
+                          </td>
+                        );
+                      })}
+                      <td className="p-3 text-center font-mono font-black text-white bg-slate-950/20">
+                        {totalForThisBranch} tkt
+                      </td>
+                    </tr>
+                  );
+                })}
+                {/* FILA DE RESUMEN ACUMULADO */}
+                <tr className="bg-slate-950/60 font-black border-t-2 border-white/15 text-slate-200">
+                  <td className="p-3 text-xs uppercase text-amber-400">Total Acumulado</td>
+                  {allInvoiceTypes.map(type => {
+                    const totalType = totalByInvoiceType[type] || 0;
+                    return (
+                      <td key={type} className="p-3 text-center font-mono text-xs text-white">
+                        {totalType > 0 ? (
+                          <div className="inline-flex flex-col items-center">
+                            <span>{totalType} tkt</span>
+                            <span className="text-[9px] text-slate-400 font-normal">({((totalType / filteredInvoices.length) * 100).toFixed(1)}%)</span>
+                          </div>
+                        ) : (
+                          <span className="text-slate-600">0</span>
+                        )}
+                      </td>
+                    );
+                  })}
+                  <td className="p-3 text-center font-mono text-xs text-amber-400 bg-slate-950/40">
+                    {filteredInvoices.length} tkt
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 pb-6">
