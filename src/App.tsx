@@ -68,6 +68,7 @@ import ReportsView from "./components/ReportsView";
 import TicketDetailView from "./components/TicketDetailView";
 import TicketEditForm from "./components/TicketEditForm";
 import CameraCapture from "./components/CameraCapture";
+import ImagePreprocessor from "./components/ImagePreprocessor";
 
 // Demo Image and Mock
 const DEMO_IMAGE_BASE64 = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='400' viewBox='0 0 300 400'><rect width='300' height='400' fill='%23fafafa'/><path d='M10 20 h280 M10 30 h280' stroke='%23ccc'/><text x='150' y='60' font-family='monospace' font-size='18' text-anchor='middle'>AUTO CENTRO S.A.</text><text x='150' y='80' font-family='monospace' font-size='11' text-anchor='middle'>Brisas del Golf, San Miguelito</text><text x='150' y='110' font-family='monospace' font-size='12' text-anchor='middle'>FACTURA: 8-NT-9201-192</text><text x='20' y='150' font-family='monospace' font-size='12'>3x LUBRICANTE SINTETICO</text><text x='280' y='150' font-family='monospace' font-size='12' text-anchor='end'>24.00</text><text x='20' y='170' font-family='monospace' font-size='12'>1x FILTRO DE ACEITE PREMIUM</text><text x='280' y='170' font-family='monospace' font-size='12' text-anchor='end'>8.50</text><text x='20' y='190' font-family='monospace' font-size='12'>1x MANO DE OBRA REEMPLAZO</text><text x='280' y='190' font-family='monospace' font-size='12' text-anchor='end'>15.00</text><path d='M20 230 h260' stroke='%23aaa' stroke-dasharray='4'/><text x='20' y='260' font-family='monospace' font-size='14' font-weight='bold'>TOTAL USD</text><text x='280' y='260' font-family='monospace' font-size='14' font-weight='bold' text-anchor='end'>51.25</text><text x='20' y='280' font-family='monospace' font-size='11'>TAX ITBMS (7%): 3.75</text><text x='25' y='325' font-family='monospace' font-size='10'>VICTOR CRUZ - CAJA 01</text><text x='150' y='360' font-family='monospace' font-size='10' text-anchor='middle'>GRACIAS AUTOCENTRO</text></svg>";
@@ -214,6 +215,7 @@ export default function App() {
   const [isScanning, setIsScanning] = useState(false);
   const [scanError, setScanError] = useState<string | null>(null);
   const [showCamera, setShowCamera] = useState(false);
+  const [pendingPreprocessingImage, setPendingPreprocessingImage] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedInvoiceForView, setSelectedInvoiceForView] = useState<Invoice | null>(null);
   const [dragOver, setDragOver] = useState(false);
@@ -559,14 +561,20 @@ export default function App() {
     setIncidents([]);
   };
 
-  // Image Upload processor
-  const processImageInput = async (imageUrl: string) => {
+  // Interceptor del cargado de imagen - Redirige al Laboratorio de Filtros primero
+  const processImageInput = (imageUrl: string) => {
+    setPendingPreprocessingImage(imageUrl);
+  };
+
+  // Ejecutor real del llamado a la inteligencia artificial con la imagen ya calibrada
+  const executeImageExtraction = async (imageUrl: string) => {
     try {
       setIsScanning(true);
       setScanError(null);
       setIsEditing(true);
       setSelectedInvoiceForView(null);
 
+      // Comprimir con calidad óptima
       const compressed = await compressImage(imageUrl, 850, 1100, 0.7);
       setActiveImage(compressed);
 
@@ -614,7 +622,8 @@ export default function App() {
 
     } catch (err: any) {
       console.error("AI Reader error:", err);
-      setScanError("No pudimos extraer todos los datos del ticket de forma asincrónica. Puedes rellenar los datos manualmente.");
+      // Fallback a vaciar/mantener la imagen para poder ser editado
+      setScanError("No pudimos extraer todos los datos del ticket de forma automática. El sistema guardó la imagen para que puedas rellenar o ajustar los datos requeridos manualmente.");
       setFormValues({
         issuer: "",
         date: new Date().toISOString().split("T")[0],
@@ -971,8 +980,7 @@ export default function App() {
               type="button"
               onClick={() => {
                 setLoginEmail("admin@acsa.com");
-                setLoginPassword("admin_secure_pass_2026");
-                showFirebaseToast("⚡ Auto-completado", "Credenciales de Administrador cargadas. Presione el botón de Acceder.", "info");
+                showFirebaseToast("⚡ Auto-completado", "Correo de Administrador cargado. Por favor, introduzca su contraseña.", "info");
               }}
               className="p-2.5 text-left rounded-xl bg-slate-950/40 hover:bg-slate-950/80 border border-white/5 hover:border-amber-500/50 shadow-sm hover:shadow-[0_0_12px_rgba(245,158,11,0.15)] transition-all duration-300 cursor-pointer group"
             >
@@ -989,8 +997,7 @@ export default function App() {
               type="button"
               onClick={() => {
                 setLoginEmail("moto@acsa.com");
-                setLoginPassword("viewer_secure_pass_2026");
-                showFirebaseToast("⚡ Auto-completado", "Credenciales de Visor cargadas. Presione el botón de Acceder.", "info");
+                showFirebaseToast("⚡ Auto-completado", "Correo de Visor cargado. Por favor, introduzca su contraseña.", "info");
               }}
               className="p-2.5 text-left rounded-xl bg-slate-950/40 hover:bg-slate-950/80 border border-white/5 hover:border-amber-500/50 shadow-sm hover:shadow-[0_0_12px_rgba(245,158,11,0.15)] transition-all duration-300 cursor-pointer group"
             >
@@ -1517,6 +1524,17 @@ export default function App() {
         <CameraCapture 
           onCapture={(base64) => { setShowCamera(false); processImageInput(base64); }}
           onClose={() => setShowCamera(false)}
+        />
+      )}
+
+      {pendingPreprocessingImage && (
+        <ImagePreprocessor
+          imageSrc={pendingPreprocessingImage}
+          onClose={() => setPendingPreprocessingImage(null)}
+          onConfirm={(optimizedBase64) => {
+            setPendingPreprocessingImage(null);
+            executeImageExtraction(optimizedBase64);
+          }}
         />
       )}
 

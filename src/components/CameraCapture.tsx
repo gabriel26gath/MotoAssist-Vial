@@ -128,11 +128,32 @@ export default function CameraCapture({ onCapture, onClose }: CameraCaptureProps
                 muted
                 className="w-full h-full object-cover scale-x-[-1]" // Espejado para vista amigable estilo selfie si es frontal
               />
-              {/* Rejilla de recorte para guiar al usuario */}
-              <div className="absolute inset-8 pointer-events-none border-2 border-dashed border-zinc-400/30 rounded-lg flex items-center justify-center">
-                <div className="absolute top-1/2 left-0 right-0 h-[1px] bg-zinc-400/25"></div>
-                <div className="absolute left-1/2 top-0 bottom-0 w-[1px] bg-zinc-400/25"></div>
+              
+              {/* Máscara biométrica holográfica / Rejilla de alineación inteligente */}
+              <div className="absolute inset-6 md:inset-10 pointer-events-none flex flex-col justify-between z-10">
+                <div className="flex justify-between">
+                  <div className="w-6 h-6 border-t-2 border-l-2 border-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]"></div>
+                  <div className="w-6 h-6 border-t-2 border-r-2 border-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]"></div>
+                </div>
+
+                {/* Línea Láser Sweeper */}
+                <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-amber-400 to-transparent shadow-[0_0_10px_rgba(245,158,11,0.8)] animate-[bounce_3.5s_infinite_ease-in-out]"></div>
+
+                <div className="flex justify-between">
+                  <div className="w-6 h-6 border-b-2 border-l-2 border-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]"></div>
+                  <div className="w-6 h-6 border-b-2 border-r-2 border-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]"></div>
+                </div>
+
+                {/* Etiqueta de alineación flotante */}
+                <div className="absolute inset-x-0 -bottom-8 flex justify-center">
+                  <span className="px-2.5 py-0.8 rounded bg-amber-500/10 border border-amber-500/20 text-[9px] font-mono font-bold text-amber-400 tracking-wider uppercase animate-pulse">
+                    [ ALINEAR COMPROBANTE TÉRMICO AQUÍ ]
+                  </span>
+                </div>
               </div>
+
+              {/* Guía de lectura central translúcida */}
+              <div className="absolute inset-0 bg-slate-950/20 backdrop-brightness-[1.1] pointer-events-none border border-white/5"></div>
             </>
           )}
         </div>

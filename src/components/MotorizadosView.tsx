@@ -56,7 +56,7 @@ export default function MotorizadosView({
   const [incidentSeverity, setIncidentSeverity] = useState<"baja" | "media" | "alta">("media");
   const [incidentDate, setIncidentDate] = useState(new Date().toISOString().split("T")[0]);
 
-  // Ganancias por desc "asistencia vial bat" - Corrección: 20% del valor del ticket
+  // Ganancias por desc "asistencia vial bat" - Corrección: 20% del subtotal (sin impuestos)
   const getMotorizadoGanancia = (motId?: string) => {
     if (!motId) return 0;
     const motInvoices = invoices.filter(inv => inv.motorizadoId === motId);
@@ -68,7 +68,9 @@ export default function MotorizadosView({
         item.name?.toLowerCase().includes("asistencia vial bat")
       );
       if (commentsMatch || itemsMatch) {
-        totalGanancia += (inv.total || 0) * 0.2;
+        // Usamos el subtotal (antes de impuestos) con fallback seguro
+        const subtotal = inv.subtotal || (inv.total - (inv.tax || 0)) || 0;
+        totalGanancia += subtotal * 0.2;
       }
     });
     

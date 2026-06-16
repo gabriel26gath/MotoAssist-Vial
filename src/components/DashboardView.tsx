@@ -49,14 +49,15 @@ export default function DashboardView({ invoices, motorizados, incidents }: Dash
   const pendingIncidents = incidents ? incidents.filter(inc => inc.status === "pendiente") : [];
   const highSeverityIncidents = pendingIncidents.filter(inc => inc.severity === "alta");
 
-  // Calcular ganancia acumulada total de Asistencias BAT (20% del valor del ticket)
+  // Calcular ganancia acumulada total de Asistencias BAT (20% del subtotal sin impuestos)
   const totalVialBatSum = invoices.reduce((sum, inv) => {
     const commentsMatch = inv.comments?.toLowerCase().includes("asistencia vial bat");
     const itemsMatch = inv.items?.some(item => 
       item.name?.toLowerCase().includes("asistencia vial bat")
     );
     if (commentsMatch || itemsMatch) {
-      return sum + (inv.total || 0) * 0.2;
+      const subtotal = inv.subtotal || (inv.total - (inv.tax || 0)) || 0;
+      return sum + subtotal * 0.2;
     }
     return sum;
   }, 0);
