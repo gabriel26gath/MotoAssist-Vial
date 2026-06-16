@@ -8,7 +8,8 @@ import {
   Receipt,
   Layers,
   ChevronRight,
-  Calculator
+  Calculator,
+  MapPin
 } from "lucide-react";
 import { Invoice, Motorizado } from "../types";
 import { exportInvoicesToCSV } from "../utils/csvExport";
@@ -101,52 +102,43 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
   const filteredTax = filteredInvoices.reduce((sum, inv) => sum + (inv.tax || 0), 0);
   const filteredSubtotal = filteredTotal - filteredTax;
 
-  // Cómputo de la matriz de Impuestos (Exento, 7%, 10%, 15% breakdown)
-  const taxRatesBreakdown = {
-    exento: { base: 0, tax: 0 },
-    "7%": { base: 0, tax: 0 },
-    "10%": { base: 0, tax: 0 },
-    "15%": { base: 0, tax: 0 }
-  };
+  // Agrupar ventas y asistencias por sucursal
+  interface SucursalStats {
+    name: string;
+    ventasTotal: number;
+    ventasCount: number;
+    asistenciasCount: number;
+  }
+
+  const sucursalStatsMap: { [key: string]: SucursalStats } = {};
 
   filteredInvoices.forEach(inv => {
-    if (inv.desgloseItbms && inv.desgloseItbms.length > 0) {
-      inv.desgloseItbms.forEach(desc => {
-        const rate = (desc.rate || "").toLowerCase();
-        if (rate.includes("exento") || desc.rate === "0" || desc.rate === "0%") {
-          taxRatesBreakdown.exento.base += desc.base || 0;
-          taxRatesBreakdown.exento.tax += desc.tax || 0;
-        } else if (rate.includes("7")) {
-          taxRatesBreakdown["7%"].base += desc.base || 0;
-          taxRatesBreakdown["7%"].tax += desc.tax || 0;
-        } else if (rate.includes("10")) {
-          taxRatesBreakdown["10%"].base += desc.base || 0;
-          taxRatesBreakdown["10%"].tax += desc.tax || 0;
-        } else if (rate.includes("15")) {
-          taxRatesBreakdown["15%"].base += desc.base || 0;
-          taxRatesBreakdown["15%"].tax += desc.tax || 0;
-        }
-      });
-    } else {
-      // Intento de fallback inteligente basado en la tasa total o los items
-      const base = inv.total - inv.tax;
-      if (inv.tax === 0) {
-        taxRatesBreakdown.exento.base += base;
-      } else {
-        const ratio = inv.tax / base;
-        if (Math.abs(ratio - 0.07) < 0.02) {
-          taxRatesBreakdown["7%"].base += base;
-          taxRatesBreakdown["7%"].tax += inv.tax;
-        } else if (Math.abs(ratio - 0.10) < 0.02) {
-          taxRatesBreakdown["10%"].base += base;
-          taxRatesBreakdown["10%"].tax += inv.tax;
-        } else {
-          taxRatesBreakdown["7%"].base += base;
-          taxRatesBreakdown["7%"].tax += inv.tax;
-        }
-      }
+    const rawBranch = inv.sucursal && inv.sucursal.trim() !== "" ? inv.sucursal.trim() : "Principal / Matriz";
+    
+    if (!sucursalStatsMap[rawBranch]) {
+      sucursalStatsMap[rawBranch] = {
+        name: rawBranch,
+        ventasTotal: 0,
+        ventasCount: 0,
+        asistenciasCount: 0,
+      };
+    }
+
+    const stats = sucursalStatsMap[rawBranch];
+    stats.ventasTotal += inv.total || 0;
+    stats.ventasCount += 1;
+
+    // Verificar si es asistencia vial bat
+    const isAsisComments = inv.comments?.toLowerCase().includes("asistencia vial bat");
+    const isAsisItems = inv.items?.some(item => 
+      item.name?.toLowerCase().includes("asistencia vial bat")
+    );
+    if (isAsisComments || isAsisItems) {
+      stats.asistenciasCount += 1;
     }
   });
+
+  const sucursalStatsList = Object.values(sucursalStatsMap).sort((a, b) => b.ventasTotal - a.ventasTotal);
 
   const getMotorizadoName = (id?: string) => {
     if (!id) return "Sin asignar";
@@ -372,62 +364,43 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 pb-6">
-        {/* DESGLOSE FISCAL DE ITBMS (7% / 10% / 15% / Exento) */}
+        {/* VENTAS Y ASISTENCIAS POR SUCURSAL */}
         <div className="lg:col-span-5 glass-card p-5.5 rounded-2xl shadow-2xl space-y-4">
           <div className="flex items-center gap-2">
-            <Calculator className="h-4 w-4 text-amber-400" />
-            <h4 className="font-black text-white text-xs uppercase tracking-wider font-display">Tabla Desglose ITBMS (Filtrado)</h4>
+            <MapPin className="h-4 w-4 text-amber-400 animate-pulse" />
+            <h4 className="font-black text-white text-xs uppercase tracking-wider font-display">Ventas y Asistencias por Sucursal</h4>
           </div>
-          <p className="text-[11px] text-slate-400">Distribución de impuestos cobrados por fletes e instalaciones según tasa legal:</p>
+          <p className="text-[11px] text-slate-400 font-medium">Distribución acumulada de facturación (Ventas) y asistencias viales del conductor (BAT) por sucursal:</p>
 
-          <div className="divide-y divide-white/5 font-semibold text-xs text-slate-300 space-y-2.5">
-            {/* Exento */}
-            <div className="flex justify-between items-center bg-slate-950/30 p-2.5 rounded-xl border border-white/10 shadow-inner mt-2.5">
-              <div>
-                <p className="font-extrabold text-white">0% Exento</p>
-                <p className="text-[10px] text-slate-400 font-medium">Bases No Gravadas</p>
-              </div>
-              <div className="text-right">
-                <p className="font-mono text-white">Base: ${taxRatesBreakdown.exento.base.toFixed(2)}</p>
-                <p className="text-[11px] font-mono text-slate-400">Imp: $0.00</p>
-              </div>
-            </div>
-
-            {/* 7% */}
-            <div className="flex justify-between items-center bg-slate-950/30 p-2.5 rounded-xl border border-white/10 shadow-inner pt-2.5">
-              <div>
-                <p className="font-extrabold text-white">7% ITBMS</p>
-                <p className="text-[10px] text-slate-400 font-medium">Equipos e Instalaciones</p>
-              </div>
-              <div className="text-right">
-                <p className="font-mono text-white">Base: ${taxRatesBreakdown["7%"].base.toFixed(2)}</p>
-                <p className="text-[11px] font-mono text-amber-500">Imp: ${taxRatesBreakdown["7%"].tax.toFixed(2)}</p>
-              </div>
-            </div>
-
-            {/* 10% */}
-            <div className="flex justify-between items-center bg-slate-950/30 p-2.5 rounded-xl border border-white/10 shadow-inner pt-2.5">
-              <div>
-                <p className="font-extrabold text-white">10% ITBMS</p>
-                <p className="text-[10px] text-slate-400 font-medium">Alcohol o Tabaco</p>
-              </div>
-              <div className="text-right">
-                <p className="font-mono text-white">Base: ${taxRatesBreakdown["10%"].base.toFixed(2)}</p>
-                <p className="text-[11px] font-mono text-amber-500 font-bold">Imp: ${taxRatesBreakdown["10%"].tax.toFixed(2)}</p>
-              </div>
-            </div>
-
-            {/* 15% */}
-            <div className="flex justify-between items-center bg-slate-950/30 p-2.5 rounded-xl border border-white/10 shadow-inner pt-2.5">
-              <div>
-                <p className="font-extrabold text-white">15% ITBMS</p>
-                <p className="text-[10px] text-slate-400 font-medium">Hospedajes o Especiales</p>
-              </div>
-              <div className="text-right">
-                <p className="font-mono text-white">Base: ${taxRatesBreakdown["15%"].base.toFixed(2)}</p>
-                <p className="text-[11px] font-mono text-amber-500 font-bold">Imp: ${taxRatesBreakdown["15%"].tax.toFixed(2)}</p>
-              </div>
-            </div>
+          <div className="space-y-2.5 max-h-[310px] overflow-y-auto pr-1">
+            {sucursalStatsList.length === 0 ? (
+              <p className="text-xs text-slate-400 text-center py-6 font-bold">No hay transacciones registradas para este periodo.</p>
+            ) : (
+              sucursalStatsList.map((suc) => (
+                <div key={suc.name} className="bg-slate-950/30 p-3 rounded-xl border border-white/10 shadow-inner space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="font-extrabold text-white text-xs truncate max-w-[170px]" title={suc.name}>
+                      📍 {suc.name}
+                    </span>
+                    <span className="font-mono text-xs font-black text-amber-400">
+                      ${suc.ventasTotal.toLocaleString("es-PA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                  
+                  <div className="flex justify-between items-center text-[10px] text-slate-400 border-t border-white/5 pt-1.5 font-sans">
+                    <div>
+                      <span>Facturas / Ventas: </span>
+                      <strong className="text-white font-mono">{suc.ventasCount}</strong>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                      <span>Asistencias Vial: </span>
+                      <strong className="text-emerald-400 font-mono">{suc.asistenciasCount}</strong>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
 

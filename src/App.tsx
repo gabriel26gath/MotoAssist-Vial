@@ -238,13 +238,11 @@ export default function App() {
   const [incidents, setIncidents] = useState<VehicleIncident[]>([]);
 
   const saveIncidents = async (list: VehicleIncident[]) => {
-    // Siempre actualizamos estado local e historial en caché
     setIncidents(list);
-    localStorage.setItem("thermal_incidents_local_v2", JSON.stringify(list));
 
-    const isVirtualOrOffline = !isFirebaseConfigured || !db || currentUser?.uid?.startsWith("virtual_") || currentUser?.uid?.startsWith("offline_");
-    if (isVirtualOrOffline) {
-      return; // No intentar sincronizar con la nube si estamos en modo virtual u offline
+    if (!isFirebaseConfigured || !db) {
+      console.warn("Base de datos Firebase ausente o desconectada. No se pudo registrar la incidencia en la nube.");
+      return; 
     }
     
     // Delta Sync to Firestore
@@ -368,9 +366,7 @@ export default function App() {
     let unsubscribeMotorizados = () => {};
     let unsubscribeIncidents = () => {};
 
-    const isVirtualOrOffline = !isFirebaseConfigured || !currentUser || currentUser?.uid?.startsWith("virtual_") || currentUser?.uid?.startsWith("offline_");
-
-    if (isFirebaseConfigured && currentUser && !isVirtualOrOffline) {
+    if (isFirebaseConfigured && currentUser) {
       setLoadingList(true);
       
       // Invoices Snapshot (unrestricted - shared database)
@@ -447,22 +443,8 @@ export default function App() {
         unsubscribeMotorizados();
         unsubscribeIncidents();
       };
-    } else if (currentUser) {
-      // Load offline cache for simulation mode
-      setLoadingList(true);
-      const locInvoices = getLocalInvoices();
-      const locMotorizados = getLocalMotorizados();
-      const localIncidentsRaw = localStorage.getItem("thermal_incidents_local_v2");
-      const locIncidents = localIncidentsRaw ? JSON.parse(localIncidentsRaw) : [];
-
-      // If local lists are empty, let's load a few seed items if desired, or keep as is.
-      setInvoices(locInvoices);
-      setMotorizados(locMotorizados);
-      setIncidents(locIncidents);
-      setLoadingList(false);
     } else {
-      console.warn("Firebase rules or configurations missing or user is not logged in.");
-      // Limpiar listas locales al cerrar sesión
+      console.warn("Base de datos de Firebase ausente, no configurada o el usuario no ha iniciado sesión.");
       setInvoices([]);
       setMotorizados([]);
       setIncidents([]);
@@ -497,12 +479,7 @@ export default function App() {
     const resolvedDisplayName = determinedRole === "admin" ? "Control Central ACSA" : "Auxiliar Moto ACSA";
 
     if (!isFirebaseConfigured || !auth) {
-      setCurrentUser({
-        uid: "offline_" + determinedRole + "_" + Date.now(),
-        email: email,
-        displayName: resolvedDisplayName,
-        role: determinedRole
-      });
+      setAuthError("El servicio de Firebase no está configurado o conectado. Por favor, configure sus credenciales y variables de entorno en Vercel.");
       setAuthLoading(false);
       return;
     }
@@ -524,7 +501,7 @@ export default function App() {
           try {
             userCredential = await createUserWithEmailAndPassword(auth, email, password);
           } catch (signUpErr: any) {
-            console.error("Fallo al registrar cuenta nueva:", signUpErr);
+            console.error("Fallo al registrar cuenta nueva en Firebase:", signUpErr);
             throw signInErr; // Lanzar el error inicial si el registro también falla
           }
         } else {
@@ -546,31 +523,22 @@ export default function App() {
         "success"
       );
     } catch (err: any) {
-      console.warn("Fallo en Firebase Auth. Iniciando sesión virtual para garantizar acceso continuo:", err);
+      console.error("Fallo real de Firebase Auth:", err);
       
-      let helperErr = "Contraseña incorrecta o error de Firebase Auth.";
+      let helperErr = "Contraseña incorrecta o error de conexión con Firebase Auth.";
       if (err.code === "auth/wrong-password" || err.message?.includes("password")) {
         helperErr = "La contraseña ingresada no coincide para esta cuenta existente.";
       } else if (err.code === "auth/unauthorized-domain" || err.message?.toLowerCase().includes("domain") || err.message?.toLowerCase().includes("unauthorized")) {
-        helperErr = "Dominio no autorizado en Firebase. Si estás desplegando en Vercel, agrega tu URL de Vercel en la consola de Firebase (Autenticación -> Configuración -> Dominios autorizados) o configura tus propias variables de entorno de Firebase en Vercel.";
+        helperErr = "Dominio no autorizado en Firebase. Si estás desplegando en Vercel, agrega tu URL/dominio de Vercel en la consola de Firebase (Autenticación -> Configuración -> Dominios autorizados).";
       } else {
         helperErr = `Error (${err.code || "auth/error"}): ${err.message || "Fallo de conexión."}`;
       }
       
-      setAuthError(`${helperErr} Se activó el modo de simulación virtual (las operaciones locales funcionarán pero pueden no persistirse de forma segura en la base de datos).`);
-      
-      // Permitir continuar con cuenta virtual para no trabar la experiencia
-      setCurrentUser({
-        uid: "virtual_" + determinedRole,
-        email: email,
-        displayName: resolvedDisplayName,
-        role: determinedRole
-      });
-      
+      setAuthError(helperErr);
       showFirebaseToast(
-        "⚡ Conexión Virtual Alternativa",
-        `Ingresó en modo virtual. Los datos pueden requerir configuración de dominio en Firebase.`,
-        "info"
+        "❌ Error de Autenticación",
+        helperErr,
+        "error"
       );
     } finally {
       setAuthLoading(false);
@@ -742,40 +710,25 @@ export default function App() {
 
     setLoadingList(true);
     try {
-      const isVirtualOrOffline = !isFirebaseConfigured || !db || currentUser?.uid?.startsWith("virtual_") || currentUser?.uid?.startsWith("offline_");
+      if (!isFirebaseConfigured || !db) {
+        throw new Error("El servicio de base de datos Firebase no está disponible.");
+      }
 
-      if (!isVirtualOrOffline) {
-        if (formValues.id && !formValues.id.startsWith("loc_")) {
-          const docRef = doc(db, "invoices", formValues.id);
-          const { id, ...cleanData } = payload;
-          await updateDoc(docRef, cleanData);
-          showFirebaseToast(
-            "✓ ¡Guardado en Firebase!",
-            `La factura #${payload.invoiceNumber || ""} fue actualizada exitosamente en Firebase Cloud Firestore.`,
-            "success"
-          );
-        } else {
-          const { id, ...cleanData } = payload;
-          await addDoc(collection(db, "invoices"), cleanData);
-          showFirebaseToast(
-            "✓ ¡Guardado en Firebase!",
-            `El nuevo ticket #${payload.invoiceNumber || ""} fue transmitido y guardado exitosamente en la base de datos de Firebase.`,
-            "success"
-          );
-        }
-      } else {
-        const currentLocal = getLocalInvoices();
-        if (formValues.id && formValues.id.startsWith("loc_")) {
-          const updated = currentLocal.map(i => i.id === formValues.id ? { ...payload, id: formValues.id } : i);
-          saveLocalInvoices(updated);
-        } else {
-          const newId = "loc_" + Date.now();
-          const updated = [{ ...payload, id: newId }, ...currentLocal];
-          saveLocalInvoices(updated);
-        }
+      if (formValues.id && !formValues.id.startsWith("loc_")) {
+        const docRef = doc(db, "invoices", formValues.id);
+        const { id, ...cleanData } = payload;
+        await updateDoc(docRef, cleanData);
         showFirebaseToast(
-          "✓ ¡Guardado en Caché Local!",
-          `Ticket #${payload.invoiceNumber || ""} guardado en el almacenamiento del navegador (Sesión Virtual).`,
+          "✓ ¡Guardado en Firebase!",
+          `La factura #${payload.invoiceNumber || ""} fue actualizada exitosamente en Firebase Cloud Firestore.`,
+          "success"
+        );
+      } else {
+        const { id, ...cleanData } = payload;
+        await addDoc(collection(db, "invoices"), cleanData);
+        showFirebaseToast(
+          "✓ ¡Guardado en Firebase!",
+          `El nuevo ticket #${payload.invoiceNumber || ""} fue transmitido y guardado exitosamente en la base de datos de Firebase.`,
           "success"
         );
       }
@@ -809,25 +762,16 @@ export default function App() {
       "Esta operación borrará permanentemente este registro del historial. Esta acción es irreversible.",
       async () => {
         try {
-          const isVirtualOrOffline = !isFirebaseConfigured || !db || currentUser?.uid?.startsWith("virtual_") || currentUser?.uid?.startsWith("offline_");
-
-          if (!isVirtualOrOffline) {
-            await deleteDoc(doc(db, "invoices", id));
-            showFirebaseToast(
-              "✓ Eliminado de Firebase",
-              "La factura de flete fue eliminada permanentemente del servidor Firebase Cloud Firestore.",
-              "success"
-            );
-          } else {
-            const currentLocal = getLocalInvoices();
-            const updated = currentLocal.filter(i => i.id !== id);
-            saveLocalInvoices(updated);
-            showFirebaseToast(
-              "✓ Eliminado Localmente",
-              "La factura de flete fue eliminada de las facturas en caché de la sesión virtual.",
-              "success"
-            );
+          if (!isFirebaseConfigured || !db) {
+            throw new Error("El servicio de base de datos Firebase no está disponible.");
           }
+
+          await deleteDoc(doc(db, "invoices", id));
+          showFirebaseToast(
+            "✓ Eliminado de Firebase",
+            "La factura de flete fue eliminada permanentemente del servidor Firebase Cloud Firestore.",
+            "success"
+          );
           setSelectedInvoiceForView(null);
         } catch (err: any) {
           console.error("Error al eliminar ticket:", err);
@@ -850,38 +794,23 @@ export default function App() {
     };
 
     try {
-      const isVirtualOrOffline = !isFirebaseConfigured || !db || currentUser?.uid?.startsWith("virtual_") || currentUser?.uid?.startsWith("offline_");
+      if (!isFirebaseConfigured || !db) {
+        throw new Error("El servicio de base de datos Firebase no está disponible.");
+      }
 
-      if (!isVirtualOrOffline) {
-        if (editId && !editId.startsWith("mot_")) {
-          const docRef = doc(db, "motorizados", editId);
-          await updateDoc(docRef, { ...motData });
-          showFirebaseToast(
-            "✓ Conductor Guardado",
-            `Los datos de ${motData.name} se han actualizado correctamente en Firebase Cloud Firestore.`,
-            "success"
-          );
-        } else {
-          await addDoc(collection(db, "motorizados"), payload);
-          showFirebaseToast(
-            "✓ Conductor Registrado",
-            `El perfil del motorizado ${payload.name} ha sido sincronizado en Firebase Cloud Firestore.`,
-            "success"
-          );
-        }
-      } else {
-        const currentLocal = getLocalMotorizados();
-        if (editId && editId.startsWith("mot_")) {
-          const updated = currentLocal.map(m => m.id === editId ? { ...payload, id: editId } : m);
-          saveLocalMotorizados(updated);
-        } else {
-          const newId = "mot_" + Date.now();
-          const updated = [{ ...payload, id: newId }, ...currentLocal];
-          saveLocalMotorizados(updated);
-        }
+      if (editId && !editId.startsWith("mot_")) {
+        const docRef = doc(db, "motorizados", editId);
+        await updateDoc(docRef, { ...motData });
         showFirebaseToast(
-          "✓ ¡Guardado en Caché Local!",
-          `Perfil de ${payload.name} guardado en el almacenamiento del navegador (Sesión Virtual).`,
+          "✓ Conductor Guardado",
+          `Los datos de ${motData.name} se han actualizado correctamente en Firebase Cloud Firestore.`,
+          "success"
+        );
+      } else {
+        await addDoc(collection(db, "motorizados"), payload);
+        showFirebaseToast(
+          "✓ Conductor Registrado",
+          `El perfil del motorizado ${payload.name} ha sido sincronizado en Firebase Cloud Firestore.`,
           "success"
         );
       }
@@ -921,25 +850,16 @@ export default function App() {
       "¿Está seguro de que desea eliminar permanentemente este registro de motorizado? No se podrán recuperar sus datos de contacto.",
       async () => {
         try {
-          const isVirtualOrOffline = !isFirebaseConfigured || !db || currentUser?.uid?.startsWith("virtual_") || currentUser?.uid?.startsWith("offline_");
-
-          if (!isVirtualOrOffline) {
-            await deleteDoc(doc(db, "motorizados", id));
-            showFirebaseToast(
-              "✓ Conductor Eliminado",
-              "El conductor ha sido eliminado permanentemente de Firebase Cloud Firestore.",
-              "success"
-            );
-          } else {
-            const currentLocal = getLocalMotorizados();
-            const updated = currentLocal.filter(m => m.id !== id);
-            saveLocalMotorizados(updated);
-            showFirebaseToast(
-              "✓ Conductor Eliminado Localmente",
-              "El perfil de conductor seleccionado fue eliminado de la sesión virtual local.",
-              "success"
-            );
+          if (!isFirebaseConfigured || !db) {
+            throw new Error("El servicio de base de datos Firebase no está disponible.");
           }
+
+          await deleteDoc(doc(db, "motorizados", id));
+          showFirebaseToast(
+            "✓ Conductor Eliminado",
+            "El conductor ha sido eliminado permanentemente de Firebase Cloud Firestore.",
+            "success"
+          );
         } catch (err: any) {
           console.error(err);
         }
@@ -1195,18 +1115,7 @@ export default function App() {
                     </div>
                     <div className="overflow-hidden">
                       <p className="text-[11px] font-black text-white truncate">{currentUser.displayName || currentUser.email}</p>
-                      {currentUser?.uid?.startsWith("virtual_") ? (
-                        <>
-                          <p className="text-[8px] text-amber-400 uppercase font-black tracking-wide flex items-center gap-1">
-                            <span>⚠️ Sesión Virtual</span>
-                          </p>
-                          <p className="text-[7px] text-slate-400 leading-tight">
-                            Auth falló. Configura tus correspondientes variables de entorno en Vercel.
-                          </p>
-                        </>
-                      ) : (
-                        <p className="text-[8px] text-emerald-400 uppercase font-black tracking-wide">Firebase Sincronizado</p>
-                      )}
+                      <p className="text-[8px] text-emerald-400 uppercase font-black tracking-wide">Firebase Sincronizado</p>
                     </div>
                   </div>
                   <button 
@@ -1223,11 +1132,11 @@ export default function App() {
                 </div>
               )
             ) : (
-              <div className="p-3 bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs rounded-xl flex items-center gap-2">
+              <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-300 text-xs rounded-xl flex items-center gap-2">
                 <AlertTriangle className="h-4 w-4 shrink-0" />
                 <div>
-                  <p className="font-extrabold text-[9px] uppercase leading-none">Cache Offline</p>
-                  <p className="text-[8px] text-amber-300 mt-1">Sincronizado localmente</p>
+                  <p className="font-extrabold text-[9px] uppercase leading-none">Firebase Desconectado</p>
+                  <p className="text-[8px] text-red-300/80 mt-1">Configure variables de entorno en la consola.</p>
                 </div>
               </div>
             )}
