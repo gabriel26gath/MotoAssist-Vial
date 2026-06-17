@@ -233,6 +233,55 @@ app.post("/api/extract", async (req, res) => {
   }
 });
 
+// Endpoint para análisis ejecutivo de reportes usando Gemini
+app.post("/api/analyze", async (req, res) => {
+  try {
+    const { monthlyData, sucursalData, activeMonth, activeYear } = req.body;
+    
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      return res.status(500).json({ error: "La API Key de Gemini no está configurada en el servidor." });
+    }
+
+    const ai = new GoogleGenAI({
+      apiKey: apiKey,
+      httpOptions: {
+        headers: {
+          "User-Agent": "aistudio-build",
+        },
+      },
+    });
+
+    const response = await ai.models.generateContent({
+      model: "gemini-3.5-flash",
+      contents: [
+        {
+          text: `Actúa como un Director de Operaciones y Analista Financiero Senior de la empresa automotriz AUTO CENTRO S.A.
+Genera un informe analítico ejecutivo, conciso y de alto impacto sobre las asistencias viales registradas, enfocado en el mes de ${activeMonth} del año ${activeYear}.
+
+Usa la siguiente información detallada para redactar el análisis:
+- Mes de análisis seleccionado: ${activeMonth} ${activeYear}
+- Listado de datos mensuales de todo el año (2025 vs 2026): ${JSON.stringify(monthlyData)}
+- Distribución mensual por sucursales registradas: ${JSON.stringify(sucursalData)}
+
+El análisis debe presentarse redactado en español y estructurado rigurosamente con los siguientes apartados:
+1. RESUMEN OPERATIVO EJECUTIVO (Análisis general del mes actual y el acumulado YTD, identificando tendencias de aumento o reducción).
+2. DIAGNÓSTICO SUCURSAL Y CANALES (Rendimiento por sucursales y medios líderes).
+3. EVOLUCIÓN INTERANUAL (Comparación YoY entre el año anterior y este año).
+4. PLAN DE MEJORA Y RECOMENDACIONES (Tres recomendaciones operativas de negocio accionables para optimizar recursos sanitarios/viales, mejorar tiempos de respuesta y potenciar la satisfacción general).
+
+Regresa un formato Markdown limpio con subtítulos elegantes.`
+        }
+      ]
+    });
+
+    return res.json({ analysis: response.text });
+  } catch (error: any) {
+    console.warn("Falla en Gemini, regresará error para activar fallback local:", error);
+    return res.status(500).json({ error: error.message || "Error al comunicarse con Gemini para el análisis." });
+  }
+});
+
 // Inicializar el servidor Express
 async function startServer() {
   if (process.env.NODE_ENV !== "production") {

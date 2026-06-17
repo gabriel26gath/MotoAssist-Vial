@@ -152,8 +152,8 @@ export default function TicketEditForm({
   };
 
   return (
-    <div className="bg-slate-950/40 backdrop-blur-md rounded-xl border border-amber-500/10 p-5 shadow-sm space-y-6 text-slate-100">
-      <div className="flex items-center justify-between border-b border-white/5 pb-3">
+    <div className="bg-[#1e293b]/95 backdrop-blur-md rounded-2xl border border-slate-700/80 p-6 shadow-2xl shadow-black/80 space-y-6 text-slate-100">
+      <div className="flex items-center justify-between border-b border-slate-700 pb-3">
         <div>
           <h2 className="text-base font-bold text-slate-100 flex items-center gap-2 font-display">
             <Edit3 className="h-4.5 w-4.5 text-amber-400" />
@@ -244,48 +244,48 @@ export default function TicketEditForm({
           )}
 
           {/* CAMPOS RECEPTOR - COMERCIALIZADOR Y COMPRADOR */}
-          <div className="space-y-3 p-3.5 bg-slate-900/40 rounded-xl border border-white/5">
+          <div className="space-y-3 p-4 bg-[#0d1527]/70 rounded-xl border border-slate-700/60">
             <h3 className="text-[10px] font-extrabold uppercase text-amber-400 tracking-wider">Comercializador y Comprador (Receptor)</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-455 uppercase">Nombre del Cliente (Receptor)</label>
+                <label className="text-[10px] font-bold text-slate-350 uppercase">Nombre del Cliente (Receptor)</label>
                 <input
                   type="text"
                   value={formValues.receiverName || ""}
                   onChange={(e) => setFormValues(p => ({ ...p, receiverName: e.target.value }))}
-                  className="w-full px-3 py-1.8 text-xs bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:border-amber-500/60 font-semibold text-slate-200"
+                  className="w-full px-3 py-1.8 text-xs bg-[#121a2e] border border-slate-700 rounded-lg focus:outline-none focus:border-amber-400/80 font-semibold text-slate-100 placeholder-slate-500 focus:bg-[#182544] transition-all"
                   placeholder="Nombre de cliente"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-455 uppercase">RUC / CIP Cliente</label>
+                <label className="text-[10px] font-bold text-slate-350 uppercase">RUC / CIP Cliente</label>
                 <input
                   type="text"
                   value={formValues.receiverRuc || ""}
                   onChange={(e) => setFormValues(p => ({ ...p, receiverRuc: e.target.value }))}
-                  className="w-full px-3 py-1.8 text-xs bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:border-amber-500/60 font-semibold text-slate-200"
+                  className="w-full px-3 py-1.8 text-xs bg-[#121a2e] border border-slate-700 rounded-lg focus:outline-none focus:border-amber-400/80 font-semibold text-slate-100 placeholder-slate-500 focus:bg-[#182544] transition-all"
                   placeholder="RUC o Cédula"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-455 uppercase">Vendedor (Atendido por)</label>
+                <label className="text-[10px] font-bold text-slate-350 uppercase">Vendedor (Atendido por)</label>
                 <input
                   type="text"
                   value={formValues.seller || ""}
                   onChange={(e) => setFormValues(p => ({ ...p, seller: e.target.value }))}
-                  className="w-full px-3 py-1.8 text-xs bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:border-amber-500/60 font-semibold text-slate-200"
+                  className="w-full px-3 py-1.8 text-xs bg-[#121a2e] border border-slate-700 rounded-lg focus:outline-none focus:border-amber-400/80 font-semibold text-slate-100 placeholder-slate-500 focus:bg-[#182544] transition-all"
                   placeholder="Nombre del vendedor"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-455 uppercase">Tipo de Factura <span className="text-amber-400 font-extrabold">* Obligatorio</span></label>
+                <label className="text-[10px] font-bold text-slate-350 uppercase">Tipo de Factura <span className="text-amber-400 font-extrabold">* Obligatorio</span></label>
                 <select
                   value={formValues.invoiceType || ""}
                   onChange={(e) => setFormValues(p => ({ ...p, invoiceType: e.target.value }))}
-                  className="w-full px-3 py-1.8 text-xs bg-slate-950 border border-slate-800 focus:border-amber-500/60 rounded-lg focus:outline-none font-bold text-white [color-scheme:dark]"
+                  className="w-full px-3 py-1.8 text-xs bg-[#121a2e] border border-slate-700 focus:border-amber-400/80 rounded-lg focus:outline-none font-bold text-white [color-scheme:dark] focus:bg-[#182544] transition-all cursor-pointer"
                 >
                   <option value="">-- Seleccionar --</option>
                   <option value="CALL CENTER">CALL CENTER</option>
@@ -299,11 +299,11 @@ export default function TicketEditForm({
           </div>
 
           {/* CAMPOS DOCUMENTO - PARÁMETROS DEL DOCUMENTO */}
-          <div className="space-y-3 p-3.5 bg-slate-900/40 rounded-xl border border-white/5">
+          <div className="space-y-3 p-4 bg-[#0d1527]/70 rounded-xl border border-slate-700/60">
             <h3 className="text-[10px] font-extrabold uppercase text-amber-400 tracking-wider">Parámetros del Documento</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-450 uppercase flex items-center gap-1">
+                <label className="text-[10px] font-bold text-slate-350 uppercase flex items-center gap-1">
                   <Calendar className="h-3.5 w-3.5 text-amber-500" />
                   Fecha de Ticket
                 </label>
@@ -311,64 +311,64 @@ export default function TicketEditForm({
                   type="date"
                   value={formValues.date}
                   onChange={(e) => setFormValues(p => ({ ...p, date: e.target.value }))}
-                  className="w-full px-3 py-1.8 text-xs bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:border-amber-500/60 font-bold text-white [color-scheme:dark]"
+                  className="w-full px-3 py-1.8 text-xs bg-[#121a2e] border border-slate-700 rounded-lg focus:outline-none focus:border-amber-400/80 font-bold text-white [color-scheme:dark] focus:bg-[#182544] transition-all"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-450 uppercase">Nº Factura / Documento</label>
+                <label className="text-[10px] font-bold text-slate-350 uppercase">Nº Factura / Documento</label>
                 <input
                   type="text"
                   value={formValues.invoiceNumber}
                   onChange={(e) => setFormValues(p => ({ ...p, invoiceNumber: e.target.value }))}
-                  className="w-full px-3 py-1.8 text-xs bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:border-amber-500/60 font-bold text-slate-100"
+                  className="w-full px-3 py-1.8 text-xs bg-[#121a2e] border border-slate-700 rounded-lg focus:outline-none focus:border-amber-400/80 font-bold text-slate-100 placeholder-slate-500 focus:bg-[#182544] transition-all"
                   placeholder="Número de Factura"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-450 uppercase">Nº de Serie / Consecutivo</label>
+                <label className="text-[10px] font-bold text-slate-350 uppercase">Nº de Serie / Consecutivo</label>
                 <input
                   type="text"
                   value={formValues.serial || ""}
                   onChange={(e) => setFormValues(p => ({ ...p, serial: e.target.value }))}
-                  className="w-full px-3 py-1.8 text-xs bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:border-amber-500/60 font-semibold text-slate-200"
+                  className="w-full px-3 py-1.8 text-xs bg-[#121a2e] border border-slate-700 rounded-lg focus:outline-none focus:border-amber-400/80 font-semibold text-slate-200 placeholder-slate-500 focus:bg-[#182544] transition-all"
                   placeholder="Número de Serie"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-450 uppercase">Nº de Sucursal</label>
+                <label className="text-[10px] font-bold text-slate-350 uppercase">Nº de Sucursal</label>
                 <input
                   type="text"
                   value={formValues.sucursal || ""}
                   onChange={(e) => setFormValues(p => ({ ...p, sucursal: e.target.value }))}
-                  className="w-full px-3 py-1.8 text-xs bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:border-amber-500/60 font-semibold text-slate-200"
+                  className="w-full px-3 py-1.8 text-xs bg-[#121a2e] border border-slate-700 rounded-lg focus:outline-none focus:border-amber-400/80 font-semibold text-slate-200 placeholder-slate-500 focus:bg-[#182544] transition-all"
                   placeholder="Código o nombre sucursal"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-450 uppercase">Punto Facturación (Caja)</label>
+                <label className="text-[10px] font-bold text-slate-350 uppercase">Punto Facturación (Caja)</label>
                 <input
                   type="text"
                   value={formValues.ptoFact || ""}
                   onChange={(e) => setFormValues(p => ({ ...p, ptoFact: e.target.value }))}
-                  className="w-full px-3 py-1.8 text-xs bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:border-amber-500/60 font-semibold text-slate-200"
+                  className="w-full px-3 py-1.8 text-xs bg-[#121a2e] border border-slate-700 rounded-lg focus:outline-none focus:border-amber-400/80 font-semibold text-slate-200 placeholder-slate-500 focus:bg-[#182544] transition-all"
                   placeholder="Número de caja"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-450 uppercase flex items-center gap-1">
-                  <CreditCard className="h-3.5 w-3.5 text-amber-550" />
+                <label className="text-[10px] font-bold text-slate-350 uppercase flex items-center gap-1">
+                  <CreditCard className="h-3.5 w-3.5 text-amber-500" />
                   Método de Pago
                 </label>
                 <input
                   type="text"
                   value={formValues.paymentMethod}
                   onChange={(e) => setFormValues(p => ({ ...p, paymentMethod: e.target.value }))}
-                  className="w-full px-3 py-1.8 text-xs bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:border-amber-500/60 font-semibold text-slate-200"
+                  className="w-full px-3 py-1.8 text-xs bg-[#121a2e] border border-slate-700 rounded-lg focus:outline-none focus:border-amber-400/80 font-semibold text-slate-200 placeholder-slate-500 focus:bg-[#182544] transition-all"
                   placeholder="Método de pago"
                 />
               </div>
@@ -376,18 +376,18 @@ export default function TicketEditForm({
           </div>
 
           {/* OPERATIVO / FLOTA Y COMENTARIOS */}
-          <div className="space-y-3 p-3.5 bg-slate-900/40 rounded-xl border border-white/5">
+          <div className="space-y-3 p-4 bg-[#0d1527]/70 rounded-xl border border-slate-700/60">
             <h3 className="text-[10px] font-extrabold uppercase text-amber-400 tracking-wider">Asignación Operativa de la Flota</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-455 uppercase flex items-center gap-1">
+                <label className="text-[10px] font-bold text-slate-355 uppercase flex items-center gap-1">
                   <Users className="h-3.5 w-3.5 text-amber-400" />
                   Asociar a (Motorizado) <span className="text-amber-400 font-extrabold">* Obligatorio</span>
                 </label>
                 <select
                   value={formValues.motorizadoId || ""}
                   onChange={(e) => setFormValues(p => ({ ...p, motorizadoId: e.target.value }))}
-                  className="w-full px-3 py-2 text-xs bg-slate-950 border border-slate-800 focus:border-amber-500/60 rounded-lg focus:outline-none font-bold text-white [color-scheme:dark]"
+                  className="w-full px-3 py-2 text-xs bg-[#121a2e] border border-slate-700 focus:border-amber-400/80 rounded-lg focus:outline-none font-bold text-white [color-scheme:dark] transition-all cursor-pointer"
                 >
                   <option value="">-- Seleccionar Motorizado --</option>
                   {motorizados.map(m => (
@@ -397,12 +397,12 @@ export default function TicketEditForm({
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-455 uppercase">Lugar de flete / Comentarios</label>
+                <label className="text-[10px] font-bold text-slate-355 uppercase">Lugar de flete / Comentarios</label>
                 <input
                   type="text"
                   value={formValues.comments || ""}
                   onChange={(e) => setFormValues(p => ({ ...p, comments: e.target.value }))}
-                  className="w-full px-3 py-2 text-xs bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:border-amber-500/60 font-semibold"
+                  className="w-full px-3 py-2 text-xs bg-[#121a2e] border border-slate-700 rounded-lg focus:outline-none focus:border-amber-400/80 font-semibold text-slate-100 placeholder-slate-500 focus:bg-[#182544] transition-all"
                   placeholder="Dirección del flete o comentarios"
                 />
               </div>
@@ -432,12 +432,12 @@ export default function TicketEditForm({
             ) : (
               <div className="space-y-2 max-h-[200px] overflow-y-auto pr-1 select-text">
                 {formValues.items.map((item, index) => (
-                  <div key={index} className="flex flex-wrap md:flex-nowrap items-center gap-2 p-2 bg-slate-950 rounded-lg border border-slate-850 shadow-xxs">
+                  <div key={index} className="flex flex-wrap md:flex-nowrap items-center gap-2 p-2 bg-[#121a2e] rounded-lg border border-slate-700/80 shadow-sm">
                     <input
                       type="text"
                       value={item.name}
                       onChange={(e) => handleItemChange(index, "name", e.target.value)}
-                      className="flex-grow min-w-[120px] px-2 py-1 text-xs border border-slate-800 bg-slate-950 text-slate-100 rounded font-semibold focus:outline-none focus:border-amber-500/60"
+                      className="flex-grow min-w-[120px] px-2 py-1.5 text-xs border border-slate-700 bg-[#1b253b] text-slate-100 rounded font-semibold focus:outline-none focus:border-amber-400/80 focus:bg-[#23314d] transition-all"
                       placeholder="Producto o Servicio"
                     />
                     <div className="w-16">
@@ -445,7 +445,7 @@ export default function TicketEditForm({
                         type="number"
                         value={item.quantity}
                         onChange={(e) => handleItemChange(index, "quantity", e.target.value)}
-                        className="w-full px-2 py-1 text-xs text-center border border-slate-800 bg-slate-950 text-slate-100 rounded font-semibold focus:outline-none focus:border-amber-500/60"
+                        className="w-full px-2 py-1.5 text-xs text-center border border-slate-700 bg-[#1b253b] text-slate-100 rounded font-semibold focus:outline-none focus:border-amber-400/80 focus:bg-[#23314d] transition-all"
                         title="Cantidad"
                       />
                     </div>
@@ -455,17 +455,17 @@ export default function TicketEditForm({
                         step="0.01"
                         value={item.price}
                         onChange={(e) => handleItemChange(index, "price", e.target.value)}
-                        className="w-full px-2 py-1 text-xs text-center border border-slate-800 bg-slate-950 text-slate-100 rounded font-semibold focus:outline-none focus:border-amber-500/60"
+                        className="w-full px-2 py-1.5 text-xs text-center border border-slate-700 bg-[#1b253b] text-slate-100 rounded font-semibold focus:outline-none focus:border-amber-400/80 focus:bg-[#23314d] transition-all"
                         title="Precio"
                       />
                     </div>
                     <div className="w-20 font-mono text-xs font-bold text-amber-300 text-right pr-2">
-                      ${(item.total || 0).toFixed(2)}
+                       ${(item.total || 0).toFixed(2)}
                     </div>
                     <button
                       type="button"
                       onClick={() => handleRemoveItem(index)}
-                      className="p-1 hover:bg-rose-950/45 text-slate-500 hover:text-rose-450 rounded transition"
+                      className="p-1.5 hover:bg-rose-950/45 text-slate-400 hover:text-rose-450 rounded transition"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
@@ -476,38 +476,38 @@ export default function TicketEditForm({
           </div>
 
           {/* TOTALES */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-slate-850 pt-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-slate-700 pt-4">
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-450 uppercase">Impuestos (ITBMS / IVA 7% - 10%) ($)</label>
+              <label className="text-[10px] font-bold text-slate-350 uppercase">Impuestos (ITBMS / IVA 7% - 10%) ($)</label>
               <input
                 type="number"
                 step="0.01"
                 value={formValues.tax}
                 onChange={(e) => handleTaxChange(Number(e.target.value))}
-                className="w-full px-3 py-2 text-xs bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:border-amber-500/60 font-semibold"
+                className="w-full px-3 py-2 text-xs bg-[#121a2e] border border-slate-700 rounded-lg focus:outline-none focus:border-amber-400/80 font-semibold focus:bg-[#182544] transition-all"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-slate-450 uppercase">Total de Factura ($)</label>
+              <label className="text-[10px] font-bold text-slate-350 uppercase">Total de Factura ($)</label>
               <input
                 type="number"
                 step="0.01"
                 value={formValues.total}
                 onChange={(e) => handleTotalChange(Number(e.target.value))}
-                className="w-full px-3 py-2 text-xs bg-amber-500/10 border border-amber-500/30 rounded-lg focus:outline-none focus:border-amber-500/60 font-black text-amber-300 font-mono"
+                className="w-full px-3 py-2 text-xs bg-amber-500/15 border border-amber-500/40 rounded-lg focus:outline-none focus:border-amber-400/80 font-black text-amber-300 font-mono"
               />
             </div>
           </div>
 
           {/* CLAVE DE ACCESO FACTURACIÓN ELECTRÓNICA */}
-          <div className="space-y-1.5 p-3.5 bg-slate-900/40 rounded-xl border border-white/5">
-            <label className="text-[10px] font-bold font-mono text-slate-450 uppercase">CUFE / Clave Acceso Electrónica Autorizada</label>
+          <div className="space-y-1.5 p-4 bg-[#0d1527]/70 rounded-xl border border-slate-700/60">
+            <label className="text-[10px] font-bold font-mono text-slate-350 uppercase">CUFE / Clave Acceso Electrónica Autorizada</label>
             <input
               type="text"
               value={formValues.accessKey || ""}
               onChange={(e) => setFormValues(p => ({ ...p, accessKey: e.target.value }))}
-              className="w-full px-3 py-1.5 text-[10px] font-mono bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:border-amber-500/60 font-semibold"
+              className="w-full px-3 py-2 text-[11px] font-mono bg-[#121a2e] border border-slate-700 rounded-lg focus:outline-none focus:border-amber-400/80 font-semibold focus:bg-[#182544] transition-all"
               placeholder="Clave de acceso electrónica o código CUFE"
             />
           </div>

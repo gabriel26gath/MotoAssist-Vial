@@ -65,6 +65,7 @@ import tireTracksBg from "./assets/images/tire_tracks_1781557483749.jpg";
 import DashboardView from "./components/DashboardView";
 import MotorizadosView from "./components/MotorizadosView";
 import ReportsView from "./components/ReportsView";
+import ExecutiveReportView from "./components/ExecutiveReportView";
 import TicketDetailView from "./components/TicketDetailView";
 import TicketEditForm from "./components/TicketEditForm";
 import CameraCapture from "./components/CameraCapture";
@@ -203,7 +204,7 @@ export default function App() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [motorizados, setMotorizados] = useState<Motorizado[]>([]);
   const [loadingList, setLoadingList] = useState(false);
-  const [activeTab, setActiveTab ] = useState<"dashboard" | "tickets" | "fleet" | "reports">("tickets");
+  const [activeTab, setActiveTab ] = useState<"dashboard" | "tickets" | "fleet" | "reports" | "executive">("tickets");
   const [mobileOptimized, setMobileOptimized] = useState<boolean>(false);
   
   // Custom columns configuration for main Tickets list export
@@ -1107,6 +1108,19 @@ export default function App() {
               <BarChart3 className={`h-4 w-4 shrink-0 transition-colors ${activeTab === "dashboard" ? "text-amber-400" : "text-slate-400"}`} />
               <span>Dashboard General</span>
             </button>
+
+            {/* Tab Executive Report */}
+            <button
+              onClick={() => { setActiveTab("executive"); setSelectedInvoiceForView(null); setIsEditing(false); }}
+              className={`flex items-center gap-2.5 px-4 py-2.5 sm:py-3 rounded-xl text-xs font-black whitespace-nowrap transition duration-200 cursor-pointer shrink-0 ${
+                activeTab === "executive" 
+                  ? "bg-indigo-500/20 text-indigo-300 shadow-xl shadow-indigo-500/5 scale-[1.02] border border-indigo-500/40" 
+                  : "text-slate-300 hover:bg-white/5 hover:text-white font-bold"
+              }`}
+            >
+              <Layers className={`h-4 w-4 shrink-0 transition-colors ${activeTab === "executive" ? "text-indigo-400" : "text-slate-400"}`} />
+              <span>Reporte Ejecutivo</span>
+            </button>
           </nav>
 
           {/* SESIÓN USUARIO PIE */}
@@ -1162,6 +1176,7 @@ export default function App() {
                     {activeTab === "fleet" && "📋 Flota de Motorizados"}
                     {activeTab === "reports" && "📊 Reportes & Exportación"}
                     {activeTab === "dashboard" && "⚡ Panel de Monitoreo Vial"}
+                    {activeTab === "executive" && "📊 Reporte Ejecutivo de Asistencias"}
                   </span>
                 </h2>
                 <p className="text-xs text-slate-300 mt-1">
@@ -1169,6 +1184,7 @@ export default function App() {
                   {activeTab === "fleet" && "Control de choferes, matrículas, fletes, KPI por motorizado e incidentes de motocicleta"}
                   {activeTab === "reports" && "Filtros inteligentes de impuestos y descargas personalizadas Excel/CSV"}
                   {activeTab === "dashboard" && "Inspección de KPI por sucursal, incidentes activos de motos y flujo temporal"}
+                  {activeTab === "executive" && "Matriz ejecutiva consolidada de medios, sucursales y evolución interanual 2025 vs 2026"}
                 </p>
               </div>
 
@@ -1221,6 +1237,10 @@ export default function App() {
 
             {activeTab === "reports" && (
               <ReportsView invoices={invoices} motorizados={motorizados} />
+            )}
+
+            {activeTab === "executive" && (
+              <ExecutiveReportView invoices={invoices} />
             )}
 
             {activeTab === "tickets" && (
