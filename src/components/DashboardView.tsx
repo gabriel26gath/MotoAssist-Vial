@@ -138,7 +138,7 @@ export default function DashboardView({ invoices, motorizados, incidents }: Dash
               {pendingIncidents.map(inc => {
                 const mot = motorizados.find(m => m.id === inc.motorizadoId);
                 return (
-                  <div key={inc.id} className="bg-slate-900/85 border border-white/5 rounded-lg p-2.5 shrink-0 min-w-[210px] text-[11px] shadow-lg">
+                  <div key={inc.id} className="bg-zinc-900/85 border border-white/5 rounded-lg p-2.5 shrink-0 min-w-[210px] text-[11px] shadow-lg">
                     <div className="flex items-center justify-between gap-1 border-b border-white/5 pb-1 mb-1 font-black uppercase text-[9px]">
                       <span className="text-slate-300 truncate max-w-[110px]" title={mot ? mot.name : "Moto"}>{mot ? mot.name : "Moto / S.M."}</span>
                       <span className={`px-1.5 py-0.2 rounded-full text-[8px] font-black uppercase ${
@@ -160,7 +160,7 @@ export default function DashboardView({ invoices, motorizados, incidents }: Dash
             <div className="p-2 bg-amber-500/10 border border-amber-500/30 rounded-full animate-bounce">
               <Wrench className="h-5 w-5 text-amber-400" />
             </div>
-            <div className="text-left bg-slate-900/60 p-2.5 rounded-lg border border-white/5 shadow-inner">
+            <div className="text-left bg-zinc-900/60 p-2.5 rounded-lg border border-white/5 shadow-inner">
               <p className="text-[8.5px] uppercase font-black text-amber-400 tracking-wider">Estado Flota</p>
               <p className="text-lg font-black font-mono text-amber-300">{(activeRiders / (motorizados.length || 1) * 100).toFixed(0)}% Ope.</p>
             </div>
@@ -186,7 +186,7 @@ export default function DashboardView({ invoices, motorizados, incidents }: Dash
       {/* TARJETAS DE MÉTRICAS PRINCIPALES */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {/* Total Ventas Instaladas */}
-        <div className="glass-card p-5 rounded-2xl flex items-center justify-between hover:-translate-y-0.5 hover:shadow-[0_0_25px_rgba(245,158,11,0.18)] hover:border-amber-500/35 hover:bg-slate-900/50 transition-all duration-300 cursor-pointer">
+        <div className="glass-card p-5 rounded-2xl flex items-center justify-between hover:-translate-y-0.5 hover:shadow-[0_0_25px_rgba(245,158,11,0.18)] hover:border-amber-500/35 hover:bg-zinc-900/50 transition-all duration-300 cursor-pointer">
           <div className="space-y-1">
             <span className="text-[9.5px] font-black uppercase text-slate-400 tracking-wider">Ventas Instaladas</span>
             <p className="text-xl font-black font-mono text-white">${totalSalesVal.toLocaleString("es-PA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
@@ -201,7 +201,7 @@ export default function DashboardView({ invoices, motorizados, incidents }: Dash
         </div>
 
         {/* Total Tickets Registrados */}
-        <div className="glass-card p-5 rounded-2xl flex items-center justify-between hover:-translate-y-0.5 hover:shadow-[0_0_25px_rgba(245,158,11,0.15)] hover:border-amber-500/35 hover:bg-slate-900/50 transition-all duration-300 cursor-pointer">
+        <div className="glass-card p-5 rounded-2xl flex items-center justify-between hover:-translate-y-0.5 hover:shadow-[0_0_25px_rgba(245,158,11,0.15)] hover:border-amber-500/35 hover:bg-zinc-900/50 transition-all duration-300 cursor-pointer">
           <div className="space-y-1">
             <span className="text-[9.5px] font-black uppercase text-slate-400 tracking-wider">Tickets Totales</span>
             <p className="text-xl font-black font-mono text-white">{totalInvoices}</p>
@@ -213,7 +213,7 @@ export default function DashboardView({ invoices, motorizados, incidents }: Dash
         </div>
 
         {/* Ganancia por Asistencias Vial BAT (20% del Ticket) */}
-        <div className="glass-card p-5 rounded-2xl border-l-4 border-l-amber-500 flex items-center justify-between hover:-translate-y-0.5 hover:shadow-[0_0_25px_rgba(245,158,11,0.18)] hover:border-amber-500/35 hover:bg-slate-900/50 transition-all duration-300 cursor-pointer">
+        <div className="glass-card p-5 rounded-2xl border-l-4 border-l-amber-500 flex items-center justify-between hover:-translate-y-0.5 hover:shadow-[0_0_25px_rgba(245,158,11,0.18)] hover:border-amber-500/35 hover:bg-zinc-900/50 transition-all duration-300 cursor-pointer">
           <div className="space-y-1">
             <span className="text-[9.5px] font-black uppercase text-amber-400 tracking-wider flex items-center gap-1">
               <span>Ganancias BAT (20%)</span>
@@ -227,7 +227,7 @@ export default function DashboardView({ invoices, motorizados, incidents }: Dash
         </div>
 
         {/* Flota Activa */}
-        <div className="glass-card p-5 rounded-2xl flex items-center justify-between hover:-translate-y-0.5 hover:shadow-[0_0_25px_rgba(245,158,11,0.15)] hover:border-amber-500/35 hover:bg-slate-900/50 transition-all duration-300 cursor-pointer">
+        <div className="glass-card p-5 rounded-2xl flex items-center justify-between hover:-translate-y-0.5 hover:shadow-[0_0_25px_rgba(245,158,11,0.15)] hover:border-amber-500/35 hover:bg-zinc-900/50 transition-all duration-300 cursor-pointer">
           <div className="space-y-1">
             <span className="text-[9.5px] font-black uppercase text-slate-400 tracking-wider">Flota Activa</span>
             <p className="text-xl font-black font-mono text-white">{activeRiders} / {motorizados.length}</p>
@@ -239,7 +239,7 @@ export default function DashboardView({ invoices, motorizados, incidents }: Dash
         </div>
 
         {/* Valor Promedio de Venta */}
-        <div className="glass-card p-5 rounded-2xl flex items-center justify-between hover:-translate-y-0.5 hover:shadow-[0_0_25px_rgba(245,158,11,0.15)] hover:border-amber-500/35 hover:bg-slate-900/50 transition-all duration-300 cursor-pointer">
+        <div className="glass-card p-5 rounded-2xl flex items-center justify-between hover:-translate-y-0.5 hover:shadow-[0_0_25px_rgba(245,158,11,0.15)] hover:border-amber-500/35 hover:bg-zinc-900/50 transition-all duration-300 cursor-pointer">
           <div className="space-y-1">
             <span className="text-[9.5px] font-black uppercase text-slate-400 tracking-wider">Promedio Venta</span>
             <p className="text-xl font-black font-mono text-white">${averageSaleValue.toLocaleString("es-PA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
@@ -317,7 +317,7 @@ export default function DashboardView({ invoices, motorizados, incidents }: Dash
                       <span className="truncate max-w-[170px]" title={branch.name}>{branch.name}</span>
                       <span className="text-slate-400 font-mono flex-shrink-0">{branch.count} tkt ({percentage.toFixed(1)}%)</span>
                     </div>
-                    <div className="w-full bg-slate-950/40 rounded-full h-1.5 overflow-hidden border border-white/5">
+                    <div className="w-full bg-zinc-950/40 rounded-full h-1.5 overflow-hidden border border-white/5">
                       <div 
                         className="bg-gradient-to-r from-amber-500 to-orange-500 h-full rounded-full transition-all duration-500" 
                         style={{ width: `${percentage}%` }}

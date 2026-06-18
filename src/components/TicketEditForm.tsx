@@ -163,18 +163,18 @@ export default function TicketEditForm({
         </div>
         <button 
           onClick={onCancel}
-          className="p-1 px-3 text-[10px] bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-400 rounded-full transition font-semibold"
+          className="p-1 px-3 text-[10px] bg-zinc-900 border border-slate-800 hover:bg-zinc-800 text-slate-400 rounded-full transition font-semibold"
         >
           Cancelar
         </button>
       </div>
 
       {isScanning && (
-        <div className="flex flex-col items-center justify-center p-6 md:p-8 bg-slate-900/60 rounded-xl border border-amber-500/15 text-center space-y-4 animate-pulse-subtle">
+        <div className="flex flex-col items-center justify-center p-6 md:p-8 bg-zinc-900/60 rounded-xl border border-amber-500/15 text-center space-y-4 animate-pulse-subtle">
           
           {/* Visual ticket scanning preview with laser line overlay */}
           {activeImage ? (
-            <div className="relative w-36 h-48 rounded-lg overflow-hidden border border-amber-500/30 shadow-lg shadow-amber-500/5 bg-slate-950 flex items-center justify-center">
+            <div className="relative w-36 h-48 rounded-lg overflow-hidden border border-amber-500/30 shadow-lg shadow-amber-500/5 bg-zinc-950 flex items-center justify-center">
               <img 
                 src={activeImage} 
                 alt="Escaneando ticket..." 
@@ -202,7 +202,7 @@ export default function TicketEditForm({
               </div>
               
               {/* Modern ProgressBar */}
-              <div className="h-2.5 w-full bg-slate-950/80 rounded-full border border-white/5 overflow-hidden p-[1px]">
+              <div className="h-2.5 w-full bg-zinc-950/80 rounded-full border border-white/5 overflow-hidden p-[1px]">
                 <div 
                   className="h-full bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-400 rounded-full transition-all duration-300 ease-out relative"
                   style={{ width: `${scanProgress}%` }}
@@ -234,8 +234,8 @@ export default function TicketEditForm({
       {!isScanning && (
         <div className="space-y-6">
           {activeImage && (
-            <div className="flex items-center gap-3.5 p-2.5 bg-slate-900/50 border border-slate-800 rounded-lg">
-              <img src={activeImage} alt="Miniatura" className="w-10 h-12 object-cover rounded border border-slate-700 bg-slate-950 shadow-xs" referrerPolicy="no-referrer" />
+            <div className="flex items-center gap-3.5 p-2.5 bg-zinc-900/50 border border-slate-800 rounded-lg">
+              <img src={activeImage} alt="Miniatura" className="w-10 h-12 object-cover rounded border border-slate-700 bg-zinc-950 shadow-xs" referrerPolicy="no-referrer" />
               <div>
                 <p className="text-xs font-bold text-slate-200">Digitalización de Imagen Lista</p>
                 <p className="text-[10px] text-slate-400">La IA procesó este ticket. Edita libremente cualquier campo.</p>
@@ -410,7 +410,7 @@ export default function TicketEditForm({
           </div>
 
           {/* DESGLOSE ARTÍCULOS */}
-          <div className="border bg-slate-900/20 p-4.5 rounded-xl border-slate-800 space-y-3">
+          <div className="border bg-zinc-900/20 p-4.5 rounded-xl border-slate-800 space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase text-slate-450">
                 <Layers className="h-4 w-4 text-slate-400" />
@@ -419,14 +419,14 @@ export default function TicketEditForm({
               <button
                 type="button"
                 onClick={handleAddItem}
-                className="text-xs font-bold text-amber-300 hover:text-amber-250 bg-slate-900 border border-slate-800 hover:bg-slate-800 px-2.5 py-1 rounded-md transition cursor-pointer"
+                className="text-xs font-bold text-amber-300 hover:text-amber-250 bg-zinc-900 border border-slate-800 hover:bg-zinc-800 px-2.5 py-1 rounded-md transition cursor-pointer"
               >
                 + Añadir Item
               </button>
             </div>
 
             {(!formValues.items || formValues.items.length === 0) ? (
-              <div className="text-center p-6 bg-slate-955 border border-dashed border-slate-800 rounded-lg text-slate-500 text-xs">
+              <div className="text-center p-6 bg-zinc-955 border border-dashed border-slate-800 rounded-lg text-slate-500 text-xs">
                 Sin artículos. Añade uno con el botón superior.
               </div>
             ) : (
@@ -522,7 +522,7 @@ export default function TicketEditForm({
             </button>
             <button
               onClick={onCancel}
-              className="px-5 py-2.8 bg-slate-900 hover:bg-slate-805 text-slate-400 border border-slate-800 rounded-lg font-bold text-xs transition cursor-pointer"
+              className="px-5 py-2.8 bg-zinc-900 hover:bg-zinc-805 text-slate-400 border border-slate-800 rounded-lg font-bold text-xs transition cursor-pointer"
             >
               Cancelar
             </button>

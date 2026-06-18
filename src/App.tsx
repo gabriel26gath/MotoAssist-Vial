@@ -894,7 +894,7 @@ export default function App() {
         </div>
 
         {/* Card Contenedor Principal con Sombra de Tránsito */}
-        <div className="w-full max-w-sm bg-slate-900/95 border border-white/10 rounded-3xl p-6 sm:p-8 relative z-10 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.7)] backdrop-blur-xl animate-fade-in">
+        <div className="w-full max-w-sm bg-zinc-900/95 border border-white/10 rounded-3xl p-6 sm:p-8 relative z-10 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.7)] backdrop-blur-md animate-fade-in">
           {/* Logo y Encabezado */}
           <div className="text-center space-y-4 mb-6">
             <div className="inline-flex p-3 bg-amber-500/10 rounded-2xl border border-amber-500/20 shadow-inner">
@@ -924,7 +924,7 @@ export default function App() {
                 placeholder="usuario@acsa.com"
                 value={loginEmail}
                 onChange={(e) => setLoginEmail(e.target.value)}
-                className="w-full bg-slate-950/60 text-white rounded-xl px-4 py-2.5 text-xs font-semibold border border-white/10 hover:border-amber-500/70 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all duration-300 outline-none hover:shadow-[0_0_15px_rgba(245,158,11,0.25)] focus:shadow-[0_0_18px_rgba(245,158,11,0.4)] placeholder-slate-500 cursor-text"
+                className="w-full bg-zinc-950/60 text-white rounded-xl px-4 py-2.5 text-xs font-semibold border border-white/10 hover:border-amber-500/70 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all duration-300 outline-none hover:shadow-[0_0_15px_rgba(245,158,11,0.25)] focus:shadow-[0_0_18px_rgba(245,158,11,0.4)] placeholder-slate-500 cursor-text"
               />
             </div>
 
@@ -939,7 +939,7 @@ export default function App() {
                 placeholder="••••••••••••"
                 value={loginPassword}
                 onChange={(e) => setLoginPassword(e.target.value)}
-                className="w-full bg-slate-950/60 text-white rounded-xl px-4 py-2.5 text-xs font-semibold border border-white/10 hover:border-amber-500/70 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all duration-300 outline-none hover:shadow-[0_0_15px_rgba(245,158,11,0.25)] focus:shadow-[0_0_18px_rgba(245,158,11,0.4)] placeholder-slate-500 cursor-text"
+                className="w-full bg-zinc-950/60 text-white rounded-xl px-4 py-2.5 text-xs font-semibold border border-white/10 hover:border-amber-500/70 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all duration-300 outline-none hover:shadow-[0_0_15px_rgba(245,158,11,0.25)] focus:shadow-[0_0_18px_rgba(245,158,11,0.4)] placeholder-slate-500 cursor-text"
               />
             </div>
 
@@ -971,7 +971,7 @@ export default function App() {
               <div className="w-full border-t border-white/5"></div>
             </div>
             <div className="relative flex justify-center text-[9px] uppercase font-black">
-              <span className="bg-slate-900 px-3 text-slate-400 select-none">Accesos Directos Un-Clic</span>
+              <span className="bg-zinc-900 px-3 text-slate-400 select-none">Accesos Directos Un-Clic</span>
             </div>
           </div>
 
@@ -983,7 +983,7 @@ export default function App() {
                 setLoginEmail("admin@acsa.com");
                 showFirebaseToast("⚡ Auto-completado", "Correo de Administrador cargado. Por favor, introduzca su contraseña.", "info");
               }}
-              className="p-2.5 text-left rounded-xl bg-slate-950/40 hover:bg-slate-950/80 border border-white/5 hover:border-amber-500/50 shadow-sm hover:shadow-[0_0_12px_rgba(245,158,11,0.15)] transition-all duration-300 cursor-pointer group"
+              className="p-2.5 text-left rounded-xl bg-zinc-950/40 hover:bg-zinc-950/80 border border-white/5 hover:border-amber-500/50 shadow-sm hover:shadow-[0_0_12px_rgba(245,158,11,0.15)] transition-all duration-300 cursor-pointer group"
             >
               <div className="flex items-center gap-1.5 mb-1">
                 <LogoSVG className="h-4 w-4 text-amber-500 group-hover:scale-110 transition-transform" />
@@ -1000,7 +1000,7 @@ export default function App() {
                 setLoginEmail("moto@acsa.com");
                 showFirebaseToast("⚡ Auto-completado", "Correo de Visor cargado. Por favor, introduzca su contraseña.", "info");
               }}
-              className="p-2.5 text-left rounded-xl bg-slate-950/40 hover:bg-slate-950/80 border border-white/5 hover:border-amber-500/50 shadow-sm hover:shadow-[0_0_12px_rgba(245,158,11,0.15)] transition-all duration-300 cursor-pointer group"
+              className="p-2.5 text-left rounded-xl bg-zinc-950/40 hover:bg-zinc-950/80 border border-white/5 hover:border-amber-500/50 shadow-sm hover:shadow-[0_0_12px_rgba(245,158,11,0.15)] transition-all duration-300 cursor-pointer group"
             >
               <div className="flex items-center gap-1.5 mb-1">
                 <Users className="h-4 w-4 text-slate-400 group-hover:scale-110 group-hover:text-amber-500 transition-all" />
@@ -1014,7 +1014,7 @@ export default function App() {
 
           {/* Información Adicional Conexión */}
           <div className="mt-5 text-center">
-            <span className="px-2.5 py-1 text-[8px] font-extrabold text-slate-400 bg-slate-950/50 border border-white/5 rounded-full uppercase tracking-wider select-none">
+            <span className="px-2.5 py-1 text-[8px] font-extrabold text-slate-400 bg-zinc-950/50 border border-white/5 rounded-full uppercase tracking-wider select-none">
               {isFirebaseConfigured ? "🔥 Base de datos sincronizada" : "⚠ Modo Desconectado Activo"}
             </span>
           </div>
@@ -1040,7 +1040,7 @@ export default function App() {
       <div className={`flex flex-col min-h-screen ${mobileOptimized ? "" : "md:flex-row"}`}>
         
         {/* SIDEBAR ADAPTATIVO PREMIUM (Con estilo Glass Asfalto y Ámbar de Tránsito) */}
-        <aside className={`w-full bg-slate-950/60 backdrop-blur-lg text-white flex flex-col shrink-0 border-b border-amber-500/10 shadow-2xl relative z-10 ${
+        <aside className={`w-full bg-zinc-950/60 backdrop-blur-md text-white flex flex-col shrink-0 border-b border-amber-500/10 shadow-2xl relative z-10 ${
           mobileOptimized ? "" : "md:w-64 md:border-r md:border-b-0"
         }`}>
           <div className="p-6 border-b border-amber-500/10 flex items-center gap-3">
@@ -1124,7 +1124,7 @@ export default function App() {
           </nav>
 
           {/* SESIÓN USUARIO PIE */}
-          <div className={`p-4 border-t border-amber-500/10 bg-slate-950/70 text-amber-200 ${
+          <div className={`p-4 border-t border-amber-500/10 bg-zinc-950/70 text-amber-200 ${
             mobileOptimized ? "hidden" : "hidden md:block"
           }`}>
             {isFirebaseConfigured ? (
@@ -1167,7 +1167,7 @@ export default function App() {
         {/* CONTAINER CONTENIDO PRINCIPAL */}
         <main className="flex-grow flex flex-col min-h-screen">
           
-          <header className="bg-slate-900/50 backdrop-blur-lg text-white shadow-2xl px-6 py-5 md:px-8 rounded-2xl mb-6 mx-0 sm:mx-4 mt-0 sm:mt-2 border border-white/5">
+          <header className="bg-zinc-900/50 backdrop-blur-md text-white shadow-2xl px-6 py-5 md:px-8 rounded-2xl mb-6 mx-0 sm:mx-4 mt-0 sm:mt-2 border border-white/5">
             <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h2 className="text-xl md:text-2xl font-display font-black tracking-tight text-white flex items-center gap-2">
@@ -1194,7 +1194,7 @@ export default function App() {
                   className={`px-4 py-2 rounded-xl text-xs font-black transition-all duration-300 flex items-center gap-2 border shadow-lg cursor-pointer ${
                     mobileOptimized 
                       ? "bg-amber-500 text-slate-950 border-amber-400 font-extrabold scale-105 shadow-amber-500/20" 
-                      : "bg-slate-950/70 text-amber-400 border-amber-500/20 hover:border-amber-500/50 hover:bg-slate-900"
+                      : "bg-zinc-950/70 text-amber-400 border-amber-500/20 hover:border-amber-500/50 hover:bg-zinc-900"
                   }`}
                   id="toggle-layout-density"
                   title="Optimiza el espacio de las tarjetas y cuadrículas para evitar elementos amontonados"
@@ -1206,7 +1206,7 @@ export default function App() {
                 {(isEditing || selectedInvoiceForView) && activeTab === "tickets" && (
                   <button
                     onClick={() => { setIsEditing(false); setSelectedInvoiceForView(null); }}
-                    className="px-4 py-2 bg-white/10 hover:bg-white/15 text-white rounded-xl text-xs font-black transition border border-white/10 cursor-pointer backdrop-blur-xs shadow-xs"
+                    className="px-4 py-2 bg-white/10 hover:bg-white/15 text-white rounded-xl text-xs font-black transition border border-white/10 cursor-pointer backdrop-blur-md shadow-xs"
                   >
                     Regresar a la Entrada
                   </button>
@@ -1275,7 +1275,7 @@ export default function App() {
                     />
                   ) : (
                     /* SCANNER ZONE INPUT */
-                    <div className="bg-slate-950/40 backdrop-blur-md rounded-xl border border-amber-500/10 p-6 md:p-8 shadow-sm space-y-6">
+                    <div className="bg-zinc-950/40 backdrop-blur-md rounded-xl border border-amber-500/10 p-6 md:p-8 shadow-sm space-y-6">
                       <div className="text-center max-w-sm mx-auto space-y-2">
                         <span className="px-3 py-1.5 text-[9px] font-bold text-amber-400 bg-amber-500/10 rounded-full border border-amber-500/20 uppercase tracking-wide">
                           Registro de Ventas IA
@@ -1293,7 +1293,7 @@ export default function App() {
                         className={`border-2 border-dashed rounded-xl p-8 text-center transition duration-200 flex flex-col items-center justify-center min-h-[220px] ${
                           dragOver 
                             ? "border-amber-500 bg-amber-500/10" 
-                            : "border-slate-800 bg-slate-950/20 hover:bg-slate-900/40"
+                            : "border-slate-800 bg-zinc-950/20 hover:bg-zinc-900/40"
                         }`}
                       >
                         <input 
@@ -1314,7 +1314,7 @@ export default function App() {
                         <div className="flex flex-wrap items-center justify-center gap-3">
                           <button
                             onClick={() => fileInputRef.current?.click()}
-                            className="px-4 py-1.8 bg-slate-900 border border-slate-800 text-slate-300 hover:bg-slate-800 rounded-lg text-xs font-bold transition shadow-xs cursor-pointer"
+                            className="px-4 py-1.8 bg-zinc-900 border border-slate-800 text-slate-300 hover:bg-zinc-800 rounded-lg text-xs font-bold transition shadow-xs cursor-pointer"
                           >
                             Seleccionar Archivo
                           </button>
@@ -1337,7 +1337,7 @@ export default function App() {
                 <div className={`${mobileOptimized ? "grid-cols-1" : "lg:col-span-5"} space-y-6`}>
                   
                   {invoices.length > 0 && (
-                    <div className="bg-slate-950/40 backdrop-blur-md rounded-xl border border-amber-500/10 p-4.5 shadow-sm space-y-3">
+                    <div className="bg-zinc-950/40 backdrop-blur-md rounded-xl border border-amber-500/10 p-4.5 shadow-sm space-y-3">
                       <h3 className="text-[9px] font-bold text-slate-500 uppercase tracking-widest pl-0.5">Resumen de Periodo</h3>
                       <div className="grid grid-cols-2 gap-3">
                         <div className="p-3 bg-amber-500/5 rounded-lg border border-amber-500/25">
@@ -1346,7 +1346,7 @@ export default function App() {
                             ${invoices.reduce((a, b) => a + (b.total || 0), 0).toLocaleString("es-PA", { minimumFractionDigits: 2 })}
                           </span>
                         </div>
-                        <div className="p-3 bg-slate-900/60 rounded-lg border border-slate-800">
+                        <div className="p-3 bg-zinc-900/60 rounded-lg border border-slate-800">
                           <span className="text-[9px] font-bold text-slate-400 uppercase block leading-none">Comprobantes</span>
                           <span className="text-base font-black font-mono text-white block mt-1">
                             {invoices.length} un.
@@ -1356,7 +1356,7 @@ export default function App() {
                     </div>
                   )}
 
-                  <div className="bg-slate-950/40 backdrop-blur-md rounded-xl border border-amber-500/10 p-4.5 shadow-sm space-y-4">
+                  <div className="bg-zinc-950/40 backdrop-blur-md rounded-xl border border-amber-500/10 p-4.5 shadow-sm space-y-4">
                     <div className="flex flex-col gap-2 border-b border-white/5 pb-3">
                       <div className="flex items-center justify-between flex-wrap gap-2">
                         <div>
@@ -1369,7 +1369,7 @@ export default function App() {
                             <button
                               onClick={() => setShowExportFieldsConfig(!showExportFieldsConfig)}
                               className={`p-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition ${
-                                showExportFieldsConfig ? "bg-amber-500/20 text-amber-300 border-amber-500/30" : "bg-slate-900 border-slate-800 text-slate-400 hover:bg-slate-800"
+                                showExportFieldsConfig ? "bg-amber-500/20 text-amber-300 border-amber-500/30" : "bg-zinc-900 border-slate-800 text-slate-400 hover:bg-zinc-800"
                               }`}
                               title="Editar Campos a Exportar"
                             >
@@ -1389,27 +1389,27 @@ export default function App() {
                       </div>
 
                       {showExportFieldsConfig && invoices.length > 0 && (
-                        <div className="mt-3 p-3 bg-slate-900 border border-slate-800 rounded-lg space-y-2 animate-fade-in">
+                        <div className="mt-3 p-3 bg-zinc-900 border border-slate-800 rounded-lg space-y-2 animate-fade-in">
                           <p className="text-[9px] font-extrabold uppercase text-slate-400 tracking-wider">Configurar Columnas de Exportación ({selectedExportFields.length} seleccionadas)</p>
                           <div className="flex flex-wrap gap-1.5 pb-2">
                             <button
                               type="button"
                               onClick={() => setSelectedExportFields(EXPORT_COLUMNS)}
-                              className="px-2 py-0.5 bg-slate-900 border border-slate-800 hover:bg-slate-800 text-[8.5px] font-bold text-slate-400 rounded"
+                              className="px-2 py-0.5 bg-zinc-900 border border-slate-800 hover:bg-zinc-800 text-[8.5px] font-bold text-slate-400 rounded"
                             >
                               Todo
                             </button>
                             <button
                               type="button"
                               onClick={() => setSelectedExportFields(["Establecimiento", "Tipo Factura", "Nº Ticket/Factura", "Asignado a (Motorizado)", "Total Ticket", "Fecha Emisión"])}
-                              className="px-2 py-0.5 bg-slate-900 border border-slate-800 hover:bg-slate-800 text-[8.5px] font-bold text-slate-400 rounded"
+                              className="px-2 py-0.5 bg-zinc-900 border border-slate-800 hover:bg-zinc-800 text-[8.5px] font-bold text-slate-400 rounded"
                             >
                               Básico
                             </button>
                             <button
                               type="button"
                               onClick={() => setSelectedExportFields([])}
-                              className="px-2 py-0.5 bg-slate-900 border border-slate-800 hover:bg-slate-800 text-[8.5px] font-bold text-slate-400 rounded"
+                              className="px-2 py-0.5 bg-zinc-900 border border-slate-800 hover:bg-zinc-800 text-[8.5px] font-bold text-slate-400 rounded"
                             >
                               Limpiar
                             </button>
@@ -1421,7 +1421,7 @@ export default function App() {
                                 <label
                                   key={col}
                                   className={`flex items-center gap-1.5 p-1.5 text-[9.5px] rounded border cursor-pointer select-none transition ${
-                                    isSel ? "bg-amber-500/10 text-amber-300 border-amber-500/30 font-bold" : "bg-slate-900 border-slate-850 text-slate-400"
+                                    isSel ? "bg-amber-500/10 text-amber-300 border-amber-500/30 font-bold" : "bg-zinc-900 border-slate-850 text-slate-400"
                                   }`}
                                 >
                                   <input
@@ -1434,7 +1434,7 @@ export default function App() {
                                         setSelectedExportFields([...selectedExportFields, col]);
                                       }
                                     }}
-                                    className="rounded text-amber-500 focus:ring-0 scale-75 border-slate-700 bg-slate-950"
+                                    className="rounded text-amber-500 focus:ring-0 scale-75 border-slate-700 bg-zinc-950"
                                   />
                                   <span className="truncate">{col}</span>
                                 </label>
@@ -1452,7 +1452,7 @@ export default function App() {
                       </div>
                     ) : invoices.length === 0 ? (
                       <div className="text-center py-10 px-4 space-y-3">
-                        <div className="rounded-full bg-slate-900 border border-slate-800 p-3 w-10 h-10 flex items-center justify-center mx-auto text-slate-400">
+                        <div className="rounded-full bg-zinc-900 border border-slate-800 p-3 w-10 h-10 flex items-center justify-center mx-auto text-slate-400">
                           <Receipt className="h-5 w-5" />
                         </div>
                         <div className="max-w-xs mx-auto space-y-1">
@@ -1473,12 +1473,12 @@ export default function App() {
                               className={`p-3 rounded-lg border transition duration-150 cursor-pointer flex items-center justify-between gap-3 text-left ${
                                 isSelected 
                                   ? "bg-amber-500/10 border-amber-500/30 shadow-xxs" 
-                                  : "bg-slate-900/40 border-slate-800/40 hover:border-amber-500/20 hover:bg-slate-900/60"
+                                  : "bg-zinc-900/40 border-slate-800/40 hover:border-amber-500/20 hover:bg-zinc-900/60"
                               }`}
                             >
                               <div className="flex items-center gap-3 overflow-hidden">
                                 <div className={`rounded-lg p-2 ${
-                                  isSelected ? "bg-amber-500/20 text-amber-300" : "bg-slate-900 text-slate-400 border border-slate-800"
+                                  isSelected ? "bg-amber-500/20 text-amber-300" : "bg-zinc-900 text-slate-400 border border-slate-800"
                                 }`}>
                                   <FileText className="h-4 w-4" />
                                 </div>
@@ -1560,7 +1560,7 @@ export default function App() {
 
       {originalImageInModal && (
         <div 
-          className="fixed inset-0 bg-slate-900/80 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in"
+          className="fixed inset-0 bg-zinc-900/80 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-fade-in"
           onClick={() => setOriginalImageInModal(null)}
         >
           <div 
@@ -1579,7 +1579,7 @@ export default function App() {
                 <X className="h-4 w-4" />
               </button>
             </div>
-            <div className="flex justify-center max-h-[70vh] overflow-y-auto bg-slate-50 rounded-lg p-2 border border-slate-200">
+            <div className="flex justify-center max-h-[70vh] overflow-y-auto bg-zinc-50 rounded-lg p-2 border border-slate-200">
               <img 
                 src={originalImageInModal} 
                 alt="Factura Original" 
@@ -1590,7 +1590,7 @@ export default function App() {
             <div className="text-right">
               <button
                 onClick={() => setOriginalImageInModal(null)}
-                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition"
+                className="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 text-slate-700 text-xs font-bold rounded-lg transition"
               >
                 Cerrar Imagen
               </button>
@@ -1602,7 +1602,7 @@ export default function App() {
       {/* NOTIFICACIÓN FLOTANTE DE CONFIRMACIÓN DE OPERACIONES EN FIREBASE/LOCAL */}
       {firebaseNotification?.show && (
         <div 
-          className="fixed bottom-6 right-6 z-[110] max-w-sm w-full bg-slate-950/95 border border-amber-500/30 text-white rounded-xl shadow-2xl p-4 flex gap-3 items-start backdrop-blur-md border-l-4 border-l-amber-500" 
+          className="fixed bottom-6 right-6 z-[110] max-w-sm w-full bg-zinc-950/95 border border-amber-500/30 text-white rounded-xl shadow-2xl p-4 flex gap-3 items-start backdrop-blur-md border-l-4 border-l-amber-500" 
           id="firebase-realtime-toast"
         >
           <div className="p-2 bg-amber-500/10 rounded-lg text-amber-500 shrink-0">
@@ -1639,7 +1639,7 @@ export default function App() {
 
       {/* MODAL DE CONFIRMACIÓN CUSTOM */}
       {confirmState?.isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in" id="custom-confirm-modal">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-zinc-900/60 backdrop-blur-md animate-fade-in" id="custom-confirm-modal">
           <div className="bg-white rounded-xl border border-slate-200 p-6 max-w-sm w-full shadow-2xl space-y-4">
             <div className="flex items-center gap-3">
               <div className={`p-2.5 rounded-full ${confirmState.variant === 'danger' ? 'bg-rose-100 text-rose-600' : 'bg-amber-100 text-amber-600'}`}>
@@ -1653,7 +1653,7 @@ export default function App() {
             <div className="flex justify-end gap-3 pt-1">
               <button
                 onClick={() => setConfirmState(null)}
-                className="px-4 py-2 text-xs font-bold text-slate-500 hover:bg-slate-100 rounded-lg transition"
+                className="px-4 py-2 text-xs font-bold text-slate-500 hover:bg-zinc-100 rounded-lg transition"
               >
                 Cancelar
               </button>

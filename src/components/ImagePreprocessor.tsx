@@ -163,11 +163,11 @@ export default function ImagePreprocessor({ imageSrc, onConfirm, onClose }: Imag
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 backdrop-blur-sm p-4 md:p-6 animate-fade-in">
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-4xl h-[90vh] md:h-[80vh] flex flex-col overflow-hidden shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/90 backdrop-blur-md p-4 md:p-6 animate-fade-in">
+      <div className="bg-zinc-900 border border-slate-800 rounded-2xl w-full max-w-4xl h-[90vh] md:h-[80vh] flex flex-col overflow-hidden shadow-2xl">
         
         {/* Cabecera del Preprocesador */}
-        <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/60 shrink-0">
+        <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-zinc-900/60 shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="p-2 bg-amber-500/10 rounded-lg text-amber-500">
               <Sliders className="h-5 w-5 animate-pulse" />
@@ -183,20 +183,20 @@ export default function ImagePreprocessor({ imageSrc, onConfirm, onClose }: Imag
           </div>
           <button 
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition"
+            className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-zinc-800 transition"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Cuerpo del Editor */}
-        <div className="flex-1 flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-slate-800 overflow-hidden min-h-0 bg-slate-950/35">
+        <div className="flex-1 flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-slate-800 overflow-hidden min-h-0 bg-zinc-950/35">
           
           {/* Columna Izquierda: Visualizador de Imagen */}
           <div className="flex-1 p-4 flex flex-col justify-center items-center relative overflow-y-auto">
             
             {/* Biometric-like bounding frame overlay container */}
-            <div className="relative max-w-full max-h-[350px] md:max-h-[450px] aspect-[3/4] p-2 bg-slate-900/50 rounded-xl border border-slate-800 flex items-center justify-center overflow-hidden">
+            <div className="relative max-w-full max-h-[350px] md:max-h-[450px] aspect-[3/4] p-2 bg-zinc-900/50 rounded-xl border border-slate-800 flex items-center justify-center overflow-hidden">
               
               {/* Image preview */}
               {previewUrl ? (
@@ -230,7 +230,7 @@ export default function ImagePreprocessor({ imageSrc, onConfirm, onClose }: Imag
               </div>
 
               {/* Status bar top */}
-              <div className="absolute top-4 left-4 right-4 flex justify-between items-center bg-slate-950/80 backdrop-blur-xs px-2.5 py-1 rounded border border-white/5 pointer-events-none text-[9px] font-mono select-none">
+              <div className="absolute top-4 left-4 right-4 flex justify-between items-center bg-zinc-950/80 backdrop-blur-md px-2.5 py-1 rounded border border-white/5 pointer-events-none text-[9px] font-mono select-none">
                 <div className="flex items-center gap-1.5 text-emerald-400">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
                   LENTE ROI ACTIVADO
@@ -241,7 +241,7 @@ export default function ImagePreprocessor({ imageSrc, onConfirm, onClose }: Imag
               </div>
 
               {/* Resolution indicator of virtual canvas */}
-              <div className="absolute bottom-4 left-4 bg-slate-950/80 backdrop-blur-xs px-2 py-0.5 rounded text-[9px] text-slate-400 font-mono pointer-events-none select-none border border-white/5">
+              <div className="absolute bottom-4 left-4 bg-zinc-950/80 backdrop-blur-md px-2 py-0.5 rounded text-[9px] text-slate-400 font-mono pointer-events-none select-none border border-white/5">
                 Rotación: {rotation}°
               </div>
             </div>
@@ -251,7 +251,7 @@ export default function ImagePreprocessor({ imageSrc, onConfirm, onClose }: Imag
           </div>
 
           {/* Columna Derecha: Controles del Filtro / Preprocesador */}
-          <div className="w-full md:w-80 p-4 md:p-5 flex flex-col gap-5 shrink-0 bg-slate-900/40 overflow-y-auto">
+          <div className="w-full md:w-80 p-4 md:p-5 flex flex-col gap-5 shrink-0 bg-zinc-900/40 overflow-y-auto">
             
             {/* Controles de Rotación */}
             <div className="space-y-2">
@@ -266,7 +266,7 @@ export default function ImagePreprocessor({ imageSrc, onConfirm, onClose }: Imag
                 <button
                   type="button"
                   onClick={handleRotateCcw}
-                  className="flex items-center justify-center gap-2 px-3 py-2 text-xs bg-slate-950 hover:bg-slate-850 border border-slate-800 rounded-lg text-slate-300 font-semibold transition cursor-pointer"
+                  className="flex items-center justify-center gap-2 px-3 py-2 text-xs bg-zinc-950 hover:bg-zinc-850 border border-slate-800 rounded-lg text-slate-300 font-semibold transition cursor-pointer"
                 >
                   <RotateCcw className="h-3.5 w-3.5" />
                   Ir Izquierda
@@ -274,7 +274,7 @@ export default function ImagePreprocessor({ imageSrc, onConfirm, onClose }: Imag
                 <button
                   type="button"
                   onClick={handleRotateCw}
-                  className="flex items-center justify-center gap-2 px-3 py-2 text-xs bg-slate-950 hover:bg-slate-850 border border-slate-800 rounded-lg text-slate-300 font-semibold transition cursor-pointer"
+                  className="flex items-center justify-center gap-2 px-3 py-2 text-xs bg-zinc-950 hover:bg-zinc-850 border border-slate-800 rounded-lg text-slate-300 font-semibold transition cursor-pointer"
                 >
                   <RotateCw className="h-3.5 w-3.5" />
                   Ir Derecha
@@ -297,7 +297,7 @@ export default function ImagePreprocessor({ imageSrc, onConfirm, onClose }: Imag
                   className={`flex items-center justify-between px-3 py-2.5 rounded-lg border text-xs font-semibold text-left transition text-white cursor-pointer ${
                     preset === "thermal" 
                       ? "bg-amber-600/10 border-amber-500/40" 
-                      : "bg-slate-950 border-slate-800 hover:bg-slate-850"
+                      : "bg-zinc-950 border-slate-800 hover:bg-zinc-850"
                   }`}
                 >
                   <div>
@@ -313,7 +313,7 @@ export default function ImagePreprocessor({ imageSrc, onConfirm, onClose }: Imag
                   className={`flex items-center justify-between px-3 py-2.5 rounded-lg border text-xs font-semibold text-left transition text-white cursor-pointer ${
                     preset === "grayscale" 
                       ? "bg-amber-600/10 border-amber-500/40" 
-                      : "bg-slate-950 border-slate-800 hover:bg-slate-850"
+                      : "bg-zinc-950 border-slate-800 hover:bg-zinc-850"
                   }`}
                 >
                   <div>
@@ -329,7 +329,7 @@ export default function ImagePreprocessor({ imageSrc, onConfirm, onClose }: Imag
                   className={`flex items-center justify-between px-3 py-2.5 rounded-lg border text-xs font-semibold text-left transition text-white cursor-pointer ${
                     preset === "none" 
                       ? "bg-amber-600/10 border-amber-500/40" 
-                      : "bg-slate-950 border-slate-800 hover:bg-slate-850"
+                      : "bg-zinc-950 border-slate-800 hover:bg-zinc-850"
                   }`}
                 >
                   <div>
@@ -364,7 +364,7 @@ export default function ImagePreprocessor({ imageSrc, onConfirm, onClose }: Imag
                   max="60"
                   value={brightness}
                   onChange={(e) => setBrightness(parseInt(e.target.value))}
-                  className="w-full accent-amber-500 bg-slate-950 h-1.5 rounded-lg"
+                  className="w-full accent-amber-500 bg-zinc-950 h-1.5 rounded-lg"
                 />
               </div>
 
@@ -382,7 +382,7 @@ export default function ImagePreprocessor({ imageSrc, onConfirm, onClose }: Imag
                   max="80"
                   value={contrast}
                   onChange={(e) => setContrast(parseInt(e.target.value))}
-                  className="w-full accent-amber-500 bg-slate-950 h-1.5 rounded-lg"
+                  className="w-full accent-amber-500 bg-zinc-950 h-1.5 rounded-lg"
                 />
               </div>
             </div>
@@ -398,11 +398,11 @@ export default function ImagePreprocessor({ imageSrc, onConfirm, onClose }: Imag
         </div>
 
         {/* Barra de Acciones del Pie */}
-        <div className="p-4 border-t border-slate-800 bg-slate-900/60 flex justify-end gap-3 shrink-0">
+        <div className="p-4 border-t border-slate-800 bg-zinc-900/60 flex justify-end gap-3 shrink-0">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-xs bg-slate-950 hover:bg-slate-850 border border-slate-800 text-slate-320 rounded-lg font-semibold transition"
+            className="px-4 py-2 text-xs bg-zinc-950 hover:bg-zinc-850 border border-slate-800 text-slate-320 rounded-lg font-semibold transition"
           >
             Cancelar
           </button>

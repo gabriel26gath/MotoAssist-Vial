@@ -211,7 +211,7 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="w-full px-2.5 py-1.5 text-xs bg-slate-950/60 border border-white/10 rounded-lg focus:outline-none focus:border-amber-500/60 font-semibold text-white cursor-pointer"
+              className="w-full px-2.5 py-1.5 text-xs bg-zinc-950/60 border border-white/10 rounded-lg focus:outline-none focus:border-amber-500/60 font-semibold text-white cursor-pointer"
             />
           </div>
 
@@ -225,7 +225,7 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="w-full px-2.5 py-1.5 text-xs bg-slate-950/60 border border-white/10 rounded-lg focus:outline-none focus:border-amber-500/60 font-semibold text-white cursor-pointer"
+              className="w-full px-2.5 py-1.5 text-xs bg-zinc-950/60 border border-white/10 rounded-lg focus:outline-none focus:border-amber-500/60 font-semibold text-white cursor-pointer"
             />
           </div>
 
@@ -235,12 +235,12 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
             <select
               value={selectedMotorizado}
               onChange={(e) => setSelectedMotorizado(e.target.value)}
-              className="w-full px-2.5 py-1.5 text-xs bg-slate-950/60 border border-white/10 rounded-lg focus:outline-none focus:border-amber-500/60 font-semibold text-white cursor-pointer"
+              className="w-full px-2.5 py-1.5 text-xs bg-zinc-950/60 border border-white/10 rounded-lg focus:outline-none focus:border-amber-500/60 font-semibold text-white cursor-pointer"
             >
-              <option className="bg-slate-950 text-white" value="all">Ver Todos</option>
-              <option className="bg-slate-950 text-white" value="none">Sin Motorizado</option>
+              <option className="bg-zinc-950 text-white" value="all">Ver Todos</option>
+              <option className="bg-zinc-950 text-white" value="none">Sin Motorizado</option>
               {motorizados.map(m => (
-                <option className="bg-slate-950 text-white" key={m.id} value={m.id}>{m.name}</option>
+                <option className="bg-zinc-950 text-white" key={m.id} value={m.id}>{m.name}</option>
               ))}
             </select>
           </div>
@@ -251,12 +251,12 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
             <select
               value={selectedPayment}
               onChange={(e) => setSelectedPayment(e.target.value)}
-              className="w-full px-2.5 py-1.5 text-xs bg-slate-950/60 border border-white/10 rounded-lg focus:outline-none focus:border-amber-500/60 font-semibold text-white cursor-pointer"
+              className="w-full px-2.5 py-1.5 text-xs bg-zinc-950/60 border border-white/10 rounded-lg focus:outline-none focus:border-amber-500/60 font-semibold text-white cursor-pointer"
             >
-              <option className="bg-slate-950 text-white" value="all">Ver Todos</option>
-              <option className="bg-slate-950 text-white" value="pago contra entrega">Contrareembolso / Brisas</option>
-              <option className="bg-slate-950 text-white" value="efectivo">Efectivo</option>
-              <option className="bg-slate-950 text-white" value="tarjeta">Tarjeta</option>
+              <option className="bg-zinc-950 text-white" value="all">Ver Todos</option>
+              <option className="bg-zinc-950 text-white" value="pago contra entrega">Contrareembolso / Brisas</option>
+              <option className="bg-zinc-950 text-white" value="efectivo">Efectivo</option>
+              <option className="bg-zinc-950 text-white" value="tarjeta">Tarjeta</option>
             </select>
           </div>
 
@@ -269,13 +269,13 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
                 placeholder="Buscar por comercio..."
                 value={searchIssuer}
                 onChange={(e) => setSearchIssuer(e.target.value)}
-                className="w-full pl-7 pr-2.5 py-1.5 text-xs bg-slate-950/60 border border-white/10 rounded-lg focus:outline-none focus:border-amber-500/60 font-semibold text-white placeholder-slate-550"
+                className="w-full pl-7 pr-2.5 py-1.5 text-xs bg-zinc-950/60 border border-white/10 rounded-lg focus:outline-none focus:border-amber-500/60 font-semibold text-white placeholder-slate-550"
               />
               <Search className="h-3 w-3 text-slate-400 absolute left-2.5 top-2.5" />
             </div>
           </div>
         </div>
-        <div className="bg-slate-900/40 border border-white/5 rounded-xl p-4 space-y-3 mt-2">
+        <div className="bg-zinc-900/40 border border-white/5 rounded-xl p-4 space-y-3 mt-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Layers className="h-4 w-4 text-amber-400" />
@@ -325,7 +325,7 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
                       className={`flex items-center gap-2 p-2 rounded-lg border cursor-pointer select-none transition ${
                         isChecked 
                           ? "bg-amber-500/10 border-amber-500/30 text-amber-300" 
-                          : "bg-slate-950 border-white/5 hover:bg-white/5 text-slate-400"
+                          : "bg-zinc-950 border-white/5 hover:bg-white/5 text-slate-400"
                       }`}
                     >
                       <input
@@ -338,7 +338,7 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
                             setSelectedFields([...selectedFields, field]);
                           }
                         }}
-                        className="rounded border-white/10 text-amber-500 focus:ring-amber-500 h-3.5 w-3.5 cursor-pointer bg-slate-950"
+                        className="rounded border-white/10 text-amber-500 focus:ring-amber-500 h-3.5 w-3.5 cursor-pointer bg-zinc-950"
                       />
                       <span className="truncate">{field}</span>
                     </label>
@@ -414,14 +414,14 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
         </div>
 
         {filteredInvoices.length === 0 ? (
-          <div className="p-10 text-center text-xs text-slate-400 font-bold bg-slate-950/20 rounded-xl border border-white/5">
+          <div className="p-10 text-center text-xs text-slate-400 font-bold bg-zinc-950/20 rounded-xl border border-white/5">
             Sin datos para generar la distribución matricial de sucursales.
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-xl border border-white/10 shadow-inner bg-slate-950/40">
+          <div className="overflow-x-auto rounded-xl border border-white/10 shadow-inner bg-zinc-950/40">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="bg-slate-950/70 border-b border-white/10 text-[10px] uppercase font-black text-slate-300 tracking-wider">
+                <tr className="bg-zinc-950/70 border-b border-white/10 text-[10px] uppercase font-black text-slate-300 tracking-wider">
                   <th className="p-3">Sucursal / Punto de Emisión</th>
                   {allInvoiceTypes.map(type => (
                     <th key={type} className="p-3 text-center whitespace-nowrap min-w-[150px]">
@@ -455,14 +455,14 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
                           </td>
                         );
                       })}
-                      <td className="p-3 text-center font-mono font-black text-white bg-slate-950/20">
+                      <td className="p-3 text-center font-mono font-black text-white bg-zinc-950/20">
                         {totalForThisBranch} tkt
                       </td>
                     </tr>
                   );
                 })}
                 {/* FILA DE RESUMEN ACUMULADO */}
-                <tr className="bg-slate-950/60 font-black border-t-2 border-white/15 text-slate-200">
+                <tr className="bg-zinc-950/60 font-black border-t-2 border-white/15 text-slate-200">
                   <td className="p-3 text-xs uppercase text-amber-400">Total Acumulado</td>
                   {allInvoiceTypes.map(type => {
                     const totalType = totalByInvoiceType[type] || 0;
@@ -479,7 +479,7 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
                       </td>
                     );
                   })}
-                  <td className="p-3 text-center font-mono text-xs text-amber-400 bg-slate-950/40">
+                  <td className="p-3 text-center font-mono text-xs text-amber-400 bg-zinc-950/40">
                     {filteredInvoices.length} tkt
                   </td>
                 </tr>
@@ -503,7 +503,7 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
               <p className="text-xs text-slate-400 text-center py-6 font-bold">No hay transacciones registradas para este periodo.</p>
             ) : (
               sucursalStatsList.map((suc) => (
-                <div key={suc.name} className="bg-slate-950/30 p-3 rounded-xl border border-white/10 shadow-inner space-y-2">
+                <div key={suc.name} className="bg-zinc-950/30 p-3 rounded-xl border border-white/10 shadow-inner space-y-2">
                   <div className="flex justify-between items-center">
                     <span className="font-extrabold text-white text-xs truncate max-w-[170px]" title={suc.name}>
                       📍 {suc.name}
@@ -537,13 +537,13 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
             <p className="text-[11px] text-slate-400 mt-0.5 font-semibold">Historial directo de copias que cumplen con los filtros ({filteredInvoices.length})</p>
           </div>
 
-          <div className="border border-white/10 rounded-xl overflow-hidden flex-grow max-h-[280px] overflow-y-auto bg-slate-950/40">
+          <div className="border border-white/10 rounded-xl overflow-hidden flex-grow max-h-[280px] overflow-y-auto bg-zinc-950/40">
             {filteredInvoices.length === 0 ? (
               <div className="p-10 text-center text-xs font-bold text-slate-400">Sin copias de ventas que coincidan con los filtros colocados.</div>
             ) : (
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
-                  <tr className="bg-slate-950/50 border-b border-white/10 text-[10px] uppercase font-black text-slate-300 tracking-wider">
+                  <tr className="bg-zinc-950/50 border-b border-white/10 text-[10px] uppercase font-black text-slate-300 tracking-wider">
                     <th className="p-2.5">Comercio</th>
                     <th className="p-2.5">Fecha</th>
                     <th className="p-2.5">Chofer</th>

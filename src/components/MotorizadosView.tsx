@@ -181,7 +181,7 @@ export default function MotorizadosView({
       </div>
 
       {showForm && (
-        <form onSubmit={handleSubmit} className="bg-slate-900/60 backdrop-blur-md rounded-xl border border-white/5 p-5 shadow-xl space-y-4">
+        <form onSubmit={handleSubmit} className="bg-zinc-900/60 backdrop-blur-md rounded-xl border border-white/5 p-5 shadow-xl space-y-4">
           <div className="flex items-center justify-between border-b border-white/5 pb-3">
             <h4 className="text-xs font-black uppercase text-amber-400 tracking-wider">
               {editingId ? "Editar Detalles del Motorizado" : "Registrar Nuevo Chofer / Motorizado"}
@@ -203,7 +203,7 @@ export default function MotorizadosView({
                 placeholder="Nombre del conductor"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-3 py-1.5 text-xs bg-slate-950/60 border border-white/10 rounded-md focus:outline-none focus:border-amber-500/60 font-semibold text-white placeholder-slate-550"
+                className="w-full px-3 py-1.5 text-xs bg-zinc-950/60 border border-white/10 rounded-md focus:outline-none focus:border-amber-500/60 font-semibold text-white placeholder-slate-550"
                 required
               />
             </div>
@@ -215,7 +215,7 @@ export default function MotorizadosView({
                 placeholder="Número de placa o registro"
                 value={vehiclePlate}
                 onChange={(e) => setVehiclePlate(e.target.value)}
-                className="w-full px-3 py-1.5 text-xs bg-slate-950/60 border border-white/10 rounded-md focus:outline-none focus:border-amber-500/60 font-semibold uppercase text-white placeholder-slate-550"
+                className="w-full px-3 py-1.5 text-xs bg-zinc-950/60 border border-white/10 rounded-md focus:outline-none focus:border-amber-500/60 font-semibold uppercase text-white placeholder-slate-550"
                 required
               />
             </div>
@@ -227,7 +227,7 @@ export default function MotorizadosView({
                 placeholder="Modelo / Marca del vehículo"
                 value={vehicleModel}
                 onChange={(e) => setVehicleModel(e.target.value)}
-                className="w-full px-3 py-1.5 text-xs bg-slate-950/60 border border-white/10 rounded-md focus:outline-none focus:border-amber-500/60 font-semibold text-white placeholder-slate-550"
+                className="w-full px-3 py-1.5 text-xs bg-zinc-950/60 border border-white/10 rounded-md focus:outline-none focus:border-amber-500/60 font-semibold text-white placeholder-slate-550"
               />
             </div>
 
@@ -238,7 +238,7 @@ export default function MotorizadosView({
                 placeholder="Número celular o teléfono"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="w-full px-3 py-1.5 text-xs bg-slate-950/60 border border-white/10 rounded-md focus:outline-none focus:border-amber-500/60 font-semibold text-white placeholder-slate-550"
+                className="w-full px-3 py-1.5 text-xs bg-zinc-950/60 border border-white/10 rounded-md focus:outline-none focus:border-amber-500/60 font-semibold text-white placeholder-slate-550"
               />
             </div>
 
@@ -247,10 +247,10 @@ export default function MotorizadosView({
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value as any)}
-                className="w-full px-3 py-1.5 text-xs bg-slate-950/60 border border-white/10 rounded-lg focus:outline-none focus:border-amber-500/60 font-semibold text-white cursor-pointer"
+                className="w-full px-3 py-1.5 text-xs bg-zinc-950/60 border border-white/10 rounded-lg focus:outline-none focus:border-amber-500/60 font-semibold text-white cursor-pointer"
               >
-                <option className="bg-slate-950 text-white" value="activo">Activo</option>
-                <option className="bg-slate-950 text-white" value="inactivo">Inactivo</option>
+                <option className="bg-zinc-950 text-white" value="activo">Activo</option>
+                <option className="bg-zinc-950 text-white" value="inactivo">Inactivo</option>
               </select>
             </div>
           </div>
@@ -275,7 +275,7 @@ export default function MotorizadosView({
 
       {/* LISTA EN REJILLA */}
       {motorizados.length === 0 ? (
-        <div className="bg-slate-900/40 backdrop-blur-md rounded-xl border border-white/5 p-10 text-center space-y-3">
+        <div className="bg-zinc-900/40 backdrop-blur-md rounded-xl border border-white/5 p-10 text-center space-y-3">
           <div className="bg-amber-500/10 w-12 h-12 rounded-full flex items-center justify-center text-amber-500 mx-auto border border-amber-500/15">
             <Users className="h-6 w-6" />
           </div>
@@ -293,8 +293,8 @@ export default function MotorizadosView({
             return (
               <div 
                 key={mot.id} 
-                className={`bg-slate-950/45 backdrop-blur-md rounded-xl border p-5 shadow-xl relative overflow-hidden transition hover:shadow-2xl flex flex-col justify-between min-h-[175px] ${
-                  mot.status === "inactivo" ? "border-white/5 bg-slate-950/25 opacity-70" : "border-white/5"
+                className={`bg-zinc-950/45 backdrop-blur-md rounded-xl border p-5 shadow-xl relative overflow-hidden transition hover:shadow-2xl flex flex-col justify-between min-h-[175px] ${
+                  mot.status === "inactivo" ? "border-white/5 bg-zinc-950/25 opacity-70" : "border-white/5"
                 }`}
               >
                 {/* ENCABEZADO CHIP */}
@@ -335,14 +335,14 @@ export default function MotorizadosView({
                       </span>
                     </div>
                   )}
-                  <div className="flex items-center justify-between bg-slate-950/30 p-1.5 rounded border border-white/5 mt-1.5">
+                  <div className="flex items-center justify-between bg-zinc-950/30 p-1.5 rounded border border-white/5 mt-1.5">
                     <div className="flex items-center gap-1">
                       <Calculator className="h-3.5 w-3.5 text-slate-400" />
                       <span className="text-[10px] text-slate-350 uppercase font-black">{stats.count} Tickets (sub)</span>
                     </div>
                     <span className="font-semibold text-slate-200 font-mono">${stats.subtotal.toFixed(2)}</span>
                   </div>
-                  <div className="flex items-center justify-between bg-slate-950/40 p-1.5 rounded border border-white/5 mt-1">
+                  <div className="flex items-center justify-between bg-zinc-950/40 p-1.5 rounded border border-white/5 mt-1">
                     <div className="flex items-center gap-1">
                       <FileText className="h-3.5 w-3.5 text-slate-400" />
                       <span className="text-[10px] text-slate-300 uppercase font-black">{stats.count} Ventas</span>
@@ -463,7 +463,7 @@ export default function MotorizadosView({
 
         return (
           <div 
-            className="fixed inset-0 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-fade-in"
+            className="fixed inset-0 bg-zinc-950/85 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-fade-in"
             onClick={() => setSelectedMotDetails(null)}
           >
             <div 
@@ -549,7 +549,7 @@ export default function MotorizadosView({
                       Monto total proveniente de los fletes que en su descripción o comentarios digan: <strong className="text-amber-400 underline font-mono">"asistencia vial bat"</strong>.
                     </p>
                   </div>
-                  <div className="text-right shrink-0 bg-slate-950/55 p-3 rounded-xl border border-white/10 shadow-inner">
+                  <div className="text-right shrink-0 bg-zinc-950/55 p-3 rounded-xl border border-white/10 shadow-inner">
                     <span className="text-[9px] uppercase font-black tracking-widest text-slate-400">Total Ganado</span>
                     <p className="text-2xl font-black font-mono text-[#FFB300] mt-0.5">${totalVialBat.toLocaleString("es-PA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                   </div>
@@ -569,7 +569,7 @@ export default function MotorizadosView({
                     <p className="text-[10px] text-slate-400 font-bold uppercase">Consigna aquí desperfectos viales, mecánicos o reparaciones.</p>
                   </div>
 
-                  <div className="border border-white/10 rounded-xl overflow-hidden flex-grow max-h-[220px] overflow-y-auto bg-slate-950/40">
+                  <div className="border border-white/10 rounded-xl overflow-hidden flex-grow max-h-[220px] overflow-y-auto bg-zinc-950/40">
                     {motIncidents.length === 0 ? (
                       <div className="p-8 text-center text-xs font-bold text-slate-400 space-y-2">
                         <CheckCircle className="h-7 w-7 text-emerald-400 mx-auto" />
@@ -578,7 +578,7 @@ export default function MotorizadosView({
                     ) : (
                       <div className="divide-y divide-white/5">
                         {motIncidents.map((inc) => (
-                          <div key={inc.id} className="p-3 bg-slate-950/30 hover:bg-slate-950/50 transition-colors font-semibold text-xs text-slate-300 flex flex-col gap-2.5">
+                          <div key={inc.id} className="p-3 bg-zinc-950/30 hover:bg-zinc-950/50 transition-colors font-semibold text-xs text-slate-300 flex flex-col gap-2.5">
                             <div className="flex items-start justify-between gap-3">
                               <p className="text-[11px] font-black text-white leading-relaxed truncate">{inc.description}</p>
                               {isAdmin && (
@@ -650,7 +650,7 @@ export default function MotorizadosView({
                         placeholder="Detalle de reparación, daño o mantenimiento..."
                         value={incidentDesc}
                         onChange={(e) => setIncidentDesc(e.target.value)}
-                        className="w-full px-2.5 py-1.5 bg-slate-950/60 border border-white/10 rounded-lg text-xs font-semibold focus:outline-none focus:border-amber-500/60 resize-none text-white placeholder-slate-550"
+                        className="w-full px-2.5 py-1.5 bg-zinc-950/60 border border-white/10 rounded-lg text-xs font-semibold focus:outline-none focus:border-amber-500/60 resize-none text-white placeholder-slate-550"
                         required
                       />
                     </div>
@@ -661,11 +661,11 @@ export default function MotorizadosView({
                         <select
                           value={incidentSeverity}
                           onChange={(e) => setIncidentSeverity(e.target.value as any)}
-                          className="w-full px-2 py-1.5 bg-slate-950/60 border border-white/10 rounded-lg text-[10.5px] font-bold focus:outline-none focus:border-amber-500/60 cursor-pointer text-white"
+                          className="w-full px-2 py-1.5 bg-zinc-950/60 border border-white/10 rounded-lg text-[10.5px] font-bold focus:outline-none focus:border-amber-500/60 cursor-pointer text-white"
                         >
-                          <option className="bg-slate-950 text-white" value="baja">Baja</option>
-                          <option className="bg-slate-950 text-white" value="media">Media</option>
-                          <option className="bg-slate-950 text-white" value="alta">Alta</option>
+                          <option className="bg-zinc-950 text-white" value="baja">Baja</option>
+                          <option className="bg-zinc-950 text-white" value="media">Media</option>
+                          <option className="bg-zinc-950 text-white" value="alta">Alta</option>
                         </select>
                       </div>
 
@@ -675,7 +675,7 @@ export default function MotorizadosView({
                           type="date"
                           value={incidentDate}
                           onChange={(e) => setIncidentDate(e.target.value)}
-                          className="w-full px-2 py-1 bg-slate-950/60 border border-white/10 rounded-lg text-[10.5px] font-bold focus:outline-none focus:border-amber-500/60 text-white"
+                          className="w-full px-2 py-1 bg-zinc-950/60 border border-white/10 rounded-lg text-[10.5px] font-bold focus:outline-none focus:border-amber-500/60 text-white"
                           required
                         />
                       </div>

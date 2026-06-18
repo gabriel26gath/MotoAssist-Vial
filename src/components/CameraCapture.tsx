@@ -153,7 +153,7 @@ export default function CameraCapture({ onCapture, onClose }: CameraCaptureProps
               </div>
 
               {/* Guía de lectura central translúcida */}
-              <div className="absolute inset-0 bg-slate-950/20 backdrop-brightness-[1.1] pointer-events-none border border-white/5"></div>
+              <div className="absolute inset-0 bg-zinc-950/20 backdrop-brightness-[1.1] pointer-events-none border border-white/5"></div>
             </>
           )}
         </div>

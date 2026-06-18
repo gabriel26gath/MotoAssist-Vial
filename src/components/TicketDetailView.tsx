@@ -41,7 +41,7 @@ export default function TicketDetailView({
   };
 
   return (
-    <div className="bg-slate-950/40 backdrop-blur-md rounded-xl border border-amber-500/10 p-6 md:p-8 shadow-sm space-y-6 text-slate-100">
+    <div className="bg-zinc-950/40 backdrop-blur-md rounded-xl border border-amber-500/10 p-6 md:p-8 shadow-sm space-y-6 text-slate-100">
       
       {/* CABECERA */}
       <div className="flex items-center justify-between border-b border-white/5 pb-4">
@@ -58,7 +58,7 @@ export default function TicketDetailView({
         </div>
         <button 
           onClick={onClose}
-          className="p-1 px-3 text-[10px] bg-slate-905 border border-slate-800 hover:bg-slate-800 text-slate-350 rounded-full transition font-semibold cursor-pointer"
+          className="p-1 px-3 text-[10px] bg-zinc-905 border border-slate-800 hover:bg-zinc-800 text-slate-350 rounded-full transition font-semibold cursor-pointer"
         >
           Cerrar Vista
         </button>
@@ -71,49 +71,49 @@ export default function TicketDetailView({
           <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest pl-0.5">Metadatos de la Factura</h4>
           
           <div className="grid grid-cols-2 gap-3">
-            <div className="p-3 bg-slate-900/50 border border-slate-800 rounded-lg">
+            <div className="p-3 bg-zinc-900/50 border border-slate-800 rounded-lg">
               <span className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">Comercio RUC</span>
               <p className="text-xs font-bold text-slate-200 mt-0.5 truncate">{invoice.issuerRuc || "No Registrado"}</p>
             </div>
 
-            <div className="p-3 bg-slate-900/50 border border-slate-800 rounded-lg">
+            <div className="p-3 bg-zinc-900/50 border border-slate-800 rounded-lg">
               <span className="text-[9px] uppercase font-bold text-slate-500 tracking-wider font-semibold">Tipo Documento</span>
               <p className="text-xs font-bold text-slate-200 mt-0.5 truncate" title={invoice.invoiceType}>{invoice.invoiceType || "Factura de Venta"}</p>
             </div>
 
-            <div className="p-3 bg-slate-900/50 border border-slate-800 rounded-lg">
+            <div className="p-3 bg-zinc-900/50 border border-slate-800 rounded-lg">
               <span className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">Fecha de Emisión</span>
               <p className="text-xs font-bold text-slate-200 mt-0.5">{invoice.date}</p>
             </div>
 
-            <div className="p-3 bg-slate-900/50 border border-slate-800 rounded-lg">
+            <div className="p-3 bg-zinc-900/50 border border-slate-800 rounded-lg">
               <span className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">Nº Factura / Ticket</span>
               <p className="text-xs font-bold text-slate-200 mt-0.5 truncate" title={invoice.invoiceNumber}>{invoice.invoiceNumber}</p>
             </div>
 
-            <div className="p-3 bg-slate-900/50 border border-slate-800 rounded-lg">
+            <div className="p-3 bg-zinc-900/50 border border-slate-800 rounded-lg">
               <span className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">Serie / Consecutivo</span>
               <p className="text-xs font-bold text-slate-200 mt-0.5">{invoice.serial || "S/S"}</p>
             </div>
 
-            <div className="p-3 bg-slate-900/50 border border-slate-800 rounded-lg">
+            <div className="p-3 bg-zinc-900/50 border border-slate-800 rounded-lg">
               <span className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">Lugar: Sucursal (Caja)</span>
               <p className="text-xs font-bold text-slate-200 mt-0.5">Suc {invoice.sucursal || "001"} - Caja {invoice.ptoFact || "01"}</p>
             </div>
 
-            <div className="p-3 bg-slate-900/50 border border-slate-800 rounded-lg col-span-full">
+            <div className="p-3 bg-zinc-900/50 border border-slate-800 rounded-lg col-span-full">
               <span className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">Cliente Receptor</span>
               <p className="text-xs font-bold text-slate-200 mt-0.5">
                 {invoice.receiverName || "Consumidor Final"} {invoice.receiverRuc ? `(RUC/CIP: ${invoice.receiverRuc})` : ""}
               </p>
             </div>
 
-            <div className="p-3 bg-slate-900/50 border border-slate-800 rounded-lg">
+            <div className="p-3 bg-zinc-900/50 border border-slate-800 rounded-lg">
               <span className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">Atendido por (Vendedor)</span>
               <p className="text-xs font-bold text-slate-200 mt-0.5 truncate">{invoice.seller || "No Especificado"}</p>
             </div>
 
-            <div className="p-3 bg-slate-900/50 border border-slate-800 rounded-lg">
+            <div className="p-3 bg-zinc-900/50 border border-slate-800 rounded-lg">
               <span className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">Método de Pago</span>
               <p className="text-xs font-bold text-slate-200 mt-0.5 font-sans flex items-center gap-1.5">
                 <CreditCard className="h-3.5 w-3.5 text-slate-400" />
@@ -139,7 +139,7 @@ export default function TicketDetailView({
             )}
 
             {invoice.comments && (
-              <div className="p-3 bg-slate-900/50 border border-slate-800 rounded-lg col-span-full">
+              <div className="p-3 bg-zinc-900/50 border border-slate-800 rounded-lg col-span-full">
                 <span className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">Comentarios de Entrega / Dirección Flete</span>
                 <p className="text-xs text-slate-300 mt-0.5 leading-relaxed font-semibold">{invoice.comments}</p>
               </div>

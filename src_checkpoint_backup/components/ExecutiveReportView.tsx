@@ -1797,7 +1797,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
         </div>
 
         {/* CONTENEDOR DE LA CARPETA CON EXCELENTE VISIBILIDAD (Fondo de color gris slate/zinc cambiado a ámbar cálido) */}
-        <div className="p-6 md:p-8 space-y-10 bg-amber-500/5">
+        <div className="backdrop-blur-sm p-6 md:p-8 space-y-10 bg-amber-500/5">
           
           {/* SECCIÓN 1: GRÁFICO INTEGRADOR EN EL CONTEXTO DEL REPORTE */}
           <div className="glass-panel border border-amber-500/30 bg-amber-950/20 p-5 rounded-2xl shadow-sm text-white">
