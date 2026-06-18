@@ -192,7 +192,7 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
   };
 
   return (
-    <div id="reports-module-view" className="space-y-6 animate-fade-in">
+    <div id="reports-module-view" className="space-y-6 animate-fade-in text-white pb-12">
       {/* PANEL DE CONFIGURACIÓN DE FILTROS */}
       <div className="glass-card rounded-2xl p-5.5 shadow-2xl space-y-4">
         <div>
@@ -275,8 +275,6 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
             </div>
           </div>
         </div>
-
-        {/* COMPORTAMIENTO CONFIG DE SELECCIÓN DE CAMPOS EXPORTACIÓN */}
         <div className="bg-slate-900/40 border border-white/5 rounded-xl p-4 space-y-3 mt-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -536,7 +534,7 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
         <div className="lg:col-span-7 glass-card p-5.5 rounded-2xl shadow-2xl space-y-4 flex flex-col justify-between">
           <div>
             <h4 className="text-xs font-black uppercase text-amber-400 tracking-wider">Bitácora de Ventas Filtradas</h4>
-            <p className="text-[11px] text-slate-400 mt-0.5">Historial directo de copias que cumplen con los filtros ({filteredInvoices.length})</p>
+            <p className="text-[11px] text-slate-400 mt-0.5 font-semibold">Historial directo de copias que cumplen con los filtros ({filteredInvoices.length})</p>
           </div>
 
           <div className="border border-white/10 rounded-xl overflow-hidden flex-grow max-h-[280px] overflow-y-auto bg-slate-950/40">

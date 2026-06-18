@@ -21,7 +21,8 @@ import {
   Sliders,
   DollarSign,
   Download,
-  Brain
+  Brain,
+  X
 } from "lucide-react";
 import { 
   ResponsiveContainer, 
@@ -122,6 +123,102 @@ export default function ExecutiveReportView({ invoices }: ExecutiveReportViewPro
   const [isEditing, setIsEditing] = useState(false);
   const [editedMonthly, setEditedMonthly] = useState<HistoricalMonthlyData[]>([]);
   const [editedSucursales, setEditedSucursales] = useState<HistoricalSucursalData[]>([]);
+
+  // Estados para personalización del PDF
+  const [pdfTitle, setPdfTitle] = useState("REPORTE EJECUTIVO DE ASISTENCIAS VIALES");
+  const [pdfSubtitle, setPdfSubtitle] = useState("Auto Centro S.A. • Control de Eficiencia Operativa");
+  const [showPdfCustomizer, setShowPdfCustomizer] = useState(false);
+
+  // Títulos de secciones editables antes de descargar
+  const [sectionTitles, setSectionTitles] = useState({
+    kpis: "RESUMEN DE INDICADORES OPERATIVOS (YTD)",
+    bar_trend: "EVOLUCIÓN MENSUAL COMPARADA (2025 VS 2026 YTD)",
+    line_trend: "CURVAS DE EVOLUCIÓN ANUAL COMPARADA (2025 VS 2026)",
+    branch_part: "PARTICIPACIÓN DE SUCURSALES (CONSOLIDADO YTD)",
+    compare_tab: "COMPARATIVA TRANSVERSAL ANUAL (2025 VS 2026)",
+    monthly_suc: "DISTRIBUCIÓN MENSUAL POR SUCURSAL",
+    analysis: "ANÁLISIS OPERATIVO & DIAGNÓSTICO PREDICTIVO IA"
+  });
+
+  // Tamaños de gráficos/tablas independientes en el PDF
+  const [sectionSizes, setSectionSizes] = useState({
+    kpis: "normal", // normal, grande
+    charts: "normal", // normal, grande
+    tables: "normal", // normal, grande
+    analysis: "normal" // normal, grande
+  });
+
+  // Escala global del documento (Zoom)
+  const [printScale, setPrintScale] = useState("100"); // 100, 115, 130
+
+  // Estado para la ventana flotante (Modal) del Diseñador Visual de PDF
+  const [isPdfDesignerOpen, setIsPdfDesignerOpen] = useState(false);
+
+  // Secciones del PDF con dimensiones de formas (ancho, escala/altura, salto de página, visibilidad y orden)
+  const [pdfSections, setPdfSections] = useState([
+    { id: "kpis", name: "KPIs / Indicadores Clave", visible: true, width: "100%", scale: 1.0, isPageBreakBefore: false },
+    { id: "bar_trend", name: "Gráfico de Barras Mensuales (2025 vs 2026)", visible: true, width: "100%", scale: 1.0, isPageBreakBefore: false },
+    { id: "line_trend", name: "Curvas de Evolución Anual Comparada (2025 vs 2026)", visible: true, width: "100%", scale: 1.0, isPageBreakBefore: false },
+    { id: "branch_part", name: "Gráfico de Participación por Sucursales YTD", visible: true, width: "100%", scale: 1.0, isPageBreakBefore: false },
+    { id: "compare_tab", name: "Tabla de Comparativa Transversal Anual", visible: true, width: "100%", scale: 1.0, isPageBreakBefore: false },
+    { id: "monthly_suc", name: "Tabla de Distribución Mensual por Sucursal", visible: true, width: "100%", scale: 1.0, isPageBreakBefore: false },
+    { id: "analysis", name: "Texto de Análisis IA & Diagnóstico", visible: true, width: "100%", scale: 1.0, isPageBreakBefore: false }
+  ]);
+
+  const [isEditingAnalysis, setIsEditingAnalysis] = useState(false);
+
+  // Mover elemento arriba o abajo
+  const handleMoveSection = (index: number, direction: 'up' | 'down') => {
+    if (direction === 'up' && index === 0) return;
+    if (direction === 'down' && index === pdfSections.length - 1) return;
+
+    const nextIndex = direction === 'up' ? index - 1 : index + 1;
+    const updated = [...pdfSections];
+    const [removed] = updated.splice(index, 1);
+    updated.splice(nextIndex, 0, removed);
+    setPdfSections(updated);
+  };
+
+  // Activar/Ocultar elemento de la maqueta
+  const handleToggleSectionVisible = (index: number) => {
+    const updated = [...pdfSections];
+    updated[index].visible = !updated[index].visible;
+    setPdfSections(updated);
+  };
+
+  // Alternar ancho de la forma (100% vs 50%)
+  const handleToggleSectionWidth = (index: number) => {
+    const updated = [...pdfSections];
+    updated[index].width = updated[index].width === "100%" ? "50%" : "100%";
+    setPdfSections(updated);
+  };
+
+  // Cambiar escala de la sección (+10% / -10%) para encoger o ampliar
+  const handleSectionScaleChange = (index: number, action: 'amplify' | 'shrink') => {
+    const updated = [...pdfSections];
+    let currentScale = updated[index].scale ?? 1.0;
+    if (action === "amplify") {
+      currentScale = Math.min(1.5, currentScale + 0.1);
+    } else {
+      currentScale = Math.max(0.6, currentScale - 0.1);
+    }
+    updated[index].scale = parseFloat(currentScale.toFixed(1));
+    setPdfSections(updated);
+  };
+
+  // Alternar salto de página antes de esta sección
+  const handleTogglePageBreak = (index: number) => {
+    const updated = [...pdfSections];
+    updated[index].isPageBreakBefore = !updated[index].isPageBreakBefore;
+    setPdfSections(updated);
+  };
+
+  const handleTitleChange = (sectionId: string, value: string) => {
+    setSectionTitles(prev => ({
+      ...prev,
+      [sectionId]: value
+    }));
+  };
 
   // Cargar datos de LocalStorage
   useEffect(() => {
@@ -542,7 +639,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
         <tr>
           <td style="font-weight: bold;">${item.mes}</td>
           <td style="text-align: center; font-family: monospace;">${item.val2025}</td>
-          <td style="text-align: center; font-family: monospace; color: #f59e0b; font-weight: bold;">${item.val2026}</td>
+          <td style="text-align: center; font-family: monospace; color: #d97706; font-weight: bold;">${item.val2026}</td>
           <td style="text-align: center; font-family: monospace; font-weight: bold;">${item.val2026 - item.val2025}</td>
           <td style="text-align: center; font-family: monospace; font-weight: bold;">${item.val2025 > 0 ? (((item.val2026 - item.val2025)/item.val2025)*100).toFixed(0) + '%' : '0%'}</td>
         </tr>
@@ -554,7 +651,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
           <tr>
             <td style="font-weight: bold; text-transform: uppercase;">${item.sucursal}</td>
             ${MESES_ABR.map(m => `<td style="text-align: center; font-family: monospace;">${item.meses[m] || 0}</td>`).join("")}
-            <td style="text-align: right; font-family: monospace; font-weight: bold; color: #f59e0b;">${total}</td>
+            <td style="text-align: right; font-family: monospace; font-weight: bold; color: #d97706;">${total}</td>
           </tr>
         `;
       }).join("");
@@ -565,7 +662,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
         10
       );
 
-      // Generar barras gráficas en HTML/CSS para el reporte de evolución mensual interanual
+      // Generar barras gráficas en HTML/CSS para el reporte de evolución mensual interanual (Gráfico de barras)
       const monthlyBarsHtml = resolvedMonthlyList.map(item => {
         const h2025 = (item.val2025 / maxValForChartYScale) * 110; // altura max de 110px
         const h2026 = (item.val2026 / maxValForChartYScale) * 110;
@@ -578,7 +675,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
         const varText = item.val2025 > 0 && item.val2026 > 0 ? `${sign}${varPct}%` : "";
 
         return `
-          <div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-end; width: calc(100% / 12); min-width: 38px; height: 165px;">
+          <div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-end; width: calc(100% / 12); min-width: 32px; height: 165px;">
             <!-- Variación sobre cada mes -->
             <div style="font-size: 8px; font-weight: 800; color: ${indicatorColor}; font-family: monospace; height: 16px; margin-bottom: 2px;">
               ${varText}
@@ -586,11 +683,11 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
             
             <div style="display: flex; align-items: flex-end; gap: 4px; height: 110px; border-bottom: 1px solid #cbd5e1; width: 100%; justify-content: center; padding-bottom: 2px;">
               <!-- 2025 bar -->
-              <div style="height: ${h2025}px; width: 12px; background-color: #94a3b8; border-radius: 2px 2px 0 0; position: relative;">
+              <div style="height: ${h2025}px; width: 10px; background-color: #94a3b8; border-radius: 2px 2px 0 0; position: relative;">
                 ${item.val2025 > 0 ? `<span style="font-size: 7.5px; font-weight: bold; position: absolute; top: -11px; left: 50%; transform: translateX(-50%); font-family: monospace; color: #475569;">${item.val2025}</span>` : ""}
               </div>
               <!-- 2026 bar -->
-              <div style="height: ${h2026}px; width: 12px; background-color: #f59e0b; border-radius: 2px 2px 0 0; position: relative;">
+              <div style="height: ${h2026}px; width: 10px; background-color: #f59e0b; border-radius: 2px 2px 0 0; position: relative;">
                 ${item.val2026 > 0 ? `<span style="font-size: 7.5px; font-weight: 950; position: absolute; top: -11px; left: 50%; transform: translateX(-50%); font-family: monospace; color: #b45309;">${item.val2026}</span>` : ""}
               </div>
             </div>
@@ -625,93 +722,147 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
         `;
       }).join("");
 
-      printWindow.document.write(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <title>Reporte Ejecutivo - Auto Centro S.A.</title>
-          <style>
-            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 40px; color: #1e293b; background: white; line-height: 1.5; }
-            h1 { font-size: 22px; text-transform: uppercase; border-bottom: 3px solid #f59e0b; padding-bottom: 8px; margin-bottom: 4px; color: #0f172a; font-weight: 800; }
-            .subtitle { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: #64748b; margin-bottom: 30px; font-weight: bold; }
-            .grid-kpi { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 30px; }
-            .kpi-card { border: 1px solid #e2e8f0; padding: 15px; border-radius: 12px; background: #f8fafc; border-left: 4px solid #f59e0b; }
-            .kpi-val { font-size: 22px; font-weight: 900; font-family: monospace; color: #0f172a; margin-bottom: 4px; }
-            .kpi-lbl { font-size: 9px; text-transform: uppercase; color: #64748b; font-weight: 800; letter-spacing: 0.5px; }
-            h2 { font-size: 14px; text-transform: uppercase; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px; margin-top: 30px; margin-bottom: 12px; color: #0f172a; font-weight: 800; }
-            table { width: 100%; border-collapse: collapse; font-size: 11.5px; margin-bottom: 25px; }
-            th, td { border: 1px solid #cbd5e1; padding: 7px 10px; text-align: left; }
-            th { background: #f1f5f9; font-weight: bold; text-transform: uppercase; font-size: 9px; color: #475569; letter-spacing: 0.5px; }
-            .analysis-box { background: #fafafa; border: 1px solid #e2e8f0; padding: 20px; border-radius: 12px; font-size: 12px; line-height: 1.6; color: #334155; }
-            .flex-charts-container { display: grid; grid-template-columns: 1.5fr 1fr; gap: 30px; margin-bottom: 30px; }
-            .chart-box { border: 1px solid #e2e8f0; padding: 20px; border-radius: 12px; background: #f8fafc; }
-            @media print {
-              body { padding: 0; }
-              .no-print { display: none; }
-            }
-          </style>
-        </head>
-        <body>
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <div>
-              <h1>REPORTE EJECUTIVO DE ASISTENCIAS VIALES</h1>
-              <div class="subtitle">Auto Centro S.A. &middot; Control de Eficiencia Operativa</div>
-            </div>
-            <button class="no-print" onclick="window.print()" style="padding: 10px 18px; background: #f59e0b; border: none; font-weight: bold; border-radius: 8px; cursor: pointer; color: black; font-size: 11px; text-transform: uppercase;">Imprimir PDF</button>
-          </div>
+      // Generar Gráfico de Curvas de Evolución Anual (Vectorial SVG) para el PDF
+      const svgWidth = 650;
+      const svgHeight = 220;
+      const xStart = 45;
+      const xEnd = 610;
+      const yStart = 30;
+      const yEnd = 180;
+      
+      const getX = (idx: number) => xStart + (idx * (xEnd - xStart) / 11);
+      const getY = (val: number) => yEnd - ((val / maxValForChartYScale) * (yEnd - yStart));
 
+      // Grid lines horizontales
+      const gridCount = 4;
+      let svgGridLines = "";
+      for (let g = 0; g <= gridCount; g++) {
+        const gridVal = (maxValForChartYScale / gridCount) * g;
+        const gridY = getY(gridVal);
+        svgGridLines += `
+          <line x1="${xStart}" y1="${gridY}" x2="${xEnd}" y2="${gridY}" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="3,3" />
+          <text x="${xStart - 10}" y="${gridY + 3}" font-size="8px" font-family="monospace" fill="#64748b" text-anchor="end">${gridVal.toFixed(0)}</text>
+        `;
+      }
+
+      // Conexiones de nodos
+      const points2025 = resolvedMonthlyList.map((item, idx) => ({ x: getX(idx), y: getY(item.val2025), val: item.val2025 }));
+      const points2026 = resolvedMonthlyList.map((item, idx) => ({ x: getX(idx), y: getY(item.val2026), val: item.val2026 }));
+
+      const pathD2025 = points2025.map((p, idx) => `${idx === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(" ");
+      const pathD2026 = points2026.map((p, idx) => `${idx === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(" ");
+
+      const dots2025 = points2025.map((p) => `
+        <circle cx="${p.x}" cy="${p.y}" r="4" fill="#64748b" stroke="white" stroke-width="1.2" />
+        ${p.val > 0 ? `<text x="${p.x}" y="${p.y - 7}" font-size="8px" font-family="monospace" font-weight="bold" fill="#475569" text-anchor="middle">${p.val}</text>` : ""}
+      `).join("");
+
+      const dots2026 = points2026.map((p) => `
+        <circle cx="${p.x}" cy="${p.y}" r="4" fill="#f59e0b" stroke="white" stroke-width="1.2" />
+        ${p.val > 0 ? `<text x="${p.x}" y="${p.y - 7}" font-size="8px" font-family="monospace" font-weight="black" fill="#b45309" text-anchor="middle">${p.val}</text>` : ""}
+      `).join("");
+
+      const xLabels = resolvedMonthlyList.map((item, idx) => `
+        <text x="${getX(idx)}" y="${yEnd + 15}" font-size="8.5px" font-family="sans-serif" font-weight="bold" fill="#475569" text-anchor="middle">${item.mes.substring(0, 3).toUpperCase()}</text>
+      `).join("");
+
+      const curvesSvgHtml = `
+        <svg viewBox="0 0 ${svgWidth} ${svgHeight}" style="width: 100%; height: 100%; display: block;">
+          <!-- Fondo blanco puro -->
+          <rect x="0" y="0" width="${svgWidth}" height="${svgHeight}" fill="#ffffff" />
+          
+          <!-- Rejilla trasera -->
+          ${svgGridLines}
+          
+          <!-- Ejes cartesianos -->
+          <line x1="${xStart}" y1="${yEnd}" x2="${xEnd}" y2="${yEnd}" stroke="#94a3b8" stroke-width="1.5" />
+          <line x1="${xStart}" y1="${yStart}" x2="${xStart}" y2="${yEnd}" stroke="#94a3b8" stroke-width="1.5" />
+          
+          <!-- Camino 2025 -->
+          <path d="${pathD2025}" fill="none" stroke="#64748b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+          
+          <!-- Camino 2026 -->
+          <path d="${pathD2026}" fill="none" stroke="#f59e0b" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+          
+          <!-- Puntos y leyendas rápidas -->
+          ${dots2025}
+          ${dots2026}
+          ${xLabels}
+        </svg>
+      `;
+
+      // Maquetación de cada bloque dinámico
+      const kpisHtml = `
+        <div style="margin-bottom: ${sectionSizes.kpis === 'grande' ? '35px' : '22px'};">
+          <h2 style="font-size: ${sectionSizes.kpis === 'grande' ? '15px' : '13px'};">${sectionTitles.kpis}</h2>
           <div class="grid-kpi">
-            <div class="kpi-card">
-              <div class="kpi-val">${total2026YTD}</div>
+            <div class="kpi-card" style="${sectionSizes.kpis === 'grande' ? 'padding: 20px;' : ''}">
+              <div class="kpi-val" style="font-size: ${sectionSizes.kpis === 'grande' ? '25px' : '20px'};">${total2026YTD}</div>
               <div class="kpi-lbl">Total Asistencias YTD (2026)</div>
             </div>
-            <div class="kpi-card" style="border-left-color: #10b981;">
-              <div class="kpi-val">${topMediaPercentage.toFixed(1)}%</div>
+            <div class="kpi-card" style="border-left-color: #10b981; ${sectionSizes.kpis === 'grande' ? 'padding: 20px;' : ''}">
+              <div class="kpi-val" style="font-size: ${sectionSizes.kpis === 'grande' ? '25px' : '20px'};">${topMediaPercentage.toFixed(1)}%</div>
               <div class="kpi-lbl">Medio Líder (${topMediaName})</div>
             </div>
-            <div class="kpi-card" style="border-left-color: #3b82f6;">
-              <div class="kpi-val">${diffVsPrevMonthPct >= 0 ? "+" : ""}${diffVsPrevMonthPct.toFixed(1)}%</div>
+            <div class="kpi-card" style="border-left-color: #3b82f6; ${sectionSizes.kpis === 'grande' ? 'padding: 20px;' : ''}">
+              <div class="kpi-val" style="font-size: ${sectionSizes.kpis === 'grande' ? '25px' : '20px'};">${diffVsPrevMonthPct >= 0 ? "+" : ""}${diffVsPrevMonthPct.toFixed(1)}%</div>
               <div class="kpi-lbl">vs Mes Anterior</div>
             </div>
-            <div class="kpi-card" style="border-left-color: #f59e0b;">
-              <div class="kpi-val">${variationVsPriorYearPct >= 0 ? "+" : ""}${variationVsPriorYearPct.toFixed(1)}%</div>
+            <div class="kpi-card" style="border-left-color: #f59e0b; ${sectionSizes.kpis === 'grande' ? 'padding: 20px;' : ''}">
+              <div class="kpi-val" style="font-size: ${sectionSizes.kpis === 'grande' ? '25px' : '20px'};">${variationVsPriorYearPct >= 0 ? "+" : ""}${variationVsPriorYearPct.toFixed(1)}%</div>
               <div class="kpi-lbl">vs Histórico YTD</div>
             </div>
           </div>
+        </div>
+      `;
 
-          <h2>1. GRÁFICOS ANALÍTICOS DE COMPORTAMIENTO VIAL</h2>
-          <div class="flex-charts-container">
-            <!-- Gráfico mensual interanual -->
-            <div class="chart-box">
-              <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #0f172a; margin-bottom: 15px;">Evolución Mensual Comparada (2025 vs 2026 YTD)</div>
-              
-              <!-- Leyenda -->
-              <div style="display: flex; gap: 15px; margin-bottom: 15px; font-size: 9px; font-weight: bold;">
-                <div style="display: flex; align-items: center; gap: 4px;">
-                  <div style="width: 10px; height: 10px; background-color: #94a3b8; border-radius: 2px;"></div>
-                  <span style="color: #475569;">Año 2025 (Histórico)</span>
-                </div>
-                <div style="display: flex; align-items: center; gap: 4px;">
-                  <div style="width: 10px; height: 10px; background-color: #f59e0b; border-radius: 2px;"></div>
-                  <span style="color: #475569;">Año 2026 (YTD Real)</span>
-                </div>
+      const barTrendHtml = `
+        <div style="margin-bottom: 25px;">
+          <h2 style="font-size: 13px;">${sectionTitles.bar_trend}</h2>
+          <div class="chart-box" style="padding: 16px; height: ${sectionSizes.charts === 'grande' ? '260px' : '180px'}; display: flex; flex-direction: column; justify-content: space-between;">
+            <div style="display: flex; gap: 12px; margin-bottom: 8px; font-size: 9px; font-weight: bold;">
+              <div style="display: flex; align-items: center; gap: 4px;">
+                <div style="width: 10px; height: 10px; background-color: #94a3b8; border-radius: 2px;"></div>
+                <span style="color: #475569;">Año 2025 (Histórico)</span>
               </div>
-
-              <div style="display: flex; align-items: flex-end; justify-content: space-between; border-left: 2px solid #cbd5e1; border-bottom: 2px solid #cbd5e1; padding-left: 10px; padding-bottom: 5px;">
-                ${monthlyBarsHtml}
+              <div style="display: flex; align-items: center; gap: 4px;">
+                <div style="width: 10px; height: 10px; background-color: #f59e0b; border-radius: 2px;"></div>
+                <span style="color: #475569;">Año 2026 (YTD Real)</span>
               </div>
             </div>
-
-            <!-- Gráfico sucursal -->
-            <div class="chart-box">
-              <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #0f172a; margin-bottom: 15px;">Participación de Sucursales (Consolidado YTD)</div>
-              <div style="display: flex; flex-direction: column; justify-content: center; height: calc(100% - 30px);">
-                ${sucursalProgressHtml}
-              </div>
+            
+            <div style="display: flex; align-items: flex-end; justify-content: space-between; border-left: 1.5px solid #cbd5e1; border-bottom: 1.5px solid #cbd5e1; padding-left: 8px; padding-bottom: 5px; height: 100%;">
+              ${monthlyBarsHtml}
             </div>
           </div>
+        </div>
+      `;
 
-          <h2>2. COMPARATIVA TRANSVERSAL ANUAL (2025 VS 2026)</h2>
+      const lineTrendHtml = `
+        <div style="margin-bottom: 25px;">
+          <h2 style="font-size: 13px;">${sectionTitles.line_trend}</h2>
+          <div class="chart-box" style="padding: 16px; height: ${sectionSizes.charts === 'grande' ? '260px' : '180px'}; display: flex; align-items: center; justify-content: center; background-color: white;">
+            <div style="width: 100%; height: 100%;">
+              ${curvesSvgHtml}
+            </div>
+          </div>
+        </div>
+      `;
+
+      const branchPartHtml = `
+        <div style="margin-bottom: 25px;">
+          <h2 style="font-size: 13px;">${sectionTitles.branch_part}</h2>
+          <div class="chart-box" style="padding: 18px; min-height: 140px;">
+            <div style="display: flex; flex-direction: column; justify-content: center;">
+              ${sucursalProgressHtml}
+            </div>
+          </div>
+        </div>
+      `;
+
+      const compareTabHtml = `
+        <div style="margin-bottom: 25px; font-size: ${sectionSizes.tables === 'grande' ? '12.5px' : '11px'};">
+          <h2 style="font-size: 13px;">${sectionTitles.compare_tab}</h2>
           <table>
             <thead>
               <tr>
@@ -726,8 +877,12 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
               ${tableRows}
             </tbody>
           </table>
+        </div>
+      `;
 
-          <h2>3. DISTRIBUCIÓN MENSUAL POR SUCURSAL</h2>
+      const monthlySucHtml = `
+        <div style="margin-bottom: 25px; font-size: ${sectionSizes.tables === 'grande' ? '12.5px' : '11px'};">
+          <h2 style="font-size: 13px;">${sectionTitles.monthly_suc}</h2>
           <table>
             <thead>
               <tr>
@@ -740,11 +895,89 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
               ${sucursalRows}
             </tbody>
           </table>
+        </div>
+      `;
 
-          <h2>4. ANÁLISIS EJECUTIVO Y DIAGNÓSTICO (AI GENERATED)</h2>
+      const analysisHtml = `
+        <div style="margin-bottom: 25px; font-size: ${sectionSizes.analysis === 'grande' ? '13px' : '11.5px'};">
+          <h2 style="font-size: 13px;">${sectionTitles.analysis}</h2>
           <div class="analysis-box">
             ${analysisContent ? analysisContent.replace(/\n/g, "<br>") : "Cargando análisis inteligente..."}
           </div>
+        </div>
+      `;
+
+      // Generar contenido en el orden exacto especificado por el usuario
+      const customReportContent = pdfSections
+        .filter(sec => sec.visible)
+        .map(sec => {
+          let sectionContent = "";
+          if (sec.id === "kpis") sectionContent = kpisHtml;
+          else if (sec.id === "bar_trend") sectionContent = barTrendHtml;
+          else if (sec.id === "line_trend") sectionContent = lineTrendHtml;
+          else if (sec.id === "branch_part") sectionContent = branchPartHtml;
+          else if (sec.id === "compare_tab") sectionContent = compareTabHtml;
+          else if (sec.id === "monthly_suc") sectionContent = monthlySucHtml;
+          else if (sec.id === "analysis") sectionContent = analysisHtml;
+
+          // Estilos de dimensiones interactivas aplicados a la forma
+          const isHalf = sec.width === "50%";
+          const widthCss = isHalf ? "width: 49.5%; display: inline-block; vertical-align: top; box-sizing: border-box;" : "width: 100%; display: block; clear: both;";
+          const scaleCss = sec.scale ? `zoom: ${sec.scale};` : "";
+          const pageBreakCss = sec.isPageBreakBefore ? "page-break-before: always; padding-top: 10px;" : "";
+
+          return `
+            <div style="${widthCss} ${pageBreakCss} box-sizing: border-box; margin-bottom: 25px;">
+              <div style="${scaleCss}">
+                ${sectionContent}
+              </div>
+            </div>
+          `;
+        })
+        .join("");
+
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>${pdfTitle}</title>
+          <style>
+            body { 
+              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+              padding: 40px; 
+              color: #1e293b; 
+              background: white; 
+              line-height: 1.5;
+              zoom: ${parseInt(printScale) / 100};
+            }
+            h1 { font-size: 22px; text-transform: uppercase; border-bottom: 3px solid #f59e0b; padding-bottom: 8px; margin-bottom: 4px; color: #0f172a; font-weight: 800; }
+            .subtitle { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: #64748b; margin-bottom: 30px; font-weight: bold; }
+            .grid-kpi { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px; }
+            .kpi-card { border: 1px solid #e2e8f0; padding: 14px; border-radius: 12px; background: #f8fafc; border-left: 4px solid #f59e0b; }
+            .kpi-val { font-size: 21px; font-weight: 950; font-family: monospace; color: #0f172a; margin-bottom: 4px; }
+            .kpi-lbl { font-size: 9px; text-transform: uppercase; color: #64748b; font-weight: 800; letter-spacing: 0.5px; }
+            h2 { font-size: 12.5px; text-transform: uppercase; border-bottom: 2px solid #cbd5e1; padding-bottom: 5px; margin-top: 25px; margin-bottom: 11px; color: #0f172a; font-weight: 850; letter-spacing: 0.5px; }
+            table { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 20px; }
+            th, td { border: 1px solid #cbd5e1; padding: 6px 9px; text-align: left; }
+            th { background: #f1f5f9; font-weight: bold; text-transform: uppercase; font-size: 8.5px; color: #475569; letter-spacing: 0.5px; }
+            .analysis-box { background: #fafafa; border: 1px solid #e2e8f0; padding: 18px; border-radius: 12px; font-size: 11.5px; line-height: 1.6; color: #27272a; font-weight: 500; font-family: sans-serif; }
+            .chart-box { border: 1px solid #e2e8f0; border-radius: 12px; background: #f8fafc; box-sizing: border-box; }
+            @media print {
+              body { padding: 0; }
+              .no-print { display: none; }
+            }
+          </style>
+        </head>
+        <body>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <div>
+              <h1>${pdfTitle}</h1>
+              <div class="subtitle">${pdfSubtitle}</div>
+            </div>
+            <button class="no-print" onclick="window.print()" style="padding: 10px 18px; background: #f59e0b; border: none; font-weight: bold; border-radius: 8px; cursor: pointer; color: black; font-size: 11px; text-transform: uppercase;">Imprimir PDF</button>
+          </div>
+
+          ${customReportContent}
 
           <script>
             window.onload = function() {
@@ -817,16 +1050,10 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
     <div id="executive-report-module-view" className="space-y-6 animate-fade-in text-zinc-100 pb-12">
       
       {/* Botones y controles de edición manual */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-zinc-500/85 backdrop-blur-md p-5 rounded-2xl border border-zinc-400 shadow-lg text-white">
-        <div className="flex items-start gap-3">
-          <div className="p-2.5 bg-amber-500 border border-amber-400 rounded-xl text-slate-950 shrink-0">
-            <Info className="h-5 w-5" />
-          </div>
-          <div>
-            <p className="text-xs leading-relaxed font-black text-white">
-              Consolide y compare el histórico de asistencias viales. El mes en curso se recalcula de forma automática con datos de la base de datos. Los meses históricos y años anteriores se pueden rellenar y editar de forma manual aquí.
-            </p>
-          </div>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 glass-panel p-5 rounded-2xl border border-white/10 shadow-2xl text-white">
+        <div>
+          <h4 className="text-xs font-black uppercase text-amber-400 tracking-wider">Historial de Asistencias Manuales</h4>
+          <p className="text-[10px] text-zinc-200 mt-0.5 font-bold">Consolide y edite los valores de asistencias del histórico comparativo</p>
         </div>
         
         <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto shrink-0 justify-end">
@@ -843,7 +1070,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
               <button
                 type="button"
                 onClick={() => setIsEditing(false)}
-                className="px-4.5 py-2.5 bg-zinc-800 hover:bg-zinc-750 text-zinc-300 font-bold rounded-xl text-xs cursor-pointer border border-zinc-705 transition"
+                className="px-4.5 py-2.5 bg-slate-800 hover:bg-slate-750 text-slate-300 font-bold rounded-xl text-xs cursor-pointer border border-white/10 transition"
               >
                 Cancelar
               </button>
@@ -861,16 +1088,28 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
               <button
                 type="button"
                 onClick={resetToImageDefaults}
-                className="flex items-center gap-1.5 px-3.5 py-2.5 bg-zinc-800 hover:bg-zinc-750 text-zinc-300 font-bold rounded-xl text-xs cursor-pointer border border-zinc-705 transition hover:text-zinc-105"
+                className="flex items-center gap-1.5 px-3.5 py-2.5 bg-slate-800 hover:bg-slate-750 text-zinc-300 font-bold rounded-xl text-xs cursor-pointer border border-white/10 transition hover:text-white"
                 title="Regresa a los números exactos de la foto"
               >
                 <RotateCcw className="h-3.5 w-3.5" />
                 Sincronizar Captura
               </button>
+              
+              {/* Botón para abrir el diseñador de formas y maqueta PDF */}
+              <button
+                type="button"
+                onClick={() => setIsPdfDesignerOpen(true)}
+                className="flex items-center gap-1.5 px-4.5 py-2.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 font-black rounded-xl text-xs cursor-pointer transition shadow-md border border-amber-500/30 hover:scale-[1.02]"
+                title="Diseñador visual avanzado de formas PDF"
+              >
+                <Sliders className="h-4 w-4 text-amber-400" />
+                Diseñador de PDF (Visual)
+              </button>
+
               <button
                 type="button"
                 onClick={handleDownloadPDF}
-                className="flex items-center gap-1.5 px-4 py-2.5 bg-amber-600 hover:bg-amber-550 text-slate-950 font-black rounded-xl text-xs cursor-pointer transition shadow-md border border-amber-700 hover:scale-[1.02]"
+                className="flex items-center gap-1.5 px-4 py-2.5 bg-amber-650 hover:bg-amber-550 text-slate-950 font-black rounded-xl text-xs cursor-pointer transition shadow-md border border-amber-700 hover:scale-[1.02]"
                 title="Descargar el reporte en formato PDF"
               >
                 <Download className="h-4 w-4" />
@@ -881,30 +1120,335 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
         </div>
       </div>
 
+      {/* VENTANA MODAL FLOTANTE: DISEÑADOR VISUAL AVANZADO DE FORMATO PDF */}
+      {isPdfDesignerOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-xl animate-fade-in text-slate-200">
+          <div className="glass-panel relative w-full max-w-5xl rounded-3xl border border-white/10 bg-slate-905 flex flex-col max-h-[92vh] shadow-2xl p-6 md:p-8">
+            
+            {/* Cabecera de la Ventana */}
+            <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-5">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-amber-500/10 border border-amber-500/30 rounded-xl text-amber-400 shadow-md">
+                  <Sliders className="h-5 w-5 text-amber-300" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black uppercase text-amber-300 tracking-wider">Diseñador Visual del Reporte PDF</h3>
+                  <p className="text-[10.5px] text-slate-350 mt-0.5 font-bold">Mueva, redimensione y personalice la estructura del PDF interactuando con las formas</p>
+                </div>
+              </div>
+              <button 
+                type="button" 
+                onClick={() => setIsPdfDesignerOpen(false)}
+                className="p-1.5 bg-slate-800/80 hover:bg-slate-700/80 hover:text-amber-400 border border-white/5 rounded-xl cursor-pointer transition-all duration-250 text-slate-400"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Cuerpo del Diseñador */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 overflow-y-auto pr-1 flex-grow scrollbar-thin scrollbar-thumb-white/15">
+              
+              {/* Columna Izquierda: Configuración Global (Span 4) */}
+              <div className="lg:col-span-4 space-y-5 bg-slate-950/40 p-4.5 rounded-2xl border border-white/5 h-fit text-slate-250">
+                <h4 className="text-[10.5px] font-black uppercase text-amber-400 tracking-widest border-b border-white/5 pb-2">Propiedades Globales</h4>
+                
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black uppercase tracking-wider text-slate-300">Título Principal del PDF</label>
+                  <input
+                    type="text"
+                    value={pdfTitle}
+                    onChange={(e) => setPdfTitle(e.target.value)}
+                    className="w-full bg-slate-900 border border-white/10 px-3 py-2 rounded-xl text-xs font-bold text-white focus:outline-none focus:border-amber-450 placeholder-slate-500 transition-all"
+                    placeholder="Ingrese título..."
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black uppercase tracking-wider text-slate-300">Subtítulo / Términos de Cabecera</label>
+                  <input
+                    type="text"
+                    value={pdfSubtitle}
+                    onChange={(e) => setPdfSubtitle(e.target.value)}
+                    className="w-full bg-slate-900 border border-white/10 px-3 py-2 rounded-xl text-xs font-bold text-white focus:outline-none focus:border-amber-450 placeholder-slate-500 transition-all"
+                    placeholder="Ingrese subtítulo..."
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black uppercase tracking-wider text-slate-300">Escala Global de Impresión</label>
+                  <select
+                    value={printScale}
+                    onChange={(e) => setPrintScale(e.target.value)}
+                    className="w-full bg-slate-900 border border-white/10 px-3 py-2 rounded-xl text-xs font-black text-amber-400 cursor-pointer focus:outline-none focus:border-amber-450 [color-scheme:dark]"
+                  >
+                    <option value="90">Compacto (90%)</option>
+                    <option value="100">Normal (100%)</option>
+                    <option value="115">Ampliando Elementos (115%)</option>
+                    <option value="130">Zoom Alto (130%)</option>
+                  </select>
+                </div>
+
+                <div className="p-3.5 bg-amber-500/5 rounded-xl border border-amber-500/10 text-slate-300 space-y-1.5 text-[10px] leading-relaxed font-sans">
+                  <div className="font-extrabold text-amber-300 flex items-center gap-1.5 uppercase tracking-wide">
+                    <Info className="h-3.5 w-3.5 text-amber-400" />
+                    ¿Cómo funciona?
+                  </div>
+                  <p>
+                    Las <strong>Formas</strong> de la derecha replican el orden y espacio exacto de impresión.
+                  </p>
+                  <ul className="list-disc list-inside space-y-1 mt-1 text-slate-450 font-medium">
+                    <li>Modifique títulos directamente en cada forma.</li>
+                    <li>Suelte o asigne <strong>Media Columna (50%)</strong> para juntar formas en paralelo.</li>
+                    <li>Use <strong>Encoger / Ampliar</strong> para balancear el reajuste del elemento en la hoja.</li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Columna Derecha: El Canvas de Formas Interactivas (Span 8) */}
+              <div className="lg:col-span-8 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-[10.5px] font-black uppercase text-amber-400 tracking-widest">Maqueta del PDF & Formas Interactivas</h4>
+                  <span className="text-[9.5px] text-slate-450 font-mono font-black uppercase">Canvas Activo YTD</span>
+                </div>
+
+                {/* Grid que simula las páginas reales del PDF */}
+                <div className="bg-slate-950/60 p-5 rounded-2xl border border-white/5 min-h-[400px] flex flex-wrap gap-3.5 content-start">
+                  {pdfSections.map((item, idx) => {
+                    const isVisible = item.visible;
+                    const isHalfWidth = item.width === "50%";
+                    const scaleFactor = item.scale ?? 1.0;
+                    
+                    return (
+                      <div 
+                        key={item.id}
+                        className={`transition-all duration-300 rounded-2xl border flex flex-col p-4 bg-slate-900/90 shadow-lg ${
+                          isHalfWidth ? "w-full md:w-[calc(50%-7px)]" : "w-full"
+                        } ${
+                          isVisible 
+                            ? "border-white/10 hover:border-amber-500/30" 
+                            : "border-white/5 opacity-40 grayscale"
+                        }`}
+                      >
+                        {/* Cabecera de la Forma */}
+                        <div className="flex items-center justify-between gap-2.5 mb-3">
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              checked={isVisible}
+                              onChange={() => handleToggleSectionVisible(idx)}
+                              className="rounded border-white/20 text-amber-500 focus:ring-amber-500 h-4.5 w-4.5 bg-slate-950 cursor-pointer"
+                              title="Activar/Ocultar sección"
+                            />
+                            <div>
+                              <span className="text-[11px] font-black uppercase tracking-wide text-white block">
+                                {item.name}
+                              </span>
+                              <span className="text-[8.5px] text-slate-400 font-mono font-bold block uppercase mt-0.5">
+                                Tipo: Forma {isHalfWidth ? "Media [50%]" : "Entera [100%]"} • {scaleFactor.toFixed(1)}x
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            {/* Subir de posición */}
+                            <button
+                              type="button"
+                              onClick={() => handleMoveSection(idx, 'up')}
+                              disabled={idx === 0}
+                              className={`p-1.5 rounded-lg border text-[10px] font-black transition cursor-pointer ${
+                                idx === 0 
+                                  ? "border-white/5 text-slate-600 cursor-not-allowed opacity-20" 
+                                  : "border-white/10 bg-slate-800 hover:bg-slate-700 hover:text-amber-400"
+                              }`}
+                              title="Subir de posición"
+                            >
+                              ▲
+                            </button>
+
+                            {/* Bajar de posición */}
+                            <button
+                              type="button"
+                              onClick={() => handleMoveSection(idx, 'down')}
+                              disabled={idx === pdfSections.length - 1}
+                              className={`p-1.5 rounded-lg border text-[10px] font-black transition cursor-pointer ${
+                                idx === pdfSections.length - 1 
+                                  ? "border-white/5 text-slate-600 cursor-not-allowed opacity-20" 
+                                  : "border-white/10 bg-slate-800 hover:bg-slate-750 hover:text-amber-400"
+                              }`}
+                              title="Bajar de posición"
+                            >
+                              ▼
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Input de Título de la Forma */}
+                        <div className="space-y-1 mb-3.5">
+                          <label className="text-[8px] font-black uppercase tracking-wider text-amber-400 block block">Título / Rótulo de la Forma</label>
+                          <input
+                            type="text"
+                            placeholder="Ingrese título de cabecera para el PDF..."
+                            value={sectionTitles[item.id as keyof typeof sectionTitles] || ""}
+                            onChange={(e) => handleTitleChange(item.id, e.target.value)}
+                            className="w-full bg-slate-950/85 border border-white/10 px-2.5 py-1.5 rounded-lg text-[11px] font-bold text-white focus:outline-none focus:border-amber-500 placeholder-slate-600 transition-all"
+                            disabled={!isVisible}
+                          />
+                        </div>
+
+                        {/* Fila de Controles de Dimensiones (Formas) */}
+                        <div className="flex flex-wrap items-center justify-between gap-2 bg-slate-950/40 p-2 rounded-xl border border-white/5 mt-auto">
+                          
+                          {/* Cambiar dimensión Ancho */}
+                          <button
+                            type="button"
+                            onClick={() => handleToggleSectionWidth(idx)}
+                            disabled={!isVisible}
+                            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-black border transition cursor-pointer ${
+                              !isVisible 
+                                ? "cursor-not-allowed border-white/5 text-slate-600"
+                                : isHalfWidth
+                                  ? "bg-amber-500/10 border-amber-500/30 text-amber-400"
+                                  : "bg-slate-800 hover:bg-slate-700 border-white/10 text-slate-300"
+                            }`}
+                            title="Alternar entre Media Columna y Ancho Completo"
+                          >
+                            <span>Ancho: {isHalfWidth ? "50%" : "100%"}</span>
+                          </button>
+
+                          {/* Ampliar y Encoger (Escalar) */}
+                          <div className="flex items-center gap-1">
+                            <span className="text-[8px] font-black uppercase text-slate-450 mr-1 font-sans">Zoom:</span>
+                            <button
+                              type="button"
+                              onClick={() => handleSectionScaleChange(idx, 'shrink')}
+                              disabled={!isVisible || scaleFactor <= 0.6}
+                              className="px-2 py-1 rounded-l-lg bg-slate-800 hover:bg-slate-700 text-[10px] font-extrabold border border-r-0 border-white/10 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer text-slate-300"
+                              title="Encoger tamaño / Escala"
+                            >
+                              ➖
+                            </button>
+                            <span className="px-2 py-1 bg-slate-950 border-t border-b border-white/10 text-[9.5px] font-mono font-black text-amber-400 shrink-0 w-11 text-center">
+                              {scaleFactor.toFixed(1)}x
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleSectionScaleChange(idx, 'amplify')}
+                              disabled={!isVisible || scaleFactor >= 1.5}
+                              className="px-2 py-1 rounded-r-lg bg-slate-800 hover:bg-slate-700 text-[10px] font-extrabold border border-l-0 border-white/10 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer text-slate-300"
+                              title="Ampliar tamaño / Escala"
+                            >
+                              ➕
+                            </button>
+                          </div>
+
+                          {/* Salto de página */}
+                          <button
+                            type="button"
+                            onClick={() => handleTogglePageBreak(idx)}
+                            disabled={!isVisible}
+                            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-black border transition cursor-pointer ${
+                              !isVisible
+                                ? "cursor-not-allowed border-white/5 text-slate-600"
+                                : item.isPageBreakBefore
+                                  ? "bg-rose-500/15 border-rose-500/30 text-rose-450 font-sans"
+                                  : "bg-slate-800 hover:bg-slate-700 border-white/10 text-slate-400 font-sans"
+                            }`}
+                            title="Insertar salto de página antes de esta sección"
+                          >
+                            <span>Salto pág: {item.isPageBreakBefore ? "SÍ" : "NO"}</span>
+                          </button>
+
+                        </div>
+
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+            </div>
+
+            {/* Fila inferior de Botones de la Ventana */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-white/10 pt-4 mt-5 shrink-0">
+              <button
+                type="button"
+                onClick={() => {
+                  setPdfSections([
+                    { id: "kpis", name: "KPIs / Indicadores Clave", visible: true, width: "100%", scale: 1.0, isPageBreakBefore: false },
+                    { id: "bar_trend", name: "Gráfico de Barras Mensuales (2025 vs 2026)", visible: true, width: "100%", scale: 1.0, isPageBreakBefore: false },
+                    { id: "line_trend", name: "Curvas de Evolución Anual Comparada (2025 vs 2026)", visible: true, width: "100%", scale: 1.0, isPageBreakBefore: false },
+                    { id: "branch_part", name: "Gráfico de Participación por Sucursales YTD", visible: true, width: "100%", scale: 1.0, isPageBreakBefore: false },
+                    { id: "compare_tab", name: "Tabla de Comparativa Transversal Anual", visible: true, width: "100%", scale: 1.0, isPageBreakBefore: false },
+                    { id: "monthly_suc", name: "Tabla de Distribución Mensual por Sucursal", visible: true, width: "100%", scale: 1.0, isPageBreakBefore: false },
+                    { id: "analysis", name: "Texto de Análisis IA & Diagnóstico", visible: true, width: "100%", scale: 1.0, isPageBreakBefore: false }
+                  ]);
+                  setSectionTitles({
+                    kpis: "RESUMEN DE INDICADORES OPERATIVOS (YTD)",
+                    bar_trend: "EVOLUCIÓN MENSUAL COMPARADA (2025 VS 2026 YTD)",
+                    line_trend: "CURVAS DE EVOLUCIÓN ANUAL COMPARADA (2025 VS 2026)",
+                    branch_part: "PARTICIPACIÓN DE SUCURSALES (CONSOLIDADO YTD)",
+                    compare_tab: "COMPARATIVA TRANSVERSAL ANUAL (2025 VS 2026)",
+                    monthly_suc: "DISTRIBUCIÓN MENSUAL POR SUCURSAL",
+                    analysis: "ANÁLISIS OPERATIVO & DIAGNÓSTICO PREDICTIVO IA"
+                  });
+                  setPrintScale("100");
+                }}
+                className="flex items-center gap-1.5 px-4 py-2 text-xs font-black text-slate-300 bg-slate-850 hover:bg-slate-800 border border-white/5 rounded-xl cursor-pointer transition shadow-xl"
+              >
+                <RotateCcw className="h-4 w-4" />
+                Restablecer Maqueta
+              </button>
+
+              <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
+                <button
+                  type="button"
+                  onClick={() => setIsPdfDesignerOpen(false)}
+                  className="px-5 py-2.5 text-xs font-black text-slate-300 bg-slate-850 hover:bg-slate-800 border border-white/5 rounded-xl cursor-pointer transition"
+                >
+                  Confirmar Maqueta
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsPdfDesignerOpen(false);
+                    handleDownloadPDF();
+                  }}
+                  className="flex items-center gap-1.5 px-5 py-2.5 bg-amber-500 hover:bg-amber-450 text-slate-950 font-black rounded-xl text-xs cursor-pointer transition shadow-xl border border-amber-600 hover:scale-[1.02]"
+                >
+                  <Download className="h-4 w-4" />
+                  Descargar PDF
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
+
       {/* Selector del período activo */}
-      <div className="flex flex-wrap items-center justify-between gap-4 bg-zinc-500/85 backdrop-blur-md p-5 rounded-2xl border border-zinc-400 shadow-lg text-white">
+      <div className="flex flex-wrap items-center justify-between gap-4 glass-card p-5 border border-white/10 shadow-2xl text-white">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 bg-amber-500 border border-amber-400 rounded-lg text-slate-950">
-            <Calendar className="h-4.5 w-4.5 text-slate-950" />
+          <div className="p-2.5 bg-amber-500/10 border border-amber-500/30 rounded-xl text-amber-400 shadow-md shrink-0">
+            <Calendar className="h-4.5 w-4.5 text-amber-300" />
           </div>
           <div className="flex items-center gap-2">
             <select
               value={activeMonthIndex}
               onChange={(e) => setActiveMonthIndex(Number(e.target.value))}
-              className="bg-zinc-800 hover:bg-zinc-750 border border-zinc-700 text-amber-500 font-black text-xs px-3.5 py-2 rounded-xl focus:outline-none focus:border-amber-500 cursor-pointer transition shadow-sm font-sans [color-scheme:dark]"
+              className="bg-slate-900 border border-white/10 text-amber-400 hover:text-amber-300 font-black text-xs px-3.5 py-2 rounded-xl focus:outline-none focus:border-amber-550 cursor-pointer transition shadow-sm font-sans [color-scheme:dark]"
             >
               {MESES_ABR.map((m, i) => (
-                <option key={m} value={i} className="bg-zinc-800 text-zinc-100">{m} ({monthlyData[i].mes})</option>
+                <option key={m} value={i} className="bg-slate-900 text-slate-100">{m} ({monthlyData[i].mes})</option>
               ))}
             </select>
 
             <select
               value={activeYear}
               onChange={(e) => setActiveYear(Number(e.target.value))}
-              className="bg-zinc-800 hover:bg-zinc-750 border border-zinc-700 text-amber-500 font-black text-xs px-3.5 py-2 rounded-xl focus:outline-none focus:border-amber-500 cursor-pointer transition shadow-sm font-sans [color-scheme:dark]"
+              className="bg-slate-900 border border-white/10 text-amber-400 hover:text-amber-300 font-black text-xs px-3.5 py-2 rounded-xl focus:outline-none focus:border-amber-550 cursor-pointer transition shadow-sm font-sans [color-scheme:dark]"
             >
-              <option value={2026} className="bg-zinc-800 text-zinc-100">2026</option>
-              <option value={2025} className="bg-zinc-800 text-zinc-100">2025</option>
+              <option value={2026} className="bg-slate-900 text-slate-100">2026</option>
+              <option value={2025} className="bg-slate-900 text-slate-100">2025</option>
             </select>
           </div>
         </div>
@@ -916,124 +1460,124 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         
         {/* KPI 1: TOTAL ASISTENCIAS (YTD) */}
-        <div className="bg-zinc-500/85 backdrop-blur-md border border-zinc-400 text-white p-5 rounded-2xl flex items-center justify-between shadow-md relative overflow-hidden group hover:border-amber-400 transition-all duration-300">
+        <div className="glass-panel text-white p-5 rounded-2xl flex items-center justify-between shadow-2xl relative overflow-hidden group border border-white/10 hover:border-amber-500/30 transition-all duration-350">
           <div className="space-y-1 z-10">
             <span className="text-3xl font-mono font-black tracking-tight text-white block">{total2026YTD}</span>
-            <span className="text-[10px] font-bold text-zinc-200 block uppercase tracking-wider">TOTAL ASISTENCIAS YTD</span>
-            <span className="text-[9px] font-black text-amber-300 block uppercase tracking-wide">A {monthlyData[activeMonthIndex].mes} {activeYear}</span>
+            <span className="text-[10px] font-bold text-slate-300 block uppercase tracking-wider">TOTAL ASISTENCIAS YTD</span>
+            <span className="text-[9px] font-black text-amber-400 block uppercase tracking-wide">A {monthlyData[activeMonthIndex].mes} {activeYear}</span>
           </div>
-          <div className="p-3 bg-amber-500/20 rounded-xl text-amber-300 border border-amber-400 z-10">
+          <div className="p-3 bg-amber-500/10 rounded-xl text-amber-300 border border-amber-500/20 z-10">
             <FileSpreadsheet className="h-5.5 w-5.5" />
           </div>
           <div className="absolute top-0 left-0 w-1 h-full bg-amber-500"></div>
         </div>
 
         {/* KPI 2: MEDIO PRINCIPAL */}
-        <div className="bg-zinc-500/85 backdrop-blur-md border border-zinc-400 text-white p-5 rounded-2xl flex items-center justify-between shadow-md relative overflow-hidden group hover:border-emerald-400 transition-all duration-300">
+        <div className="glass-panel text-white p-5 rounded-2xl flex items-center justify-between shadow-2xl relative overflow-hidden group border border-white/10 hover:border-emerald-500/30 transition-all duration-350">
           <div className="space-y-1 z-10">
-            <span className="text-3xl font-mono font-black tracking-tight text-emerald-300 block">{topMediaPercentage.toFixed(1)}%</span>
-            <span className="text-[10px] font-bold text-zinc-200 block uppercase tracking-wider">MEDIO LÍDER: {topMediaName}</span>
-            <span className="text-[9px] font-bold text-zinc-100 block">
+            <span className="text-3xl font-mono font-black tracking-tight text-emerald-400 block">{topMediaPercentage.toFixed(1)}%</span>
+            <span className="text-[10px] font-bold text-slate-300 block uppercase tracking-wider">MEDIO LÍDER: {topMediaName}</span>
+            <span className="text-[9px] font-bold text-slate-400 block">
               {topMediaCount} de {mediaConsolidadoTotal} asistencias
             </span>
           </div>
-          <div className="p-3 bg-emerald-500/20 rounded-xl text-emerald-300 border border-emerald-400 z-10">
+          <div className="p-3 bg-emerald-500/15 rounded-xl text-emerald-300 border border-emerald-500/20 z-10">
             <Layers className="h-5.5 w-5.5" />
           </div>
-          <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500"></div>
+          <div className="absolute top-0 left-0 w-1 h-full bg-emerald-400"></div>
         </div>
 
         {/* KPI 3: VARIACIÓN VS MES ANTERIOR */}
-        <div className="bg-zinc-500/85 backdrop-blur-md border border-zinc-400 text-white p-5 rounded-2xl flex items-center justify-between shadow-md relative overflow-hidden group hover:border-slate-300 transition-all duration-300">
+        <div className="glass-panel text-white p-5 rounded-2xl flex items-center justify-between shadow-2xl relative overflow-hidden group border border-white/10 hover:border-slate-500/30 transition-all duration-350">
           <div className="space-y-1 z-10">
-            <span className={`text-3xl font-mono font-black tracking-tight block ${diffVsPrevMonthPct >= 0 ? "text-emerald-300 font-bold" : "text-rose-300 font-bold"}`}>
+            <span className={`text-3xl font-mono font-black tracking-tight block ${diffVsPrevMonthPct >= 0 ? "text-emerald-400 font-black" : "text-rose-400 font-black"}`}>
               {diffVsPrevMonthPct >= 0 ? "+" : ""}{diffVsPrevMonthPct.toFixed(1)}%
             </span>
-            <span className="text-[10px] font-bold text-zinc-200 block uppercase tracking-wider font-sans">VS MES ANTERIOR</span>
-            <span className="text-[9px] font-bold text-zinc-100 block">
+            <span className="text-[10px] font-bold text-slate-300 block uppercase tracking-wider font-sans">VS MES ANTERIOR</span>
+            <span className="text-[9px] font-bold text-slate-450 block">
               {valPrevMonth2026PctStr}% cambio en mes previo
             </span>
           </div>
-          <div className={`p-3 rounded-xl border z-10 ${diffVsPrevMonthPct >= 0 ? "bg-emerald-500/20 text-emerald-300 border-emerald-450" : "bg-rose-500/20 text-rose-300 border-rose-450"}`}>
+          <div className={`p-3 rounded-xl border z-10 ${diffVsPrevMonthPct >= 0 ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/20" : "bg-rose-500/15 text-rose-400 border-rose-500/20"}`}>
             {diffVsPrevMonthPct >= 0 ? <TrendingUp className="h-5.5 w-5.5" /> : <TrendingDown className="h-5.5 w-5.5" />}
           </div>
-          <div className={`absolute top-0 left-0 w-1 h-full ${diffVsPrevMonthPct >= 0 ? "bg-emerald-500" : "bg-rose-500"}`}></div>
+          <div className={`absolute top-0 left-0 w-1 h-full ${diffVsPrevMonthPct >= 0 ? "bg-emerald-400" : "bg-rose-400"}`}></div>
         </div>
 
         {/* KPI 4: VARIACIÓN COMPARADO AL HISTÓRICO YTD */}
-        <div className="bg-zinc-500/85 backdrop-blur-md border border-zinc-400 text-white p-5 rounded-2xl flex items-center justify-between shadow-md relative overflow-hidden group hover:border-amber-450 transition-all duration-300">
+        <div className="glass-panel text-white p-5 rounded-2xl flex items-center justify-between shadow-2xl relative overflow-hidden group border border-white/10 hover:border-amber-500/30 transition-all duration-350">
           <div className="space-y-1 z-10">
-            <span className={`text-3xl font-mono font-black tracking-tight block ${variationVsPriorYearPct >= 0 ? "text-emerald-300 font-bold" : "text-rose-300 font-bold"}`}>
+            <span className={`text-3xl font-mono font-black tracking-tight block ${variationVsPriorYearPct >= 0 ? "text-emerald-400 font-extrabold" : "text-rose-400 font-extrabold"}`}>
               {variationVsPriorYearPct >= 0 ? "+" : ""}{variationVsPriorYearPct.toFixed(1)}%
             </span>
-            <span className="text-[10px] font-bold text-zinc-200 block uppercase tracking-wider">VARIACIÓN VS 2025 YTD</span>
-            <span className="text-[9px] font-black text-amber-300 block uppercase tracking-wide">CONSOLIDADO GENERAL</span>
+            <span className="text-[10px] font-bold text-slate-300 block uppercase tracking-wider">VARIACIÓN VS 2025 YTD</span>
+            <span className="text-[9px] font-black text-amber-400 block uppercase tracking-wide">CONSOLIDADO GENERAL</span>
           </div>
-          <div className={`p-3 rounded-xl border z-10 ${variationVsPriorYearPct >= 0 ? "bg-amber-500/20 text-amber-300 border-amber-400" : "bg-rose-500/20 text-rose-300 border-rose-450"}`}>
+          <div className={`p-3 rounded-xl border z-10 ${variationVsPriorYearPct >= 0 ? "bg-amber-500/10 text-amber-400 border-amber-500/20" : "bg-rose-500/15 text-rose-400 border-rose-500/20"}`}>
             {variationVsPriorYearPct >= 0 ? <TrendingUp className="h-5.5 w-5.5" /> : <TrendingDown className="h-5.5 w-5.5" />}
           </div>
-          <div className={`absolute top-0 left-0 w-1 h-full ${variationVsPriorYearPct >= 0 ? "bg-amber-500" : "bg-rose-500"}`}></div>
+          <div className={`absolute top-0 left-0 w-1 h-full ${variationVsPriorYearPct >= 0 ? "bg-emerald-400" : "bg-rose-400"}`}></div>
         </div>
 
       </div>
 
       {/* RE-DISEÑO INFORME PRINCIPAL (SLATE CLARO PREMIUM CON CONTRASTE ELEVADO PARA DATOS LEGIBLES) */}
-      <div className="bg-zinc-500 border border-slate-200 rounded-3xl overflow-hidden shadow-xl flex flex-col">
+      <div className="glass-card border border-white/10 relative isolate rounded-3xl overflow-hidden shadow-2xl flex flex-col">
         
         {/* ENCABEZADOS DE LA MATRIZ */}
-        <div className="bg-slate-800 px-6 py-5 border-b-4 border-amber-500 flex flex-col md:flex-row items-center justify-between gap-4 text-white">
+        <div className="bg-slate-900/60 px-6 py-5 border-b border-white/10 flex flex-col md:flex-row items-center justify-between gap-4 text-white">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-amber-500 text-slate-950 rounded-xl font-extrabold shadow-md flex items-center justify-center">
-              <FileSpreadsheet className="h-5 w-5" />
+            <div className="p-2.5 bg-amber-500/10 border border-amber-500/30 rounded-xl font-extrabold shadow-md flex items-center justify-center">
+              <FileSpreadsheet className="h-5 w-5 text-amber-300" />
             </div>
             <div>
               <h1 className="text-base font-display font-black uppercase text-white tracking-wider flex items-center gap-2">
                 <span>MATRIZ EJECUTIVA DE ASISTENCIAS VIALES</span>
                 <span className="text-amber-300 font-extrabold text-xs">· AUTO CENTRO S.A. ·</span>
               </h1>
-              <p className="text-[10px] text-slate-300 font-extrabold uppercase tracking-widest mt-0.5">Control de Eficiencia Operativa Integral e Interanual</p>
+              <p className="text-[10px] text-slate-350 font-extrabold uppercase tracking-widest mt-0.5">Control de Eficiencia Operativa Integral e Interanual</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <span className="bg-slate-700 border border-slate-600 text-amber-300 px-3.5 py-1.8 rounded-xl text-xs font-black font-mono tracking-wider">
+            <span className="bg-slate-950/80 border border-white/10 text-amber-300 px-3.5 py-1.8 rounded-xl text-xs font-black font-mono tracking-wider">
               PERÍODO: {monthlyData[activeMonthIndex].mes} {activeYear}
             </span>
           </div>
         </div>
 
         {/* CONTENEDOR DE LA CARPETA CON EXCELENTE VISIBILIDAD (Gris Pizarra Claro que resalta con colores intensos) */}
-        <div className="p-6 md:p-8 space-y-10 bg-zinc-500">
+        <div className="backdrop-blur-none p-6 md:p-8 space-y-10 bg-slate-500/20">
           
           {/* SECCIÓN 1: GRÁFICO INTEGRADOR EN EL CONTEXTO DEL REPORTE */}
-          <div className="bg-zinc-500 border border-zinc-400 p-5 rounded-2xl shadow-sm text-white">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 pb-3 border-b border-zinc-400 gap-2">
+          <div className="glass-panel border border-white/10 p-5 rounded-2xl shadow-sm text-white">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 pb-3 border-b border-white/10 gap-2">
               <div className="flex items-center gap-2">
                 <div className="w-1.5 h-4.5 bg-amber-400 rounded-full"></div>
                 <div>
                   <h3 className="text-xs font-black uppercase tracking-wider text-white">
                     Evolución Mensual Comparada (2025 vs 2026 YTD)
                   </h3>
-                  <p className="text-[10px] text-zinc-10 ruling-zinc-200 font-bold mt-0.5">
+                  <p className="text-[10px] text-slate-300 font-bold mt-0.5">
                     Variación Acumulada YTD:{" "}
-                    <span className={`font-mono font-black ${variationVsPriorYearPct >= 0 ? "text-emerald-300" : "text-rose-300"}`}>
+                    <span className={`font-mono font-black ${variationVsPriorYearPct >= 0 ? "text-green-300" : "text-red-300"}`}>
                       {variationVsPriorYearPct >= 0 ? "+" : ""}{variationVsPriorYearPct.toFixed(1)}% vs 2025
                     </span>
                   </p>
                 </div>
               </div>
-              <span className="text-[10px] text-zinc-100 tracking-wider font-bold uppercase shrink-0">Asistencias por mes</span>
+              <span className="text-[10px] text-slate-350 tracking-wider font-bold uppercase shrink-0">Asistencias por mes</span>
             </div>
             <div className="w-full h-[260px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData} margin={{ top: 20, right: 10, left: -25, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" opacity={0.2} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" opacity={0.1} />
                   <XAxis 
                     dataKey="name" 
-                    tick={{ fill: '#ffffff', fontSize: 10, fontWeight: '700' }} 
+                    tick={{ fill: '#cbd5e1', fontSize: 10, fontWeight: '700' }} 
                     stroke="#cbd5e1" 
                   />
                   <YAxis 
-                    tick={{ fill: '#ffffff', fontSize: 10, fontWeight: '600' }} 
+                    tick={{ fill: '#cbd5e1', fontSize: 10, fontWeight: '600' }} 
                     stroke="#cbd5e1" 
                   />
                   <Tooltip 
@@ -1044,19 +1588,19 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                         const diff = val2025 > 0 ? ((val2026 - val2025) / val2025) * 100 : 0;
                         const isIncrease = diff >= 0;
                         return (
-                          <div className="bg-zinc-950 border border-zinc-700 p-4 rounded-xl shadow-lg text-xs font-sans text-zinc-200">
+                          <div className="bg-slate-950/90 backdrop-blur-md border border-white/10 p-4 rounded-xl shadow-lg text-xs font-sans text-slate-200">
                             <p className="font-extrabold text-amber-400 uppercase mb-2 tracking-wider">{label}</p>
-                            <p className="font-bold text-zinc-300 flex justify-between gap-4">
+                            <p className="font-bold text-slate-400 flex justify-between gap-4">
                               <span>Año 2025:</span>
                               <span className="font-mono font-black text-white">{val2025}</span>
                             </p>
-                            <p className="font-bold text-zinc-300 flex justify-between gap-4">
+                            <p className="font-bold text-slate-400 flex justify-between gap-4">
                               <span>Año 2026:</span>
                               <span className="font-mono font-black text-white">{val2026}</span>
                             </p>
-                            <p className="border-t border-zinc-800 pt-2 mt-2 font-bold flex justify-between gap-10">
+                            <p className="border-t border-white/15 pt-2 mt-2 font-bold flex justify-between gap-10">
                               <span>Variación vs 2025:</span>
-                              <span className={`font-mono font-black ${isIncrease ? 'text-emerald-400' : 'text-rose-400'}`}>
+                              <span className={`font-mono font-black ${isIncrease ? 'text-green-400' : 'text-red-400'}`}>
                                 {isIncrease ? '+' : ''}{diff.toFixed(1)}%
                               </span>
                             </p>
@@ -1083,65 +1627,65 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
 
           {/* TABLA BLOCK 1: SISTEMA DE TARJETAS EXECUTIVAS PARA MEDIOS (REEMPLAZA SCROLL HORIZONTAL POR GRID) */}
           <div className="space-y-4">
-            <span className="text-[11px] uppercase font-black tracking-widest text-zinc-200 flex items-center gap-2 bg-zinc-800 px-4 py-2 rounded-xl border border-zinc-700 w-fit">
+            <span className="text-[11px] uppercase font-black tracking-widest text-slate-205 flex items-center gap-2 bg-slate-900 border border-white/10 px-4 py-2 rounded-xl w-fit">
               <Layers2 className="h-4.5 w-4.5 text-amber-400" />
               DISTRIBUCIÓN DE MEDIOS DE INGRESO (CONSOLIDADO VS SUCURSALES)
             </span>
-
+ 
             {/* GRID TOTALMENTE RESPONSIVO CON MÁS SPACING — EVITA AMONTONAMIENTO */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {/* MEDIO CONSOLIDADO MINI COMPONENT (Dorado premium accent border) */}
-              <div className="border-2 border-amber-500 bg-zinc-500 rounded-2xl overflow-hidden flex flex-col shadow-md">
-                <div className="bg-amber-500 px-4 py-3 border-b border-amber-600">
-                  <span className="text-[11px] font-extrabold text-slate-950 block text-center tracking-widest uppercase">MEDIO CONSOLIDADO</span>
+              <div className="border border-amber-500/40 bg-slate-900/60 rounded-2xl overflow-hidden flex flex-col shadow-xl backdrop-blur-md">
+                <div className="bg-amber-500/10 px-4 py-3 border-b border-amber-500/20">
+                  <span className="text-[11px] font-extrabold text-amber-300 block text-center tracking-widest uppercase">MEDIO CONSOLIDADO</span>
                 </div>
-                <div className="p-3 flex-grow bg-zinc-500">
+                <div className="p-3 flex-grow">
                   <table className="w-full text-[11px]">
-                    <thead className="border-b border-zinc-450 text-[10px] uppercase text-white font-black font-sans">
+                    <thead className="border-b border-white/10 text-[10px] uppercase text-slate-300 font-black font-sans">
                       <tr>
                         <th className="pb-2 text-left">MEDIO</th>
                         <th className="pb-2 text-right">ASIST.</th>
                         <th className="pb-2 text-right">%</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-zinc-450 text-white font-extrabold font-mono">
-                      <tr className="hover:bg-zinc-600">
-                        <td className="py-2.5 text-left text-zinc-100 font-semibold">FLOTA</td>
+                    <tbody className="divide-y divide-white/5 text-white font-extrabold font-mono">
+                      <tr className="hover:bg-white/5 transition-colors">
+                        <td className="py-2.5 text-left text-slate-200 font-semibold">FLOTA</td>
                         <td className="py-2.5 text-right text-white">{mediaConsolidadoValues.flota}</td>
-                        <td className="py-2.5 text-right text-amber-300">
+                        <td className="py-2.5 text-right text-amber-400">
                           {mediaConsolidadoTotal > 0 ? ((mediaConsolidadoValues.flota / mediaConsolidadoTotal) * 105).toFixed(0) : "0"}%
                         </td>
                       </tr>
-                      <tr className="hover:bg-zinc-600">
-                        <td className="py-2.5 text-left text-zinc-100 font-semibold">OMITIDOS</td>
+                      <tr className="hover:bg-white/5 transition-colors">
+                        <td className="py-2.5 text-left text-slate-200 font-semibold">OMITIDOS</td>
                         <td className="py-2.5 text-right text-white">{mediaConsolidadoValues.omitidos}</td>
-                        <td className="py-2.5 text-right text-amber-300">
+                        <td className="py-2.5 text-right text-amber-400">
                           {mediaConsolidadoTotal > 0 ? ((mediaConsolidadoValues.omitidos / mediaConsolidadoTotal) * 105).toFixed(0) : "0"}%
                         </td>
                       </tr>
-                      <tr className="hover:bg-zinc-600">
-                        <td className="py-2.5 text-left text-zinc-100 font-semibold">CALL CENTER</td>
+                      <tr className="hover:bg-white/5 transition-colors">
+                        <td className="py-2.5 text-left text-slate-200 font-semibold">CALL CENTER</td>
                         <td className="py-2.5 text-right text-white">{mediaConsolidadoValues.callCenter}</td>
-                        <td className="py-2.5 text-right text-amber-300">
+                        <td className="py-2.5 text-right text-amber-400">
                           {mediaConsolidadoTotal > 0 ? ((mediaConsolidadoValues.callCenter / mediaConsolidadoTotal) * 105).toFixed(0) : "0"}%
                         </td>
                       </tr>
-                      <tr className="hover:bg-zinc-600">
-                        <td className="py-2.5 text-left text-zinc-100 font-semibold">SUCURSAL</td>
+                      <tr className="hover:bg-white/5 transition-colors">
+                        <td className="py-2.5 text-left text-slate-200 font-semibold">SUCURSAL</td>
                         <td className="py-2.5 text-right text-white">{mediaConsolidadoValues.sucursal}</td>
-                        <td className="py-2.5 text-right text-amber-300">
+                        <td className="py-2.5 text-right text-amber-400">
                           {mediaConsolidadoTotal > 0 ? ((mediaConsolidadoValues.sucursal / mediaConsolidadoTotal) * 105).toFixed(0) : "0"}%
                         </td>
                       </tr>
                     </tbody>
                   </table>
                 </div>
-                <div className="bg-zinc-600 px-4 py-2.5 border-t border-zinc-450 flex justify-between items-center text-[11px] font-black">
-                  <span className="text-zinc-200">TOTAL CONSOLIDADO</span>
-                  <span className="font-mono text-amber-300">{mediaConsolidadoTotal}</span>
+                <div className="bg-slate-950/60 px-4 py-2.5 border-t border-white/10 flex justify-between items-center text-[11px] font-black">
+                  <span className="text-slate-400">TOTAL CONSOLIDADO</span>
+                  <span className="font-mono text-amber-400">{mediaConsolidadoTotal}</span>
                 </div>
               </div>
-
+ 
               {/* SUCURSAL CARDS - MÁXIMO CONFORT VISUAL SIN AMONTONAMIENTO */}
               {SUCURSALES_LIST.map(sucName => {
                 const asisFlota = getMediaForSucursal(sucName, "flota");
@@ -1149,58 +1693,58 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                 const asisCall = getMediaForSucursal(sucName, "callCenter");
                 const asisSuc = getMediaForSucursal(sucName, "sucursal");
                 const sTotal = asisFlota + asisOmitidos + asisCall + asisSuc;
-
+ 
                 return (
-                  <div key={sucName} className="border border-zinc-400 bg-zinc-500 rounded-2xl overflow-hidden flex flex-col shadow-sm hover:shadow-md transition">
-                    <div className="bg-zinc-600 px-4 py-3 border-b border-zinc-450">
+                  <div key={sucName} className="border border-white/10 bg-slate-900/40 rounded-2xl overflow-hidden flex flex-col shadow-xl backdrop-blur-sm hover:border-white/20 transition-all duration-300">
+                    <div className="bg-slate-950/40 px-4 py-3 border-b border-white/10">
                       <span className="text-[11px] font-extrabold text-white block text-center tracking-wider truncate uppercase">{sucName}</span>
                     </div>
-                    <div className="p-3 flex-grow bg-zinc-500">
+                    <div className="p-3 flex-grow">
                       <table className="w-full text-[11px]">
-                        <thead className="border-b border-zinc-450 text-[10px] uppercase text-zinc-200 font-semibold">
+                        <thead className="border-b border-white/5 text-[10px] uppercase text-slate-400 font-semibold">
                           <tr>
                             <th className="pb-2 text-left">MEDIO</th>
                             <th className="pb-2 text-right">CONTEO</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-zinc-450 text-white font-bold font-mono">
-                          <tr className="hover:bg-zinc-650">
-                            <td className="py-2 text-left text-zinc-100 font-medium">FLOTA</td>
+                        <tbody className="divide-y divide-white/5 text-slate-205 font-bold font-mono">
+                          <tr className="hover:bg-white/5 transition-colors">
+                            <td className="py-2 text-left text-slate-300 font-medium font-sans">FLOTA</td>
                             <td className="py-2 text-right text-white">{asisFlota}</td>
                           </tr>
-                          <tr className="hover:bg-zinc-650">
-                            <td className="py-2 text-left text-zinc-100 font-medium">OMITIDOS</td>
+                          <tr className="hover:bg-white/5 transition-colors">
+                            <td className="py-2 text-left text-slate-300 font-medium font-sans">OMITIDOS</td>
                             <td className="py-2 text-right text-white">{asisOmitidos}</td>
                           </tr>
-                          <tr className="hover:bg-zinc-650">
-                            <td className="py-2 text-left text-zinc-100 font-medium">CALL CENTER</td>
+                          <tr className="hover:bg-white/5 transition-colors">
+                            <td className="py-2 text-left text-slate-300 font-medium font-sans">CALL CENTER</td>
                             <td className="py-2 text-right text-white">{asisCall}</td>
                           </tr>
-                          <tr className="hover:bg-zinc-650">
-                            <td className="py-2 text-left text-zinc-100 font-medium">SUCURSAL</td>
+                          <tr className="hover:bg-white/5 transition-colors">
+                            <td className="py-2 text-left text-slate-200 font-medium">SUCURSAL</td>
                             <td className="py-2 text-right text-white">{asisSuc}</td>
                           </tr>
                         </tbody>
                       </table>
                     </div>
-                    <div className="bg-zinc-600 px-4 py-2 border-t border-zinc-450 flex justify-between items-center text-[10px] font-bold">
-                      <span className="text-zinc-200">TOTAL SUCURSAL</span>
-                      <span className="font-mono text-amber-300 font-black">{sTotal}</span>
+                    <div className="bg-slate-950/65 px-4 py-2 border-t border-white/10 flex justify-between items-center text-[10px] font-bold">
+                      <span className="text-slate-400">TOTAL SUCURSAL</span>
+                      <span className="font-mono text-amber-400 font-black">{sTotal}</span>
                     </div>
                   </div>
                 );
               })}
             </div>
           </div>
-
+ 
           {/* TABLA BLOCK 2: MATRIZ DE ASISTENCIAS VIALES POR SUCURSAL — ESPACIADO LEGIBLE SIN APARTADO DE DESPLAZAMIENTO */}
           <div className="space-y-4 pt-4">
-            <span className="text-[11px] uppercase font-black tracking-widest text-white flex items-center gap-2 bg-zinc-650 px-4 py-2 rounded-xl border border-zinc-400 w-fit">
+            <span className="text-[11px] uppercase font-black tracking-widest text-white flex items-center gap-2 bg-slate-900 border border-white/10 px-4 py-2 rounded-xl w-fit">
               <MapPin className="h-4.5 w-4.5 text-amber-300" />
               MATRIZ DE ASISTENCIAS MENSUALES POR SUCURSAL
             </span>
             
-            <div className="border border-zinc-400 bg-zinc-500 rounded-2xl overflow-hidden shadow-md p-1">
+            <div className="border border-white/10 bg-slate-900/40 rounded-2xl overflow-hidden shadow-2xl p-1">
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse text-xs table-fixed min-w-[1000px]">
                   {/* Definición de anchos de columnas fijos para que no se aprieten */}
@@ -1213,13 +1757,13 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                     <col className="w-[7.5%]" />
                   </colgroup>
 
-                  <thead className="bg-zinc-600 text-white font-extrabold text-[10px] tracking-wider uppercase border-b-2 border-zinc-400 h-11">
+                  <thead className="bg-slate-950 text-slate-300 font-extrabold text-[10px] tracking-wider uppercase border-b border-white/10 h-11">
                     <tr>
                       <th className="p-3 pl-4 text-left">SUCURSAL</th>
                       {MESES_ABR.map((m, idx) => (
                         <th 
                           key={m} 
-                          className={`p-2 text-center transition-colors font-mono ${idx === activeMonthIndex ? "bg-zinc-700 text-amber-300 shadow-inner font-black" : ""}`}
+                          className={`p-2 text-center transition-colors font-mono ${idx === activeMonthIndex ? "bg-amber-500/20 text-amber-350 font-black" : ""}`}
                         >
                           {m}
                         </th>
@@ -1229,7 +1773,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                     </tr>
                   </thead>
                   
-                  <tbody className="divide-y divide-zinc-400 text-white font-extrabold bg-zinc-500">
+                  <tbody className="divide-y divide-white/10 text-slate-205 font-extrabold bg-slate-900/60">
                     {resolvedSucursalListData.map((sucItem, sIdx) => {
                       const valuesArray = MESES_ABR.map(m => sucItem.meses[m] || 0);
                       const totalRowSum = valuesArray.reduce((sum, v) => sum + v, 0);
@@ -1237,7 +1781,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                       const averagePerMonth = totalRowSum / nonZeroMonthsCount;
 
                       return (
-                        <tr key={sucItem.sucursal} className="hover:bg-zinc-600 transition-colors h-11">
+                        <tr key={sucItem.sucursal} className="hover:bg-white/5 transition-colors h-11">
                           <td className="p-3 pl-4 text-white text-[11px] font-black uppercase tracking-wide truncate">{sucItem.sucursal}</td>
                           
                           {MESES_ABR.map((m, mIdx) => {
@@ -1247,14 +1791,14 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                             return (
                               <td 
                                 key={m} 
-                                className={`p-1.5 text-center font-mono text-xs ${mIdx === activeMonthIndex ? "bg-zinc-700 text-amber-300 font-extrabold border-x border-zinc-400" : "text-white"}`}
+                                className={`p-1.5 text-center font-mono text-xs ${mIdx === activeMonthIndex ? "bg-amber-500/15 text-amber-305 font-extrabold border-x border-white/5" : "text-white"}`}
                               >
                                 {isEditableFieldOpen ? (
                                   <input
                                     type="number"
                                     value={val}
                                     onChange={(e) => handleSucursalChange(sIdx, m, e.target.value)}
-                                    className="w-12 bg-zinc-800 text-zinc-100 border border-zinc-700 hover:border-amber-400 rounded font-bold font-mono text-center text-[11px] focus:outline-none focus:border-amber-550 py-0.5"
+                                    className="w-12 bg-slate-950 text-slate-100 border border-white/15 hover:border-amber-400 rounded font-bold font-mono text-center text-[11px] focus:outline-none focus:border-amber-500 py-0.5"
                                   />
                                 ) : (
                                   val
@@ -1263,33 +1807,33 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                             );
                           })}
 
-                          <td className="p-3 text-right font-mono text-amber-300 font-black bg-zinc-600 border-l border-zinc-400">{totalRowSum}</td>
-                          <td className="p-3 text-right font-mono text-zinc-100">{averagePerMonth.toFixed(1)}</td>
+                          <td className="p-3 text-right font-mono text-amber-350 font-black bg-slate-950/80 border-l border-white/10">{totalRowSum}</td>
+                          <td className="p-3 text-right font-mono text-slate-300">{averagePerMonth.toFixed(1)}</td>
                         </tr>
                       );
                     })}
 
                     {/* Fila del TOTAL de Sucursal */}
-                    <tr className="bg-zinc-600 text-white font-black border-t-2 border-zinc-400 h-12">
-                      <td className="p-3 pl-4 font-extrabold uppercase tracking-widest text-[10px] text-zinc-100">TOTAL SUCURSALES</td>
+                    <tr className="bg-slate-950 text-white font-black border-t border-white/10 h-12">
+                      <td className="p-3 pl-4 font-extrabold uppercase tracking-widest text-[10px] text-slate-300">TOTAL SUCURSALES</td>
                       {MESES_ABR.map((m, mIdx) => {
                         const colSum = resolvedSucursalListData.reduce((sum, item) => sum + (item.meses[m] || 0), 0);
                         return (
                           <td 
                             key={m} 
-                            className={`p-2 text-center font-mono font-black text-xs ${mIdx === activeMonthIndex ? "bg-zinc-700 text-amber-300 font-bold border-x border-zinc-400 font-black shadow-inner" : ""}`}
+                            className={`p-2 text-center font-mono font-black text-xs ${mIdx === activeMonthIndex ? "bg-amber-500/20 text-amber-305 font-bold border-x border-white/5 font-black" : ""}`}
                           >
                             {colSum}
                           </td>
                         );
                       })}
-                      <td className="p-3 text-right font-mono text-amber-300 font-black bg-zinc-700 border-l border-zinc-400">
+                      <td className="p-3 text-right font-mono text-amber-350 font-black bg-slate-950 border-l border-white/10">
                         {resolvedSucursalListData.reduce((sum, item) => {
                           const rowSum = MESES_ABR.reduce((rSum, m) => rSum + (item.meses[m] || 0), 0);
                           return sum + rowSum;
                         }, 0)}
                       </td>
-                      <td className="p-3 text-right font-mono text-zinc-100">
+                      <td className="p-3 text-right font-mono text-slate-300">
                         {(resolvedSucursalListData.reduce((sum, item) => {
                           const rowSum = MESES_ABR.reduce((rSum, m) => rSum + (item.meses[m] || 0), 0);
                           return sum + rowSum;
@@ -1303,35 +1847,35 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
           </div>
 
           {/* TABLA BLOCK 3: COMPARATIVA DE EVOLUCIÓN HISTÓRICA COMPLETA */}
-          <div className="space-y-4 pt-4 text-zinc-150">
-            <span className="text-[11px] uppercase font-black tracking-widest text-zinc-200 flex items-center gap-2 bg-zinc-800 px-4 py-2 rounded-xl border border-zinc-700 w-fit">
+          <div className="space-y-4 pt-4 text-slate-200">
+            <span className="text-[11px] uppercase font-black tracking-widest text-slate-200 flex items-center gap-2 bg-slate-900 border border-white/10 px-4 py-2 rounded-xl w-fit">
               <Layers className="h-4.5 w-4.5 text-indigo-400" />
               COMPARATIVA ANUAL TRANVERSAL FISCAL (2025 VS 2026)
             </span>
 
             {/* adicional COMPARATIVA ANUAL TRANVERSAL FISCAL (2025 VS 2026) agregale grafico curvas */}
-            <div className="bg-zinc-900 border border-zinc-700 p-5 rounded-2xl shadow-md max-w-full lg:max-w-4xl text-zinc-200">
-              <div className="flex items-center justify-between mb-4 pb-3 border-b border-zinc-805">
+            <div className="glass-panel border border-white/10 p-5 rounded-2xl shadow-xl max-w-full lg:max-w-4xl text-slate-200">
+              <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/10">
                 <div className="flex items-center gap-2">
                   <div className="w-1.5 h-4.5 bg-indigo-500 rounded-full"></div>
-                  <h3 className="text-xs font-black uppercase tracking-wider text-zinc-100">
+                  <h3 className="text-xs font-black uppercase tracking-wider text-white">
                     Curvas de Evolución Anual Comparada (2025 vs 2026)
                   </h3>
                 </div>
-                <span className="text-[10px] text-zinc-400 tracking-wider font-bold uppercase">Tendencia Interanual</span>
+                <span className="text-[10px] text-slate-400 tracking-wider font-bold uppercase">Tendencia Interanual</span>
               </div>
               <div className="w-full h-[220px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={chartData} margin={{ top: 10, right: 15, left: -25, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.3} />
                     <XAxis 
                       dataKey="name" 
                       tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: '700' }} 
-                      stroke="#4b5563" 
+                      stroke="#475569" 
                     />
                     <YAxis 
                       tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: '600' }} 
-                      stroke="#4b5563" 
+                      stroke="#475569" 
                     />
                     <Tooltip 
                       content={({ active, payload, label }) => {
@@ -1341,17 +1885,17 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                           const diff = val2026 - val2025;
                           const diffPct = val2025 > 0 ? (diff / val2025) * 100 : 0;
                           return (
-                            <div className="bg-zinc-950 border border-zinc-700 p-4 rounded-xl shadow-lg text-xs font-sans text-zinc-200">
+                            <div className="bg-slate-950/95 border border-white/10 p-4 rounded-xl shadow-lg text-xs font-sans text-slate-200">
                               <p className="font-extrabold text-amber-400 uppercase mb-2 tracking-wider">{label}</p>
-                              <p className="font-bold text-zinc-300 flex justify-between gap-4">
+                              <p className="font-bold text-slate-400 flex justify-between gap-4">
                                 <span>Año 2025:</span>
                                 <span className="font-mono font-black text-white">{val2025}</span>
                               </p>
-                              <p className="font-bold text-zinc-300 flex justify-between gap-4">
+                              <p className="font-bold text-slate-400 flex justify-between gap-4">
                                 <span>Año 2026:</span>
                                 <span className={`font-mono font-black text-amber-400`}>{val2026}</span>
                               </p>
-                              <p className="border-t border-zinc-800 pt-2 mt-2 font-bold flex justify-between gap-8">
+                              <p className="border-t border-white/10 pt-2 mt-2 font-bold flex justify-between gap-8">
                                 <span>Diferencia YoYo:</span>
                                 <span className={`font-mono font-black ${diff >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                                   {diff >= 0 ? '+' : ''}{diff} ({diffPct >= 0 ? '+' : ''}{diffPct.toFixed(1)}%)
@@ -1375,10 +1919,10 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
               </div>
             </div>
             
-            <div className="border border-zinc-600 bg-zinc-500 rounded-2xl overflow-hidden shadow-md p-1 max-w-full lg:max-w-4xl">
+            <div className="border border-white/10 bg-slate-900/40 rounded-2xl overflow-hidden shadow-2xl p-1 max-w-full lg:max-w-4xl">
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse text-xs min-w-[700px]">
-                  <thead className="bg-zinc-600 text-white font-extrabold text-[10px] tracking-wider uppercase border-b-2 border-zinc-400 h-11">
+                  <thead className="bg-slate-950 text-slate-300 font-extrabold text-[10px] tracking-wider uppercase border-b border-white/10 h-11">
                     <tr>
                       <th className="p-3 pl-4">MES</th>
                       <th className="p-3 text-center font-mono">AÑO 2025</th>
@@ -1389,7 +1933,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                     </tr>
                   </thead>
                   
-                  <tbody className="divide-y divide-zinc-400 text-white font-extrabold bg-zinc-500">
+                  <tbody className="divide-y divide-white/10 text-white font-extrabold bg-slate-900/60">
                     {resolvedMonthlyList.map((item, idx) => {
                       const isCurrentSelected = idx === activeMonthIndex;
                       const prevVal = idx > 0 ? (resolvedMonthlyList[idx - 1]?.val2026 || 0) : 0;
@@ -1404,7 +1948,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                         ? ((item.val2026 - prevVal) / prevVal) * 100 
                         : 0;
 
-                      let diffColor = "text-zinc-400";
+                      let diffColor = "text-slate-400";
                       let diffBg = "";
                       if (diffVal > 0) {
                         diffColor = "text-emerald-400 font-bold";
@@ -1414,11 +1958,11 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                         diffBg = "bg-rose-950/20";
                       }
 
-                      let pctColor = "text-zinc-400";
+                      let pctColor = "text-slate-400";
                       if (pctChangeYear > 0) pctColor = "text-emerald-400 font-extrabold bg-emerald-950 px-2.5 py-0.5 rounded-lg border border-emerald-900";
                       else if (pctChangeYear < 0) pctColor = "text-rose-400 font-extrabold bg-rose-950 px-2.5 py-0.5 rounded-lg border border-rose-900";
 
-                      let pctMonthColor = "text-zinc-400";
+                      let pctMonthColor = "text-slate-400";
                       if (pctChangeMonth > 0) pctMonthColor = "text-emerald-400 font-semibold";
                       else if (pctChangeMonth < 0) pctMonthColor = "text-rose-400 font-semibold";
 
@@ -1426,7 +1970,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                       const isEditable2026 = isEditing && !isCurrentSelected;
 
                       return (
-                        <tr key={item.mes} className={`hover:bg-zinc-650 transition h-11 ${isCurrentSelected ? "bg-amber-950/40 text-amber-300" : "text-white"}`}>
+                        <tr key={item.mes} className={`hover:bg-white/5 transition h-11 ${isCurrentSelected ? "bg-amber-500/10 text-amber-300" : "text-white"}`}>
                           <td className="p-3 pl-4">
                              <span className={`text-xs uppercase font-extrabold ${isCurrentSelected ? "text-amber-400 font-black" : "text-white"}`}>{item.mes}</span>
                           </td>
@@ -1438,7 +1982,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                                 type="number"
                                 value={item.val2025}
                                 onChange={(e) => handleMonthlyChange(idx, "val2025", e.target.value)}
-                                className="w-14 bg-zinc-850 text-white border border-zinc-700 hover:border-zinc-550 rounded font-bold font-mono text-center text-[11px] focus:outline-none focus:border-amber-500 py-0.5"
+                                className="w-14 bg-slate-950 text-white border border-white/10 hover:border-amber-400 rounded font-bold font-mono text-center text-[11px] focus:outline-none focus:border-amber-500 py-0.5"
                               />
                             ) : (
                               item.val2025
@@ -1452,7 +1996,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                                 type="number"
                                 value={item.val2026}
                                 onChange={(e) => handleMonthlyChange(idx, "val2026", e.target.value)}
-                                className="w-14 bg-zinc-850 text-white border border-zinc-700 hover:border-zinc-550 rounded font-bold font-mono text-center text-[11px] focus:outline-none focus:border-amber-500 py-0.5"
+                                className="w-14 bg-slate-950 text-white border border-white/10 hover:border-amber-400 rounded font-bold font-mono text-center text-[11px] focus:outline-none focus:border-amber-500 py-0.5"
                               />
                             ) : (
                               item.val2026
@@ -1465,7 +2009,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
 
                           <td className="p-3 text-center font-mono">
                             {item.val2025 === 0 && item.val2026 === 0 ? (
-                              <span className="text-zinc-500 font-normal">-</span>
+                              <span className="text-slate-550 font-normal">-</span>
                             ) : (
                               <span className={pctColor}>{pctChangeYear >= 0 ? "+" : ""}{pctChangeYear.toFixed(1)}%</span>
                             )}
@@ -1479,10 +2023,10 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                     })}
 
                     {/* Fila del TOTAL del Comparativo */}
-                    <tr className="bg-zinc-950 border-t-2 border-zinc-850 text-zinc-200 font-black h-12">
-                      <td className="p-3 pl-4 font-bold uppercase text-[10px] tracking-widest text-zinc-400">TOTAL GENERAL</td>
+                    <tr className="bg-slate-950 border-t border-white/10 text-slate-200 font-black h-12">
+                      <td className="p-3 pl-4 font-bold uppercase text-[10px] tracking-widest text-slate-400 font-sans">TOTAL GENERAL</td>
                       
-                      <td className="p-3 text-center font-mono text-zinc-100 font-extrabold text-xs">
+                      <td className="p-3 text-center font-mono text-slate-100 font-extrabold text-xs">
                         {resolvedMonthlyList.reduce((sum, i) => sum + i.val2025, 0)}
                       </td>
 
@@ -1511,7 +2055,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                         );
                       })()}
 
-                      <td className="p-3 text-center font-mono text-zinc-500 font-semibold">-</td>
+                      <td className="p-3 text-center font-mono text-slate-500 font-semibold">-</td>
                     </tr>
                   </tbody>
                 </table>
@@ -1520,31 +2064,31 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
           </div>
 
           {/* SECCIÓN 3: INFORME DE ANÁLISIS DE DATOS IA EN VIVO (INTEGRADO EN PDF) */}
-          <div className="bg-zinc-500 border border-zinc-400 rounded-2xl overflow-hidden shadow-lg p-6">
-            <div className="flex items-center justify-between border-b border-zinc-400 pb-3 mb-4">
+          <div className="glass-card border border-white/10 rounded-2xl overflow-hidden shadow-2xl p-6">
+            <div className="flex items-center justify-between border-b border-white/15 pb-3 mb-4">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 bg-zinc-650 border border-zinc-400 rounded-lg text-amber-400">
-                  <Brain className="h-5 w-5 text-amber-300" />
+                <div className="p-2 bg-slate-900 border border-white/15 rounded-lg text-amber-300">
+                  <Brain className="h-5 w-5 text-amber-400 shrink-0" />
                 </div>
                 <div>
-                  <h3 className="text-xs font-black uppercase tracking-wider text-slate-950">
+                  <h3 className="text-xs font-black uppercase tracking-wider text-white">
                     Análisis de Datos Operativo & Predictivo IA
                   </h3>
-                  <p className="text-[10px] text-zinc-900 font-extrabold">Generado de forma dinámica con IA para {monthlyData[activeMonthIndex].mes} 2026</p>
+                  <p className="text-[10px] text-slate-400 font-bold font-mono">Generado de forma dinámica con IA para {monthlyData[activeMonthIndex].mes} 2026</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={generateAnalysis}
                 disabled={isGeneratingAnalysis}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-750 hover:bg-zinc-800 text-amber-300 font-black rounded-xl text-[10px] cursor-pointer transition border border-zinc-600 disabled:opacity-50"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-950 hover:bg-slate-900 text-amber-300 font-black rounded-xl text-[10px] cursor-pointer transition border border-white/10 disabled:opacity-50"
               >
                 <Sparkles className="h-3 w-3 text-amber-300 animate-pulse" />
                 {isGeneratingAnalysis ? "Analizando..." : "Regenerar Análisis"}
               </button>
             </div>
             
-            <div className="text-xs text-slate-950 leading-relaxed font-sans space-y-4 whitespace-pre-line bg-zinc-100/90 p-4.5 rounded-xl border border-zinc-450 font-bold shadow-inner">
+            <div className="text-xs text-slate-205 leading-relaxed font-sans space-y-4 whitespace-pre-line bg-slate-950/40 p-4.5 rounded-xl border border-white/5 font-bold">
               {analysisContent}
             </div>
           </div>
@@ -1552,13 +2096,13 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
         </div>
 
         {/* PIE DE PLANILLA */}
-        <div className="bg-zinc-900 px-6 py-4.5 border-t border-zinc-800 text-zinc-400 flex flex-col sm:flex-row sm:items-center justify-between text-[11px] font-mono leading-relaxed">
+        <div className="bg-slate-950 px-6 py-4.5 border-t border-white/10 text-slate-400 flex flex-col sm:flex-row sm:items-center justify-between text-[11px] font-mono leading-relaxed">
           <div className="flex items-center gap-2">
             <FileSpreadsheet className="h-4 w-4 text-amber-500 shrink-0" />
-            <span className="text-zinc-300 font-semibold">REPORTE EJECUTIVO DE ASISTENCIAS VIALES</span>
+            <span className="text-slate-300 font-semibold">REPORTE EJECUTIVO DE ASISTENCIAS VIALES</span>
           </div>
-          <div className="text-zinc-300 mt-1.5 sm:mt-0 font-extrabold">
-            AUTO CENTRO S.A. · {new Date().toISOString().split("T")[0]}
+          <div className="text-slate-300 mt-1.5 sm:mt-0 font-extrabold">
+            AUTO CENTRO S.A. • {new Date().toISOString().split("T")[0]}
           </div>
         </div>
 
