@@ -2517,7 +2517,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
       </div>
 
       {/* RE-DISEÑO INFORME PRINCIPAL (SLATE CLARO PREMIUM CON CONTRASTE ELEVADO PARA DATOS LEGIBLES) */}
-      <div className="glass-card border border-white/10 relative isolate rounded-3xl overflow-hidden shadow-2xl flex flex-col">
+      <div className="border border-white/10 relative isolate rounded-3xl overflow-hidden shadow-2xl flex flex-col">
         
         {/* ENCABEZADOS DE LA MATRIZ */}
         <div className="bg-zinc-900/60 px-6 py-5 border-b border-white/10 flex flex-col md:flex-row items-center justify-between gap-4 text-white">
@@ -2769,7 +2769,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
 
             {/* DETALLES DE SUCURSAL INVIDIDUAL */}
             <div className="space-y-3 pt-2">
-              <span className="text-[10px] uppercase font-black tracking-widest text-slate-400 block">
+              <span className="text-[11px] uppercase font-black tracking-widest text-slate-205 flex items-center gap-2 bg-zinc-900 border border-white/10 px-4 py-2 rounded-xl w-fit">
                 Detalle Individual por Sucursal ({monthlyData[activeMonthIndex].mes})
               </span>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
@@ -2844,7 +2844,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
               MATRIZ DE ASISTENCIAS MENSUALES POR SUCURSAL
             </span>
             
-            <div className="border border-white/10 bg-zinc-900/40 rounded-2xl overflow-hidden shadow-2xl p-1">
+            <div className="bg-zinc-500/40 rounded-2xl overflow-hidden shadow-2xl p-0">
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse text-xs table-fixed min-w-[1000px]">
                   {/* Definición de anchos de columnas fijos para que no se aprieten */}
@@ -2873,7 +2873,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                     </tr>
                   </thead>
                   
-                  <tbody className="divide-y divide-white/10 text-slate-205 font-extrabold bg-zinc-900/60">
+                  <tbody className="backdrop-blur-md divide-y divide-white/10 text-slate-205 font-extrabold bg-zinc-900/40">
                     {resolvedSucursalListData.map((sucItem, sIdx) => {
                       const valuesArray = MESES_ABR.map(m => sucItem.meses[m] || 0);
                       const totalRowSum = valuesArray.reduce((sum, v) => sum + v, 0);
@@ -2964,7 +2964,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
             </span>
 
             {/* adicional COMPARATIVA ANUAL TRANSVERSAL FISCAL (2025 VS 2026) agregale grafico curvas */}
-            <div className="glass-panel border border-white/10 p-5 rounded-2xl shadow-xl max-w-full lg:max-w-6xl text-slate-200">
+                        <div className="glass-panel border border-white/10 p-5 rounded-2xl shadow-xl max-w-full lg:max-w-6xl text-slate-200">
               <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/10">
                 <div className="flex items-center gap-2">
                   <div className="w-1.5 h-4.5 bg-indigo-500 rounded-full"></div>
@@ -3037,9 +3037,8 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                   </LineChart>
                 </ResponsiveContainer>
               </div>
-
-              {/* Contenedor de la tabla scrollable */}
-              <div className="overflow-x-auto rounded-xl border border-white/10 bg-zinc-950/40 mt-6">
+             {/* Contenedor de la tabla scrollable */}
+              <div className="overflow-x-auto rounded-xl border border-white/10 bg-zinc-500/40 mt-6">
                 <table className="w-full text-left border-collapse text-[11.5px] min-w-[700px]">
                   <thead className="bg-zinc-950 text-slate-300 font-extrabold text-[9px] tracking-wider uppercase border-b border-white/10 h-8">
                     <tr>
@@ -3052,7 +3051,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                     </tr>
                   </thead>
                   
-                  <tbody className="divide-y divide-white/10 text-white font-extrabold bg-zinc-900/60">
+                  <tbody className="divide-y divide-white/10 text-white font-extrabold bg-zinc-500/40">
                     {resolvedMonthlyList.map((item, idx) => {
                       const isCurrentSelected = idx === activeMonthIndex;
                       const prevVal = idx > 0 ? (resolvedMonthlyList[idx - 1]?.val2026 || 0) : 0;
@@ -3191,7 +3190,6 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
               </div>
             </div>
           </div>
-
           {/* SECCIÓN 3: INFORME DE ANÁLISIS DE DATOS IA EN VIVO (INTEGRADO EN PDF) */}
           <div className="glass-card border border-white/10 rounded-2xl overflow-hidden shadow-2xl p-6">
             <div className="flex items-center justify-between border-b border-white/15 pb-3 mb-4">
