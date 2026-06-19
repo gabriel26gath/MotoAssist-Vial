@@ -50,7 +50,7 @@ export interface Invoice {
   userId: string;
   createdAt: string; // ISO 8601 string or Timestamp string
 
-  // Nuevos campos detallados adicionales de la factura adjunta (AUTO CENTRO S.A.)
+  // Nuevos campos detallados adicionales de la factura adjunta
   issuerRuc?: string; // RUC Emisor dgi (e.g., "603-203-124985 DV 01")
   issuerAddress?: string; // Dirección física o avenida
   invoiceType?: string; // e.g., "Comprobante Auxiliar de Factura Electrónica" or "Factura de Operación Interna"

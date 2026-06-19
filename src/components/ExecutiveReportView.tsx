@@ -29,7 +29,16 @@ import {
   ChevronDown,
   Plus,
   Minus,
-  Scissors
+  Scissors,
+  ShieldAlert,
+  Lock,
+  Unlock,
+  Palette,
+  Type,
+  GripVertical,
+  AlignLeft,
+  AlignCenter,
+  AlignRight
 } from "lucide-react";
 import { 
   ResponsiveContainer, 
@@ -142,12 +151,16 @@ export default function ExecutiveReportView({ invoices }: ExecutiveReportViewPro
   const [monthlyData, setMonthlyData] = useState<HistoricalMonthlyData[]>(DEFAULT_MONTHS_2025_2026);
   const [sucursalMonths, setSucursalMonths] = useState<HistoricalSucursalData[]>(INITIAL_SUCURSAL_MONTHS_2026);
   const [isEditing, setIsEditing] = useState(false);
+  const [isSuperAdminActive, setIsSuperAdminActive] = useState(false);
+  const [showSuperAdminModal, setShowSuperAdminModal] = useState(false);
+  const [superAdminPIN, setSuperAdminPIN] = useState("");
+  const [superAdminError, setSuperAdminError] = useState("");
   const [editedMonthly, setEditedMonthly] = useState<HistoricalMonthlyData[]>([]);
   const [editedSucursales, setEditedSucursales] = useState<HistoricalSucursalData[]>([]);
 
   // Estados para personalización del PDF
   const [pdfTitle, setPdfTitle] = useState("REPORTE EJECUTIVO DE ASISTENCIAS VIALES");
-  const [pdfSubtitle, setPdfSubtitle] = useState("Auto Centro S.A. • Control de Eficiencia Operativa");
+  const [pdfSubtitle, setPdfSubtitle] = useState("Control de Eficiencia Operativa");
   const [showPdfCustomizer, setShowPdfCustomizer] = useState(false);
 
   // Títulos de secciones editables antes de descargar
@@ -171,6 +184,13 @@ export default function ExecutiveReportView({ invoices }: ExecutiveReportViewPro
 
   // Escala global del documento (Zoom)
   const [printScale, setPrintScale] = useState("100"); // 100, 115, 130
+
+  // Nuevas propiedades interactivas del PDF
+  const [pdfTitleAlign, setPdfTitleAlign] = useState<"left" | "center" | "right">("left");
+  const [pdfTitleStyle, setPdfTitleStyle] = useState<"sans" | "serif" | "mono">("sans");
+  const [pdfPadding, setPdfPadding] = useState<"compact" | "normal" | "spacious">("normal");
+  const [pdfAccentColor, setPdfAccentColor] = useState<"amber" | "blue" | "indigo" | "emerald" | "rose">("amber");
+  const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
 
   // Estado para la ventana flotante (Modal) del Diseñador Visual de PDF
   const [isPdfDesignerOpen, setIsPdfDesignerOpen] = useState(false);
@@ -231,6 +251,57 @@ export default function ExecutiveReportView({ invoices }: ExecutiveReportViewPro
   const handleTogglePageBreak = (index: number) => {
     const updated = [...pdfSections];
     updated[index].isPageBreakBefore = !updated[index].isPageBreakBefore;
+    setPdfSections(updated);
+  };
+
+  // Alternar ancho de sección cíclicamente: 100% -> 66% -> 50% -> 33% -> 100%
+  const handleCycleSectionWidth = (index: number) => {
+    const updated = [...pdfSections];
+    const curr = updated[index].width || "100%";
+    let next = "100%";
+    if (curr === "100%") next = "66%";
+    else if (curr === "66%") next = "50%";
+    else if (curr === "50%") next = "33%";
+    else if (curr === "33%") next = "100%";
+    updated[index].width = next;
+    setPdfSections(updated);
+  };
+
+  // Alternar tonalidad de fondo: blanco -> ámbar sutil -> gris ejecutivo -> esmeralda suave
+  const handleCycleSectionBgTint = (index: number) => {
+    const updated = [...pdfSections];
+    const curr = (updated[index] as any).bgTint || "white";
+    let next = "white";
+    if (curr === "white") next = "amber";
+    else if (curr === "amber") next = "slate";
+    else if (curr === "slate") next = "emerald";
+    else if (curr === "emerald") next = "white";
+    (updated[index] as any).bgTint = next;
+    setPdfSections(updated);
+  };
+
+  // Alternar tipografía: sans-serif -> serif elegante -> monospace técnico
+  const handleCycleSectionFontFamily = (index: number) => {
+    const updated = [...pdfSections];
+    const curr = (updated[index] as any).fontFamily || "sans";
+    let next = "sans";
+    if (curr === "sans") next = "serif";
+    else if (curr === "serif") next = "mono";
+    else if (curr === "mono") next = "sans";
+    (updated[index] as any).fontFamily = next;
+    setPdfSections(updated);
+  };
+
+  // Alternar marco/borde: simple -> punteado -> acento ámbar izq -> acento índigo izq
+  const handleCycleSectionBorderStyle = (index: number) => {
+    const updated = [...pdfSections];
+    const curr = (updated[index] as any).borderStyle || "solid";
+    let next = "solid";
+    if (curr === "solid") next = "dashed";
+    else if (curr === "dashed") next = "accent-left";
+    else if (curr === "accent-left") next = "accent-indigo";
+    else if (curr === "accent-indigo") next = "solid";
+    (updated[index] as any).borderStyle = next;
     setPdfSections(updated);
   };
 
@@ -566,6 +637,7 @@ export default function ExecutiveReportView({ invoices }: ExecutiveReportViewPro
     setEditedMonthly(JSON.parse(JSON.stringify(monthlyData)));
     setEditedSucursales(JSON.parse(JSON.stringify(sucursalMonths)));
     setIsEditing(true);
+    setIsSuperAdminActive(false);
   };
 
   const saveEditedValues = () => {
@@ -574,6 +646,23 @@ export default function ExecutiveReportView({ invoices }: ExecutiveReportViewPro
     localStorage.setItem("executive_report_monthly_v1", JSON.stringify(editedMonthly));
     localStorage.setItem("executive_report_sucursales_v1", JSON.stringify(editedSucursales));
     setIsEditing(false);
+    setIsSuperAdminActive(false);
+  };
+
+  const cancelEditing = () => {
+    setIsEditing(false);
+    setIsSuperAdminActive(false);
+  };
+
+  const handleVerifyPIN = () => {
+    if (superAdminPIN === "233291") {
+      setIsSuperAdminActive(true);
+      setShowSuperAdminModal(false);
+      setSuperAdminPIN("");
+      setSuperAdminError("");
+    } else {
+      setSuperAdminError("Clave de Programador incorrecta");
+    }
   };
 
   const handleMonthlyChange = (idx: number, field: "val2025" | "val2026", value: string) => {
@@ -611,6 +700,7 @@ export default function ExecutiveReportView({ invoices }: ExecutiveReportViewPro
   const [analysisContent, setAnalysisContent] = useState<string>("");
   const [isGeneratingAnalysis, setIsGeneratingAnalysis] = useState<boolean>(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
+  const [hasBeenAnalyzed, setHasBeenAnalyzed] = useState<boolean>(false);
 
   // Generador de análisis dinámico local en caso de que Gemini esté offline o sin API Key
   const generateLocalFallbackAnalysis = () => {
@@ -651,7 +741,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
 
 4. **PLAN DE MEJORA Y RECOMENDACIONES OPERATIVAS**
 - **Optimización de Flota y Rutas**: Redistribuir motorizados de respuesta rápida en zonas de alto tráfico próximas a **${topSucName}** para reducir el tiempo promedio de atención a menos de 30 minutos.
-- **Campañas de Mantenimiento Preventivo (Baterías)**: Implementar promociones de reemplazo de baterías preventivas de Auto Centro, disminuyendo de forma directa las solicitudes de auxilio por fallas de encendido.
+- **Campañas de Mantenimiento Preventivo (Baterías)**: Implementar promociones de reemplazo de baterías preventivas, disminuyendo de forma directa las solicitudes de auxilio por fallas de encendido.
 - **Digitalización de Recepción Técnica**: Capacitar al personal receptor para agilizar la carga de incidencias térmicas y facturas electrónicas desde la aplicación, integrando el API de reportes en tiempo real para un monitoreo YTD continuo.`;
   };
 
@@ -689,6 +779,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
       setAnalysisContent(fallback);
     } finally {
       setIsGeneratingAnalysis(false);
+      setHasBeenAnalyzed(true);
     }
   };
 
@@ -701,11 +792,20 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
         return;
       }
       
+      const accentHexMap = {
+        amber: { primary: "#f59e0b", hover: "#d97706", light: "#fef3c7" },
+        blue: { primary: "#3b82f6", hover: "#1d4ed8", light: "#dbeafe" },
+        indigo: { primary: "#6366f1", hover: "#4338ca", light: "#e0e7ff" },
+        emerald: { primary: "#10b981", hover: "#047857", light: "#d1fae5" },
+        rose: { primary: "#f43f5e", hover: "#be123c", light: "#ffe4e6" }
+      };
+      const accent = accentHexMap[pdfAccentColor] || accentHexMap.amber;
+
       const tableRows = resolvedMonthlyList.map(item => `
         <tr>
           <td style="font-weight: bold;">${item.mes}</td>
           <td style="text-align: center; font-family: monospace;">${item.val2025}</td>
-          <td style="text-align: center; font-family: monospace; color: #d97706; font-weight: bold;">${item.val2026}</td>
+          <td style="text-align: center; font-family: monospace; color: ${accent.hover}; font-weight: bold;">${item.val2026}</td>
           <td style="text-align: center; font-family: monospace; font-weight: bold;">${item.val2026 - item.val2025}</td>
           <td style="text-align: center; font-family: monospace; font-weight: bold;">${item.val2025 > 0 ? (((item.val2026 - item.val2025)/item.val2025)*100).toFixed(0) + '%' : '0%'}</td>
         </tr>
@@ -717,7 +817,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
           <tr>
             <td style="font-weight: bold; text-transform: uppercase;">${item.sucursal}</td>
             ${MESES_ABR.map(m => `<td style="text-align: center; font-family: monospace;">${item.meses[m] || 0}</td>`).join("")}
-            <td style="text-align: right; font-family: monospace; font-weight: bold; color: #d97706;">${total}</td>
+            <td style="text-align: right; font-family: monospace; font-weight: bold; color: ${accent.hover};">${total}</td>
           </tr>
         `;
       }).join("");
@@ -753,8 +853,8 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                 ${item.val2025 > 0 ? `<span style="font-size: 7.5px; font-weight: bold; position: absolute; top: -11px; left: 50%; transform: translateX(-50%); font-family: monospace; color: #475569;">${item.val2025}</span>` : ""}
               </div>
               <!-- 2026 bar -->
-              <div style="height: ${h2026}px; width: 10px; background-color: #f59e0b; border-radius: 2px 2px 0 0; position: relative;">
-                ${item.val2026 > 0 ? `<span style="font-size: 7.5px; font-weight: 950; position: absolute; top: -11px; left: 50%; transform: translateX(-50%); font-family: monospace; color: #b45309;">${item.val2026}</span>` : ""}
+              <div style="height: ${h2026}px; width: 10px; background-color: ${accent.primary}; border-radius: 2px 2px 0 0; position: relative;">
+                ${item.val2026 > 0 ? `<span style="font-size: 7.5px; font-weight: 950; position: absolute; top: -11px; left: 50%; transform: translateX(-50%); font-family: monospace; color: ${accent.hover};">${item.val2026}</span>` : ""}
               </div>
             </div>
             <!-- Etiqueta de mes -->
@@ -779,10 +879,10 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
           <div style="margin-bottom: 10px;">
             <div style="display: flex; justify-content: space-between; font-size: 10px; font-weight: bold; margin-bottom: 4px; text-transform: uppercase;">
               <span>${item.sucursal}</span>
-              <span style="font-family: monospace; color: #d97706;">${total} servicios YTD</span>
+              <span style="font-family: monospace; color: ${accent.hover};">${total} servicios YTD</span>
             </div>
             <div style="width: 100%; height: 10px; border-radius: 5px; overflow: hidden; border: 1px solid #cbd5e1; background-color: #f1f5f9;">
-              <div style="width: ${pct}%; background: linear-gradient(90deg, #f59e0b, #d97706); height: 100%; border-radius: 5px;"></div>
+              <div style="width: ${pct}%; background: linear-gradient(90deg, ${accent.primary}, ${accent.hover}); height: 100%; border-radius: 5px;"></div>
             </div>
           </div>
         `;
@@ -830,8 +930,8 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
         const varText = val2025 > 0 ? `${diffPct >= 0 ? '+' : ''}${diffPct.toFixed(0)}%` : "";
         const varColor = diffPct >= 0 ? '#10b981' : '#ef4444'; // emerald vs red
         return `
-          <circle cx="${p.x}" cy="${p.y}" r="4" fill="#f59e0b" stroke="white" stroke-width="1.2" />
-          ${val2026 > 0 ? `<text x="${p.x}" y="${p.y - 12}" font-size="7.5px" font-family="monospace" font-weight="black" fill="#b45309" text-anchor="middle">${val2026}</text>` : ""}
+          <circle cx="${p.x}" cy="${p.y}" r="4" fill="${accent.primary}" stroke="white" stroke-width="1.2" />
+          ${val2026 > 0 ? `<text x="${p.x}" y="${p.y - 12}" font-size="7.5px" font-family="monospace" font-weight="black" fill="${accent.hover}" text-anchor="middle">${val2026}</text>` : ""}
           ${varText ? `<text x="${p.x}" y="${p.y - 4}" font-size="6.5px" font-family="sans-serif" font-weight="black" fill="${varColor}" text-anchor="middle">${varText}</text>` : ""}
         `;
       }).join("");
@@ -856,7 +956,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
           <path d="${pathD2025}" fill="none" stroke="#64748b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
           
           <!-- Camino 2026 -->
-          <path d="${pathD2026}" fill="none" stroke="#f59e0b" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="${pathD2026}" fill="none" stroke="${accent.primary}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
           
           <!-- Puntos y leyendas rápidas -->
           ${dots2025}
@@ -886,6 +986,46 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
               <div class="kpi-val" style="font-size: ${sectionSizes.kpis === 'grande' ? '25px' : '20px'};">${variationVsPriorYearPct >= 0 ? "+" : ""}${variationVsPriorYearPct.toFixed(1)}%</div>
               <div class="kpi-lbl">vs Histórico YTD</div>
             </div>
+          </div>
+        </div>
+      `;
+
+      const kpiYtdHtml = `
+        <div style="margin-bottom: 12px;">
+          <h2 style="font-size: 11px; margin-bottom: 5px;">${sectionTitles.kpi_ytd || "Asistencias YTD"}</h2>
+          <div class="kpi-card" style="min-height: 55px;">
+            <div class="kpi-val" style="font-size: 21px;">${total2026YTD}</div>
+            <div class="kpi-lbl">Total Servicios Realizados (YTD)</div>
+          </div>
+        </div>
+      `;
+
+      const kpiLeaderHtml = `
+        <div style="margin-bottom: 12px;">
+          <h2 style="font-size: 11px; margin-bottom: 5px;">${sectionTitles.kpi_leader || "Canal Líder"}</h2>
+          <div class="kpi-card" style="border-left-color: #10b981; min-height: 55px;">
+            <div class="kpi-val" style="font-size: 21px;">${topMediaPercentage.toFixed(1)}%</div>
+            <div class="kpi-lbl">Medio Líder (${topMediaName})</div>
+          </div>
+        </div>
+      `;
+
+      const kpiChangeHtml = `
+        <div style="margin-bottom: 12px;">
+          <h2 style="font-size: 11px; margin-bottom: 5px;">${sectionTitles.kpi_change || "Cambio Mensual"}</h2>
+          <div class="kpi-card" style="border-left-color: #3b82f6; min-height: 55px;">
+            <div class="kpi-val" style="font-size: 21px;">${diffVsPrevMonthPct >= 0 ? "+" : ""}${diffVsPrevMonthPct.toFixed(1)}%</div>
+            <div class="kpi-lbl">vs Mes Anterior</div>
+          </div>
+        </div>
+      `;
+
+      const kpiYoyHtml = `
+        <div style="margin-bottom: 12px;">
+          <h2 style="font-size: 11px; margin-bottom: 5px;">${sectionTitles.kpi_yoy || "Acumulado YoY"}</h2>
+          <div class="kpi-card" style="border-left-color: #f59e0b; min-height: 55px;">
+            <div class="kpi-val" style="font-size: 21px;">${variationVsPriorYearPct >= 0 ? "+" : ""}${variationVsPriorYearPct.toFixed(1)}%</div>
+            <div class="kpi-lbl">vs Histórico YTD</div>
           </div>
         </div>
       `;
@@ -987,6 +1127,10 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
         .map(sec => {
           let sectionContent = "";
           if (sec.id === "kpis") sectionContent = kpisHtml;
+          else if (sec.id === "kpi_ytd") sectionContent = kpiYtdHtml;
+          else if (sec.id === "kpi_leader") sectionContent = kpiLeaderHtml;
+          else if (sec.id === "kpi_change") sectionContent = kpiChangeHtml;
+          else if (sec.id === "kpi_yoy") sectionContent = kpiYoyHtml;
           else if (sec.id === "bar_trend") sectionContent = barTrendHtml;
           else if (sec.id === "line_trend") sectionContent = lineTrendHtml;
           else if (sec.id === "branch_part") sectionContent = branchPartHtml;
@@ -995,8 +1139,16 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
           else if (sec.id === "analysis") sectionContent = analysisHtml;
 
           // Estilos de dimensiones interactivas aplicados a la forma
+          const isQuarter = sec.width === "25%";
+          const isThird = sec.width === "33%";
           const isHalf = sec.width === "50%";
-          const widthCss = isHalf ? "width: 49.5%; display: inline-block; vertical-align: top; box-sizing: border-box;" : "width: 100%; display: block; clear: both;";
+          const isTwoThirds = sec.width === "66%";
+          let widthCss = "width: 100%; display: block; clear: both;";
+          if (isHalf) widthCss = "width: 49.5%; display: inline-block; vertical-align: top; box-sizing: border-box;";
+          else if (isThird) widthCss = "width: 32.8%; display: inline-block; vertical-align: top; box-sizing: border-box;";
+          else if (isTwoThirds) widthCss = "width: 66.2%; display: inline-block; vertical-align: top; box-sizing: border-box;";
+          else if (isQuarter) widthCss = "width: 24.2%; display: inline-block; vertical-align: top; box-sizing: border-box;";
+
           const scaleCss = sec.scale ? `zoom: ${sec.scale};` : "";
           const pageBreakCss = sec.isPageBreakBefore ? "page-break-before: always; padding-top: 10px;" : "";
 
@@ -1017,22 +1169,63 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
           <title>${pdfTitle}</title>
           <style>
             body { 
-              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-              padding: 40px; 
+              font-family: ${
+                pdfTitleStyle === "serif" ? '"Playfair Display", Georgia, serif' :
+                pdfTitleStyle === "mono" ? 'Consolas, "Fira Code", monospace' :
+                '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+              }; 
+              padding: ${pdfPadding === "compact" ? "20px" : pdfPadding === "spacious" ? "65px" : "40px"}; 
               color: #1e293b; 
               background: white; 
               line-height: 1.5;
               zoom: ${parseInt(printScale) / 100};
             }
-            h1 { font-size: 22px; text-transform: uppercase; border-bottom: 3px solid #f59e0b; padding-bottom: 8px; margin-bottom: 4px; color: #0f172a; font-weight: 800; }
-            .subtitle { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: #64748b; margin-bottom: 30px; font-weight: bold; }
+            h1 { 
+              font-size: 22px; 
+              text-transform: uppercase; 
+              border-bottom: 3px solid ${accent.primary}; 
+              padding-bottom: 8px; 
+              margin-bottom: 4px; 
+              color: #0f172a; 
+              font-weight: 800;
+              text-align: ${pdfTitleAlign === "center" ? "center" : pdfTitleAlign === "right" ? "right" : "left"};
+            }
+            .subtitle { 
+              font-size: 10px; 
+              text-transform: uppercase; 
+              letter-spacing: 1.5px; 
+              color: #64748b; 
+              margin-bottom: 30px; 
+              font-weight: bold;
+              text-align: ${pdfTitleAlign === "center" ? "center" : pdfTitleAlign === "right" ? "right" : "left"};
+            }
             .grid-kpi { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px; }
-            .kpi-card { border: 1px solid #e2e8f0; padding: 14px; border-radius: 12px; background: #f8fafc; border-left: 4px solid #f59e0b; }
+            .kpi-card { 
+              border: 1px solid #e2e8f0; 
+              padding: 14px; 
+              border-radius: 12px; 
+              background: #f8fafc; 
+              border-left: 4px solid ${accent.primary}; 
+            }
             .kpi-val { font-size: 21px; font-weight: 950; font-family: monospace; color: #0f172a; margin-bottom: 4px; }
             .kpi-lbl { font-size: 9px; text-transform: uppercase; color: #64748b; font-weight: 800; letter-spacing: 0.5px; }
-            h2 { font-size: 12.5px; text-transform: uppercase; border-bottom: 2px solid #cbd5e1; padding-bottom: 5px; margin-top: 25px; margin-bottom: 11px; color: #0f172a; font-weight: 850; letter-spacing: 0.5px; }
+            h2 { 
+              font-size: 12.5px; 
+              text-transform: uppercase; 
+              border-bottom: 2px solid #cbd5e1; 
+              padding-bottom: 5px; 
+              margin-top: 25px; 
+              margin-bottom: 11px; 
+              color: #0f172a; 
+              font-weight: 850; 
+              letter-spacing: 0.5px; 
+            }
             table { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 20px; }
-            th, td { border: 1px solid #cbd5e1; padding: 6px 9px; text-align: left; }
+            th, td { 
+              border: 1px solid #cbd5e1; 
+              padding: ${pdfPadding === "compact" ? "4px 6px" : pdfPadding === "spacious" ? "11px 15px" : "6px 9px"}; 
+              text-align: left; 
+            }
             th { background: #f1f5f9; font-weight: bold; text-transform: uppercase; font-size: 8.5px; color: #475569; letter-spacing: 0.5px; }
             .analysis-box { background: #fafafa; border: 1px solid #e2e8f0; padding: 18px; border-radius: 12px; font-size: 11.5px; line-height: 1.6; color: #27272a; font-weight: 500; font-family: sans-serif; }
             .chart-box { border: 1px solid #e2e8f0; border-radius: 12px; background: #f8fafc; box-sizing: border-box; }
@@ -1044,11 +1237,11 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
         </head>
         <body>
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <div>
+            <div style="width: 100%;">
               <h1>${pdfTitle}</h1>
               <div class="subtitle">${pdfSubtitle}</div>
             </div>
-            <button class="no-print" onclick="window.print()" style="padding: 10px 18px; background: #f59e0b; border: none; font-weight: bold; border-radius: 8px; cursor: pointer; color: black; font-size: 11px; text-transform: uppercase;">Imprimir PDF</button>
+            <button class="no-print" onclick="window.print()" style="padding: 10px 18px; background: ${accent.primary}; border: none; font-weight: bold; border-radius: 8px; cursor: pointer; color: ${pdfAccentColor === 'amber' ? 'black' : 'white'}; font-size: 11px; text-transform: uppercase; shrink-0; margin-left: 20px;">Imprimir PDF</button>
           </div>
 
           ${customReportContent}
@@ -1072,6 +1265,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
 
   // Cargar análisis al cambiar mes o año
   useEffect(() => {
+    setHasBeenAnalyzed(false);
     const localAnalysis = generateLocalFallbackAnalysis();
     setAnalysisContent(localAnalysis);
 
@@ -1122,6 +1316,84 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
 
   return (
     <div id="executive-report-module-view" className="space-y-6 animate-fade-in text-zinc-100 pb-12">
+
+      {/* VENTANA MODAL FLOTANTE: VERIFICACIÓN SÚPER ADMINISTRADOR (PIN DE SEGURIDAD) */}
+      {showSuperAdminModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-zinc-950/85 backdrop-blur-md animate-fade-in text-slate-200">
+          <div className="glass-panel relative w-full max-w-md rounded-2xl border border-red-500/20 bg-zinc-905 flex flex-col shadow-2xl p-6 border border-white/10">
+            {/* Cabecera del Modal */}
+            <div className="flex items-center gap-3 border-b border-white/10 pb-4 mb-4">
+              <div className="p-2.5 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400">
+                <ShieldAlert className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-xs font-black uppercase text-red-400 tracking-widest">Verificación Súper Admin</h3>
+                <p className="text-[10px] text-slate-400 mt-0.5 font-bold font-mono">ACCESO EXCLUSIVO DEL PROGRAMADOR</p>
+              </div>
+            </div>
+
+            {/* Cuerpo del Modal */}
+            <div className="space-y-4">
+              <p className="text-[11px] text-zinc-300 leading-relaxed font-bold">
+                Para completar la matriz con los datos del periodo de arranque 2026, ingrese la clave de programación. Esto desbloqueará Temporalmente la edición de los meses pasados y del mes en curso para evitar falsificaciones.
+              </p>
+
+              <div>
+                <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">
+                  CLAVE EXCLUSIVA
+                </label>
+                <input
+                  type="password"
+                  placeholder="••••••"
+                  value={superAdminPIN}
+                  onChange={(e) => {
+                    setSuperAdminPIN(e.target.value);
+                    setSuperAdminError("");
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleVerifyPIN();
+                    } else if (e.key === "Escape") {
+                      setShowSuperAdminModal(false);
+                      setSuperAdminPIN("");
+                      setSuperAdminError("");
+                    }
+                  }}
+                  className="w-full bg-zinc-950 border border-white/10 focus:border-red-500/60 focus:ring-1 focus:ring-red-500 rounded-xl text-center text-sm font-bold font-mono tracking-widest text-slate-100 py-3 focus:outline-none"
+                  autoFocus
+                />
+                {superAdminError && (
+                  <p className="text-[10px] text-red-400 font-bold mt-1.5 flex items-center gap-1 font-mono">
+                    <span>⚠️ {superAdminError}</span>
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Pie del Modal */}
+            <div className="flex items-center justify-end gap-2.5 mt-6 pt-4 border-t border-white/10">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowSuperAdminModal(false);
+                  setSuperAdminPIN("");
+                  setSuperAdminError("");
+                }}
+                className="px-4 py-2 text-[10px] font-black uppercase tracking-wider rounded-xl transition bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-white/5 cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleVerifyPIN}
+                className="px-4 py-2 text-[10px] font-black uppercase tracking-wider rounded-xl transition bg-red-600 hover:bg-red-500 text-white border border-red-500 shadow-lg hover:shadow-red-900/20 cursor-pointer"
+              >
+                Autenticar PIN
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* VENTANA MODAL FLOTANTE: DISEÑADOR VISUAL AVANZADO DE FORMATO PDF */}
       {isPdfDesignerOpen && (
@@ -1191,6 +1463,101 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                   </select>
                 </div>
 
+                {/* Visual Customization controls */}
+                <div className="space-y-4 pt-3 border-t border-white/5">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-wider text-slate-300">Alineación Cabecera</label>
+                    <div className="grid grid-cols-3 gap-1">
+                      {(["left", "center", "right"] as const).map((align) => (
+                        <button
+                          key={align}
+                          type="button; button"
+                          onClick={() => setPdfTitleAlign(align)}
+                          className={`flex items-center justify-center gap-1 py-1.5 border rounded-xl text-[10px] uppercase font-black transition cursor-pointer ${
+                            pdfTitleAlign === align
+                              ? "bg-amber-500/10 border-amber-450 text-amber-400"
+                              : "bg-zinc-900 border-white/5 text-slate-400 hover:bg-zinc-800"
+                          }`}
+                        >
+                          {align === "left" && <AlignLeft className="h-3 w-3" />}
+                          {align === "center" && <AlignCenter className="h-3 w-3" />}
+                          {align === "right" && <AlignRight className="h-3 w-3" />}
+                          {align === "left" ? "Izquierda" : align === "center" ? "Centro" : "Derecha"}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-wider text-slate-300">Tipografía de Cabecera</label>
+                    <div className="grid grid-cols-3 gap-1">
+                      {(["sans", "serif", "mono"] as const).map((sty) => (
+                        <button
+                          key={sty}
+                          type="button"
+                          onClick={() => setPdfTitleStyle(sty)}
+                          className={`py-1.5 border rounded-xl text-[10px] uppercase font-black transition cursor-pointer ${
+                            pdfTitleStyle === sty
+                              ? "bg-amber-500/10 border-amber-450 text-amber-400"
+                              : "bg-zinc-900 border-white/5 text-slate-400 hover:bg-zinc-800"
+                          }`}
+                        >
+                          {sty === "sans" ? "Sans (Inter)" : sty === "serif" ? "Serif" : "Mono"}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-wider text-slate-300">Márgenes de Papel</label>
+                    <div className="grid grid-cols-3 gap-1">
+                      {(["compact", "normal", "spacious"] as const).map((pad) => (
+                        <button
+                          key={pad}
+                          type="button"
+                          onClick={() => setPdfPadding(pad)}
+                          className={`py-1.5 border rounded-xl text-[10px] uppercase font-black transition cursor-pointer ${
+                            pdfPadding === pad
+                              ? "bg-amber-500/10 border-amber-450 text-amber-400"
+                              : "bg-zinc-900 border-white/5 text-slate-400 hover:bg-zinc-800"
+                          }`}
+                        >
+                          {pad === "compact" ? "Estrecho" : pad === "normal" ? "Medio" : "Ancho"}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-wider text-slate-300">Tono de Acentuación PDF</label>
+                    <div className="flex items-center gap-3 bg-zinc-900 border border-white/10 p-2 rounded-xl">
+                      {(["amber", "blue", "indigo", "emerald", "rose"] as const).map((color) => {
+                        const bgDots = {
+                          amber: "bg-amber-500 border-amber-300",
+                          blue: "bg-blue-500 border-blue-300",
+                          indigo: "bg-indigo-500 border-indigo-300",
+                          emerald: "bg-emerald-500 border-emerald-300",
+                          rose: "bg-rose-500 border-rose-300",
+                        };
+                        return (
+                          <button
+                            key={color}
+                            type="button"
+                            onClick={() => setPdfAccentColor(color)}
+                            className={`w-6 h-6 rounded-full border-2 transition-all duration-200 transform hover:scale-115 cursor-pointer ${bgDots[color]} ${
+                              pdfAccentColor === color ? "ring-2 ring-white ring-offset-2 ring-offset-zinc-950 scale-110" : "opacity-60"
+                            }`}
+                            title={`Acentuar en color ${color.toUpperCase()}`}
+                          />
+                        );
+                      })}
+                      <span className="text-[9px] font-mono font-black uppercase text-amber-400 tracking-wider ml-auto">
+                        {pdfAccentColor}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="p-3.5 bg-amber-500/5 rounded-xl border border-amber-500/10 text-slate-300 space-y-1.5 text-[10px] leading-relaxed font-sans">
                   <div className="font-extrabold text-amber-300 flex items-center gap-1.5 uppercase tracking-wide">
                     <Info className="h-3.5 w-3.5 text-amber-400 shrink-0" />
@@ -1224,31 +1591,53 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                 <div className="bg-zinc-950 p-6 rounded-2xl border border-white/5 overflow-y-auto max-h-[66vh] scrollbar-thin scrollbar-thumb-white/10 flex flex-col gap-6 items-center shadow-inner">
                   
                   {/* Hoja de PDF Simulada (White Paper look) */}
-                  <div className="w-full max-w-4xl bg-white text-slate-800 shadow-2xl rounded-sm p-6 md:p-8 relative font-sans border border-slate-350 select-text">
+                  <div className={`w-full max-w-4xl bg-white text-slate-800 shadow-2xl rounded-sm relative border border-slate-350 select-text transition-all duration-350 ${
+                    pdfPadding === "compact" ? "p-4 md:p-5" : pdfPadding === "spacious" ? "p-9 md:p-12" : "p-6 md:p-8"
+                  }`}>
                     
                     {/* Logotipo y Títulos de Cabecera del Documento en la Hoja */}
-                    <div className="border-b-2 border-slate-800 pb-3 mb-5 flex flex-col gap-1 text-slate-900">
-                      <div className="text-[8px] font-black tracking-widest text-slate-450 uppercase">Cabecera de Documento PDF (Editable en línea)</div>
+                    <div className={`border-b-2 pb-3 mb-5 flex flex-col gap-1 text-slate-900 border-slate-800 ${
+                      pdfTitleAlign === "center" ? "items-center text-center" : pdfTitleAlign === "right" ? "items-end text-right" : "items-start text-left"
+                    }`}>
+                      <div className="text-[8px] font-black tracking-widest text-slate-400 uppercase">Cabecera de Documento PDF (Editable en línea)</div>
                       
                       {/* Título editable en vivo */}
                       <input 
                         type="text" 
                         value={pdfTitle} 
                         onChange={(e) => setPdfTitle(e.target.value)} 
-                        className="w-full bg-transparent hover:bg-zinc-100 border-b border-transparent hover:border-slate-300 focus:border-amber-500 focus:bg-amber-500/5 text-base font-black uppercase text-slate-950 py-1 transition-all focus:outline-none rounded px-1.5"
+                        className={`w-full bg-transparent hover:bg-zinc-100 border-b border-transparent hover:border-slate-300 focus:bg-amber-500/5 text-base font-black uppercase py-1 transition-all focus:outline-none rounded px-1.5 ${
+                          pdfTitleAlign === "center" ? "text-center" : pdfTitleAlign === "right" ? "text-right" : "text-left"
+                        } ${
+                          pdfTitleStyle === "serif" ? "font-serif text-slate-950" : pdfTitleStyle === "mono" ? "font-mono text-slate-900" : "font-sans text-slate-950"
+                        } ${
+                          pdfAccentColor === "blue" ? "focus:border-blue-500" :
+                          pdfAccentColor === "indigo" ? "focus:border-indigo-500" :
+                          pdfAccentColor === "emerald" ? "focus:border-emerald-500" :
+                          pdfAccentColor === "rose" ? "focus:border-rose-500" : "focus:border-amber-500"
+                        }`}
                         placeholder="TÍTULO PRINCIPAL DEL DOCUMENTO..."
                         title="Haga clic para cambiar el título principal que se imprimirá"
                       />
                       
                       {/* Subtítulo editable en vivo */}
-                      <div className="flex justify-between items-center gap-4 mt-0.5">
+                      <div className={`flex items-center gap-4 mt-0.5 w-full ${
+                        pdfTitleAlign === "right" ? "flex-row-reverse" : "justify-between"
+                      }`}>
                         <input 
                           type="text" 
                           value={pdfSubtitle} 
                           onChange={(e) => setPdfSubtitle(e.target.value)} 
-                          className="w-4/5 bg-transparent hover:bg-zinc-100 border-b border-transparent hover:border-slate-300 focus:border-amber-500 focus:bg-amber-500/5 text-xs font-bold text-slate-600 py-0.5 transition-all focus:outline-none rounded px-1.5"
+                          className={`w-3/5 bg-transparent hover:bg-zinc-100 border-b border-transparent hover:border-slate-300 focus:bg-amber-500/5 text-xs font-bold text-slate-650 py-0.5 transition-all focus:outline-none rounded px-1.5 ${
+                            pdfTitleAlign === "center" ? "text-center" : pdfTitleAlign === "right" ? "text-right" : "text-left"
+                          } ${
+                            pdfAccentColor === "blue" ? "focus:border-blue-500" :
+                            pdfAccentColor === "indigo" ? "focus:border-indigo-500" :
+                            pdfAccentColor === "emerald" ? "focus:border-emerald-500" :
+                            pdfAccentColor === "rose" ? "focus:border-rose-500" : "focus:border-amber-500"
+                          }`}
                           placeholder="SUBTÍTULO DEL DOCUMENTO..."
-                          title="Haga clic para cambiar el subtítulo que se imprimirá"
+                          title="Haga clic para cambiar al subtítulo que se imprimirá"
                         />
                         <span className="text-[10px] font-bold font-mono text-slate-500 shrink-0 select-none">
                           {new Date().toISOString().split("T")[0]} · {monthlyData[activeMonthIndex].mes} 2026
@@ -1260,9 +1649,34 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                     <div className="flex flex-wrap gap-4.5 items-stretch">
                       {pdfSections.map((item, idx) => {
                         const isVisible = item.visible;
-                        const isHalfWidth = item.width === "50%";
+                        const w = item.width || "100%";
+                        let widthClass = "w-full";
+                        if (w === "66%") widthClass = "w-full md:w-[calc(66.6%-12px)]";
+                        else if (w === "50%") widthClass = "w-full md:w-[calc(50%-12px)]";
+                        else if (w === "33%") widthClass = "w-full md:w-[calc(33.3%-12px)]";
+
                         const scaleFactor = item.scale ?? 1.0;
                         const resolvedHeight = Math.round(135 * scaleFactor);
+
+                        // Tonalidad del fondo
+                        let bgClass = "bg-white";
+                        const bgT = (item as any).bgTint || "white";
+                        if (bgT === "amber") bgClass = "bg-amber-50/50";
+                        else if (bgT === "slate") bgClass = "bg-slate-50/80";
+                        else if (bgT === "emerald") bgClass = "bg-emerald-50/45";
+
+                        // Estilo de tipografía
+                        let fontClass = "font-sans text-slate-800";
+                        const ft = (item as any).fontFamily || "sans";
+                        if (ft === "serif") fontClass = "font-serif text-slate-900";
+                        else if (ft === "mono") fontClass = "font-mono text-slate-800";
+
+                        // Estilo de bordes
+                        let borderClass = "border-slate-200";
+                        const bS = (item as any).borderStyle || "solid";
+                        if (bS === "dashed") borderClass = "border-dashed border-2 border-slate-300";
+                        else if (bS === "accent-left") borderClass = "border-slate-200 border-l-4 border-l-amber-500 rounded-r-xl";
+                        else if (bS === "accent-indigo") borderClass = "border-slate-200 border-l-4 border-l-indigo-500 rounded-r-xl";
 
                         return (
                           <React.Fragment key={item.id}>
@@ -1278,17 +1692,44 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
 
                             {/* Contendor del Bloque/Sección de la Hoja */}
                             <div 
-                              className={`transition-all duration-300 rounded-xl border flex flex-col p-3.5 bg-white ${
-                                isHalfWidth ? "w-full md:w-[calc(50%-9px)]" : "w-full"
-                              } ${
+                              draggable={isVisible}
+                              onDragStart={(e) => {
+                                if (!isVisible) return;
+                                setDraggedIdx(idx);
+                                e.dataTransfer.effectAllowed = "move";
+                                e.dataTransfer.setData("text/plain", idx.toString());
+                              }}
+                              onDragEnd={() => {
+                                setDraggedIdx(null);
+                              }}
+                              onDragOver={(e) => {
+                                if (draggedIdx === null) return;
+                                e.preventDefault();
+                                e.dataTransfer.dropEffect = "move";
+                              }}
+                              onDrop={(e) => {
+                                e.preventDefault();
+                                if (draggedIdx === null || draggedIdx === idx) return;
+                                const updated = [...pdfSections];
+                                const [removed] = updated.splice(draggedIdx, 1);
+                                updated.splice(idx, 0, removed);
+                                setPdfSections(updated);
+                                setDraggedIdx(null);
+                              }}
+                              className={`transition-all duration-300 rounded-xl border flex flex-col p-3.5 ${widthClass} ${bgClass} ${borderClass} ${
                                 isVisible 
-                                  ? "border-slate-200 hover:border-amber-500/60 hover:shadow-md" 
-                                  : "border-slate-200/60 bg-zinc-50/60 opacity-35 grayscale select-none"
+                                  ? `hover:border-amber-500/80 hover:shadow-xl cursor-grab active:cursor-grabbing ${draggedIdx === idx ? "opacity-30 scale-[0.98] border-dashed border-amber-400 bg-amber-500/5" : ""}` 
+                                  : "bg-zinc-50/70 border-slate-200/50 opacity-35 grayscale select-none"
                               }`}
                             >
                               {/* Barra de Controles Interna de la Maqueta */}
                               <div className="flex flex-wrap items-center justify-between gap-1.5 border-b border-slate-150 pb-2 mb-3">
-                                <div className="flex items-center gap-1.5 max-w-[55%]">
+                                <div className="flex items-center gap-1.5 max-w-[40%]">
+                                  {isVisible && (
+                                    <span className="cursor-grab text-slate-400 hover:text-amber-500 transition-colors hidden sm:inline" title="Arrastre este bloque para cambiar su orden de impresión">
+                                      <GripVertical className="h-3.5 w-3.5" />
+                                    </span>
+                                  )}
                                   <button
                                     type="button"
                                     onClick={() => handleToggleSectionVisible(idx)}
@@ -1307,15 +1748,15 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                                     type="text"
                                     value={sectionTitles[item.id as keyof typeof sectionTitles] || ""}
                                     onChange={(e) => handleTitleChange(item.id, e.target.value)}
-                                    className="bg-transparent border-b border-transparent hover:border-slate-300 focus:border-amber-500 focus:bg-zinc-50 text-[10.5px] font-black uppercase text-slate-850 py-0.5 px-1 rounded transition-all focus:outline-none w-full truncate"
+                                    className="bg-transparent border-b border-transparent hover:border-slate-300 focus:border-amber-500 focus:bg-zinc-50 text-[10px] font-black uppercase text-slate-850 py-0.5 px-1 rounded transition-all focus:outline-none w-full truncate"
                                     disabled={!isVisible}
                                     placeholder="Nombre de sección..."
-                                    title="Arrastre u ordene los encabezados haciendo doble clic"
+                                    title="Modifique el título del campo directamente aquí"
                                   />
                                 </div>
 
                                 {/* Grupo de Mini Controladores en la forma */}
-                                <div className="flex items-center gap-1 bg-zinc-100 p-0.5 rounded-lg border border-slate-200 shadow-xs shrink-0 text-slate-500 text-[10.5px]">
+                                <div className="flex flex-wrap items-center gap-1 bg-zinc-100 p-0.5 rounded-lg border border-slate-200 shadow-xs shrink-0 text-slate-500 text-[10.5px]">
                                   {/* Flechas Subir/Bajar */}
                                   <button
                                     type="button"
@@ -1338,21 +1779,62 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
 
                                   <div className="h-3.5 w-[1px] bg-zinc-300 mx-0.5"></div>
 
-                                  {/* Medios Anchos */}
+                                  {/* Medios Anchos - Modular Multigrid 100%, 66%, 50%, 33% */}
                                   <button
                                     type="button"
-                                    onClick={() => handleToggleSectionWidth(idx)}
+                                    onClick={() => handleCycleSectionWidth(idx)}
                                     disabled={!isVisible}
-                                    className={`px-1.5 py-0.5 rounded text-[8px] font-black font-mono border uppercase transition ${
+                                    className={`px-1.5 py-0.5 rounded text-[8.5px] font-black font-mono border uppercase transition ${
                                       !isVisible 
                                         ? "opacity-35 cursor-not-allowed" 
-                                        : isHalfWidth 
-                                          ? "bg-amber-100 border-amber-300 text-amber-700 font-black" 
-                                          : "bg-zinc-250 border-slate-300 hover:bg-zinc-300 text-slate-700 font-black cursor-pointer"
+                                        : "bg-amber-100 border-amber-300 text-amber-700 hover:bg-amber-200 font-extrabold cursor-pointer"
                                     }`}
-                                    title="Intercambiar ancho entre 50% y 100%"
+                                    title="Intercambiar ancho (100% ➔ 66% ➔ 50% ➔ 33%)"
                                   >
-                                    {isHalfWidth ? "50%" : "100%"}
+                                    {w}
+                                  </button>
+
+                                  <div className="h-3.5 w-[1px] bg-zinc-300 mx-0.5"></div>
+
+                                  {/* Tono del Fondo (Palette) */}
+                                  <button
+                                    type="button"
+                                    onClick={() => handleCycleSectionBgTint(idx)}
+                                    disabled={!isVisible}
+                                    className="p-1 rounded hover:bg-zinc-200 text-slate-700 transition cursor-pointer disabled:opacity-20 flex items-center gap-1.5"
+                                    title="Paleta de fondo (Blanco, Ámbar, Gris, Esmeralda)"
+                                  >
+                                    <Palette className="h-3.5 w-3.5 text-amber-500" />
+                                    <span className="w-1.5 h-1.5 rounded-full" style={{
+                                      backgroundColor: bgT === "white" ? "#cbd5e1" : bgT === "amber" ? "#f59e0b" : bgT === "slate" ? "#64748b" : "#10b981"
+                                    }} />
+                                  </button>
+
+                                  <div className="h-3.5 w-[1px] bg-zinc-300 mx-0.5"></div>
+
+                                  {/* Tipografía (Type) */}
+                                  <button
+                                    type="button"
+                                    onClick={() => handleCycleSectionFontFamily(idx)}
+                                    disabled={!isVisible}
+                                    className="p-1 rounded hover:bg-zinc-200 text-slate-700 transition cursor-pointer disabled:opacity-20 flex items-center gap-1"
+                                    title="Tipografía (Sans, Serif, Mono)"
+                                  >
+                                    <Type className="h-3.5 w-3.5 text-indigo-500" />
+                                    <span className="text-[7.5px] font-mono font-black">{ft.toUpperCase()}</span>
+                                  </button>
+
+                                  <div className="h-3.5 w-[1px] bg-zinc-300 mx-0.5"></div>
+
+                                  {/* Estilo Borde/Marco */}
+                                  <button
+                                    type="button"
+                                    onClick={() => handleCycleSectionBorderStyle(idx)}
+                                    disabled={!isVisible}
+                                    className="px-1 py-0.5 rounded hover:bg-zinc-200 text-slate-700 transition border border-zinc-300 bg-white font-bold text-[8px] cursor-pointer disabled:opacity-20"
+                                    title="Borde/Marco (Simple, Punteado, Ámbar lateral, Índigo lateral)"
+                                  >
+                                    {bS === "solid" ? "Línea" : bS === "dashed" ? "Puntos" : bS === "accent-left" ? "MarcA" : "MarcI"}
                                   </button>
 
                                   <div className="h-3.5 w-[1px] bg-zinc-300 mx-0.5"></div>
@@ -1389,8 +1871,8 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                                       !isVisible 
                                         ? "opacity-35 cursor-not-allowed" 
                                         : item.isPageBreakBefore 
-                                          ? "bg-rose-100 border-rose-300 text-rose-600 hover:bg-rose-200" 
-                                          : "border-slate-305 bg-zinc-100 hover:bg-zinc-200 hover:text-slate-700 cursor-pointer"
+                                          ? "bg-rose-105 border-rose-300 text-rose-600 hover:bg-rose-200" 
+                                          : "border-slate-350 bg-zinc-100 hover:bg-zinc-200 hover:text-slate-700 cursor-pointer"
                                     }`}
                                     title={item.isPageBreakBefore ? "Quitar salto de página" : "Añadir salto de página antes"}
                                   >
@@ -1401,7 +1883,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
 
                               {/* Contenido Dinámico del Reporte */}
                               {isVisible ? (
-                                <div className="text-slate-800 flex-grow" style={{ padding: `${Math.round(2 * scaleFactor)}px` }}>
+                                <div className={`flex-grow ${fontClass}`} style={{ padding: `${Math.round(2 * scaleFactor)}px` }}>
                                   
                                   {/* RENDER KPIs */}
                                   {item.id === "kpis" && (
@@ -1425,6 +1907,35 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                                     </div>
                                   )}
 
+                                  {/* RENDER INDIVIDUAL KPI CARDS */}
+                                  {item.id === "kpi_ytd" && (
+                                    <div className="border border-slate-150 bg-zinc-50/60 p-2 rounded-lg border-l-4 border-l-amber-500 flex flex-col justify-between h-full min-h-[50px]">
+                                      <div className="text-[7.5px] font-black text-slate-450 uppercase tracking-wider">{sectionTitles.kpi_ytd || "Asistencias YTD"}</div>
+                                      <div className="text-xs font-black font-mono text-slate-850 mt-1">{total2026YTD}</div>
+                                    </div>
+                                  )}
+
+                                  {item.id === "kpi_leader" && (
+                                    <div className="border border-slate-150 bg-zinc-50/60 p-2 rounded-lg border-l-4 border-l-emerald-600 flex flex-col justify-between h-full min-h-[50px]">
+                                      <div className="text-[7.5px] font-black text-slate-450 uppercase tracking-wider">{sectionTitles.kpi_leader || "Canal Líder"}</div>
+                                      <div className="text-[9px] font-black text-emerald-800 mt-1 truncate">{topMediaPercentage.toFixed(0)}% {topMediaName}</div>
+                                    </div>
+                                  )}
+
+                                  {item.id === "kpi_change" && (
+                                    <div className="border border-slate-150 bg-zinc-50/60 p-2 rounded-lg border-l-4 border-l-indigo-600 flex flex-col justify-between h-full min-h-[50px]">
+                                      <div className="text-[7.5px] font-black text-slate-450 uppercase tracking-wider">{sectionTitles.kpi_change || "Cambio Mensual"}</div>
+                                      <div className="text-xs font-black font-mono text-indigo-700 mt-1">{diffVsPrevMonthPct >= 0 ? "+" : ""}{diffVsPrevMonthPct.toFixed(1)}%</div>
+                                    </div>
+                                  )}
+
+                                  {item.id === "kpi_yoy" && (
+                                    <div className="border border-slate-150 bg-zinc-50/60 p-2 rounded-lg border-l-4 border-l-rose-500 flex flex-col justify-between h-full min-h-[50px]">
+                                      <div className="text-[7.5px] font-black text-slate-450 uppercase tracking-wider">{sectionTitles.kpi_yoy || "Acumulado YoY"}</div>
+                                      <div className="text-xs font-black font-mono text-rose-700 mt-1">{variationVsPriorYearPct >= 0 ? "+" : ""}{variationVsPriorYearPct.toFixed(1)}%</div>
+                                    </div>
+                                  )}
+
                                   {/* RENDER COMPARATIVA DE BARRAS */}
                                   {item.id === "bar_trend" && (
                                     <div className="w-full flex flex-col gap-1">
@@ -1439,8 +1950,8 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                                             <XAxis dataKey="name" tick={{ fontSize: 7.5, fill: "#475569", fontWeight: "900" }} stroke="#cbd5e1" />
                                             <YAxis tick={{ fontSize: 7.5, fill: "#475569" }} stroke="#cbd5e1" />
                                             <Tooltip wrapperStyle={{ fontSize: "9px" }} />
-                                            <Bar dataKey="Año 2025 (Histórico)" fill="#94a3b8" radius={[1, 1, 0, 0]} barSize={8} />
-                                            <Bar dataKey="Año 2026 (Actual)" fill="#f59e0b" radius={[1, 1, 0, 0]} barSize={8} />
+                                            <Bar dataKey="Año 2025 (Histórico)" fill="#94a3b8" radius={[1, 1, 0, 0]} barSize={8} isAnimationActive={false} />
+                                            <Bar dataKey="Año 2026 (Actual)" fill="#f59e0b" radius={[1, 1, 0, 0]} barSize={8} isAnimationActive={false} />
                                           </BarChart>
                                         </ResponsiveContainer>
                                       </div>
@@ -1456,8 +1967,8 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                                           <XAxis dataKey="name" tick={{ fontSize: 7.5, fill: "#475569", fontWeight: "900" }} stroke="#cbd5e1" />
                                           <YAxis tick={{ fontSize: 7.5, fill: "#475569" }} stroke="#cbd5e1" />
                                           <Tooltip wrapperStyle={{ fontSize: "9px" }} />
-                                          <Line type="monotone" dataKey="Año 2025 (Histórico)" stroke="#64748b" strokeWidth={1.8} dot={{ r: 2 }} activeDot={{ r: 4 }} />
-                                          <Line type="monotone" dataKey="Año 2026 (Actual)" stroke="#f59e0b" strokeWidth={2.4} dot={{ r: 2.5 }} activeDot={{ r: 5 }} />
+                                          <Line type="monotone" dataKey="Año 2025 (Histórico)" stroke="#64748b" strokeWidth={1.8} dot={{ r: 2 }} activeDot={{ r: 4 }} isAnimationActive={false} />
+                                          <Line type="monotone" dataKey="Año 2026 (Actual)" stroke="#f59e0b" strokeWidth={2.4} dot={{ r: 2.5 }} activeDot={{ r: 5 }} isAnimationActive={false} />
                                         </LineChart>
                                       </ResponsiveContainer>
                                     </div>
@@ -1505,13 +2016,13 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                                             return (
                                               <tr key={mon.mes} className="hover:bg-zinc-50">
                                                 <td className="p-1 px-1.5 font-bold">{mon.mes.substring(0, 3)}</td>
-                                                <td className="p-1 text-center font-mono text-slate-500">{mon.val2025}</td>
-                                                <td className="p-1 text-center font-mono text-amber-600 font-bold">{mon.val2026}</td>
+                                                <td className="p-1 text-center font-mono text-slate-500">{mon.val2025 === 0 ? "" : mon.val2025}</td>
+                                                <td className="p-1 text-center font-mono text-amber-600 font-bold">{mon.val2026 === 0 ? "" : mon.val2026}</td>
                                                 <td className={`p-1 text-center font-mono font-bold ${diff >= 0 ? "text-emerald-600" : "text-rose-600"}`}>
-                                                  {diff >= 0 ? "+" : ""}{diff}
+                                                  {diff === 0 ? "" : (diff >= 0 ? "+" : "") + diff}
                                                 </td>
                                                 <td className={`p-1 text-center font-mono font-bold ${diff >= 0 ? "text-emerald-600" : "text-rose-600"}`}>
-                                                  {diff >= 0 ? "+" : ""}{pct}%
+                                                  {diff === 0 || mon.val2025 === 0 || mon.val2026 === 0 ? "-" : (diff >= 0 ? "+" : "") + pct + "%"}
                                                 </td>
                                               </tr>
                                             );
@@ -1539,9 +2050,9 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                                               <tr key={sucVal.sucursal} className="hover:bg-zinc-50">
                                                 <td className="p-1 px-1.5 font-bold uppercase text-[8px] text-slate-800">{sucVal.sucursal}</td>
                                                 {MESES_ABR.slice(0, activeMonthIndex + 2).map(m => (
-                                                  <td key={m} className="p-1 text-center font-mono text-slate-500">{sucVal.meses[m] || 0}</td>
+                                                  <td key={m} className="p-1 text-center font-mono text-slate-500">{(sucVal.meses[m] === 0 || !sucVal.meses[m]) ? "" : sucVal.meses[m]}</td>
                                                 ))}
-                                                <td className="p-1 text-right font-mono font-black text-amber-605 pr-1.5">{total}</td>
+                                                <td className="p-1 text-right font-mono font-black text-amber-650 pr-1.5">{total === 0 ? "" : total}</td>
                                               </tr>
                                             );
                                           })}
@@ -1587,7 +2098,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                     <div className="border-t border-slate-200 pt-3 mt-7 flex justify-between items-center text-[8.5px] font-mono text-slate-450 uppercase font-black">
                       <div className="flex items-center gap-1">
                         <FileSpreadsheet className="h-3.5 w-3.5 text-amber-500" />
-                        <span>REPORTE EJECUTIVO DE ASISTENCIAS VIALES · AUTO CENTRO S.A.</span>
+                        <span>REPORTE EJECUTIVO DE ASISTENCIAS VIALES</span>
                       </div>
                       <span className="font-bold">IMPRESO YTD · HOJA PROTOTIPO</span>
                     </div>
@@ -1756,7 +2267,6 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
             <div>
               <h1 className="text-base font-display font-black uppercase text-white tracking-wider flex items-center gap-2">
                 <span>MATRIZ EJECUTIVA DE ASISTENCIAS VIALES</span>
-                <span className="text-amber-300 font-extrabold text-xs">· AUTO CENTRO S.A. ·</span>
               </h1>
               <p className="text-[10px] text-slate-350 font-extrabold uppercase tracking-widest mt-0.5">Control de Eficiencia Operativa Integral e Interanual</p>
             </div>
@@ -1769,7 +2279,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
         </div>
 
         {/* CONTENEDOR DE LA CARPETA CON EXCELENTE VISIBILIDAD (Fondo de color gris slate/zinc cambiado a ámbar cálido) */}
-        <div className="p-6 md:p-8 space-y-10 bg-amber-500/5">
+        <div className="p-6 md:p-8 space-y-10 bg-zinc-500/5">
           
           {/* SECCIÓN 1: GRÁFICO INTEGRADOR EN EL CONTEXTO DEL REPORTE */}
           <div className="glass-panel border border-amber-500/30 bg-amber-950/20 p-5 rounded-2xl shadow-sm text-white">
@@ -1856,14 +2366,14 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
               DISTRIBUCIÓN DE MEDIOS DE INGRESO (CONSOLIDADO VS SUCURSALES)
             </span>
  
-            {/* GRID TOTALMENTE RESPONSIVO CON MÁS SPACING — EVITA AMONTONAMIENTO */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {/* NOVEDAD: BLOQUE DE ANÁLISIS SUPERIOR (MEDIO CONSOLIDADO + GRÁFICO DE SUCURSALES AL LADO) */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
               {/* MEDIO CONSOLIDADO MINI COMPONENT (Dorado premium accent border) */}
-              <div className="border border-amber-500/40 bg-zinc-900/60 rounded-2xl overflow-hidden flex flex-col shadow-xl backdrop-blur-md">
+              <div className="lg:col-span-4 border border-amber-500/40 bg-zinc-900/60 rounded-2xl overflow-hidden flex flex-col shadow-xl backdrop-blur-md">
                 <div className="bg-amber-500/10 px-4 py-3 border-b border-amber-500/20">
                   <span className="text-[11px] font-extrabold text-amber-300 block text-center tracking-widest uppercase">MEDIO CONSOLIDADO</span>
                 </div>
-                <div className="p-3 flex-grow">
+                <div className="p-4 flex-grow">
                   <table className="w-full text-[11px]">
                     <thead className="border-b border-white/10 text-[10px] uppercase text-slate-300 font-black font-sans">
                       <tr>
@@ -1872,105 +2382,197 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                         <th className="pb-2 text-right">%</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-white/5 text-white font-extrabold font-mono">
+                    <tbody className="divide-y divide-white/5 text-white font-extrabold font-mono font-black">
                       <tr className="hover:bg-white/5 transition-colors">
-                        <td className="py-2.5 text-left text-slate-200 font-semibold">FLOTA</td>
-                        <td className="py-2.5 text-right text-white">{mediaConsolidadoValues.flota}</td>
+                        <td className="py-2.5 text-left text-slate-200 font-semibold font-sans">FLOTA</td>
+                        <td className="py-2.5 text-right text-white">{mediaConsolidadoValues.flota === 0 ? "" : mediaConsolidadoValues.flota}</td>
                         <td className="py-2.5 text-right text-amber-400">
-                          {mediaConsolidadoTotal > 0 ? ((mediaConsolidadoValues.flota / mediaConsolidadoTotal) * 105).toFixed(0) : "0"}%
+                          {mediaConsolidadoValues.flota === 0 ? "" : mediaConsolidadoTotal > 0 ? `${((mediaConsolidadoValues.flota / mediaConsolidadoTotal) * 105).toFixed(0)}%` : ""}
                         </td>
                       </tr>
                       <tr className="hover:bg-white/5 transition-colors">
-                        <td className="py-2.5 text-left text-slate-200 font-semibold">OMITIDOS</td>
-                        <td className="py-2.5 text-right text-white">{mediaConsolidadoValues.omitidos}</td>
+                        <td className="py-2.5 text-left text-slate-200 font-semibold font-sans">OMITIDOS</td>
+                        <td className="py-2.5 text-right text-white">{mediaConsolidadoValues.omitidos === 0 ? "" : mediaConsolidadoValues.omitidos}</td>
                         <td className="py-2.5 text-right text-amber-400">
-                          {mediaConsolidadoTotal > 0 ? ((mediaConsolidadoValues.omitidos / mediaConsolidadoTotal) * 105).toFixed(0) : "0"}%
+                          {mediaConsolidadoValues.omitidos === 0 ? "" : mediaConsolidadoTotal > 0 ? `${((mediaConsolidadoValues.omitidos / mediaConsolidadoTotal) * 105).toFixed(0)}%` : ""}
                         </td>
                       </tr>
                       <tr className="hover:bg-white/5 transition-colors">
-                        <td className="py-2.5 text-left text-slate-200 font-semibold">CALL CENTER</td>
-                        <td className="py-2.5 text-right text-white">{mediaConsolidadoValues.callCenter}</td>
+                        <td className="py-2.5 text-left text-slate-200 font-semibold font-sans">CALL CENTER</td>
+                        <td className="py-2.5 text-right text-white">{mediaConsolidadoValues.callCenter === 0 ? "" : mediaConsolidadoValues.callCenter}</td>
                         <td className="py-2.5 text-right text-amber-400">
-                          {mediaConsolidadoTotal > 0 ? ((mediaConsolidadoValues.callCenter / mediaConsolidadoTotal) * 105).toFixed(0) : "0"}%
+                          {mediaConsolidadoValues.callCenter === 0 ? "" : mediaConsolidadoTotal > 0 ? `${((mediaConsolidadoValues.callCenter / mediaConsolidadoTotal) * 105).toFixed(0)}%` : ""}
                         </td>
                       </tr>
                       <tr className="hover:bg-white/5 transition-colors">
-                        <td className="py-2.5 text-left text-slate-200 font-semibold">SUCURSAL</td>
-                        <td className="py-2.5 text-right text-white">{mediaConsolidadoValues.sucursal}</td>
+                        <td className="py-2.5 text-left text-slate-200 font-semibold font-sans">SUCURSAL</td>
+                        <td className="py-2.5 text-right text-white">{mediaConsolidadoValues.sucursal === 0 ? "" : mediaConsolidadoValues.sucursal}</td>
                         <td className="py-2.5 text-right text-amber-400">
-                          {mediaConsolidadoTotal > 0 ? ((mediaConsolidadoValues.sucursal / mediaConsolidadoTotal) * 105).toFixed(0) : "0"}%
+                          {mediaConsolidadoValues.sucursal === 0 ? "" : mediaConsolidadoTotal > 0 ? `${((mediaConsolidadoValues.sucursal / mediaConsolidadoTotal) * 105).toFixed(0)}%` : ""}
                         </td>
                       </tr>
                     </tbody>
                   </table>
                 </div>
                 <div className="bg-zinc-950/60 px-4 py-2.5 border-t border-white/10 flex justify-between items-center text-[11px] font-black">
-                  <span className="text-slate-400">TOTAL CONSOLIDADO</span>
-                  <span className="font-mono text-amber-400">{mediaConsolidadoTotal}</span>
+                  <span className="text-slate-400 font-sans">TOTAL CONSOLIDADO</span>
+                  <span className="font-mono text-amber-400">{mediaConsolidadoTotal === 0 ? "" : mediaConsolidadoTotal}</span>
                 </div>
               </div>
- 
-              {/* SUCURSAL CARDS - MÁXIMO CONFORT VISUAL SIN AMONTONAMIENTO */}
-              {SUCURSALES_LIST.map(sucName => {
-                const asisFlota = getMediaForSucursal(sucName, "flota");
-                const asisOmitidos = getMediaForSucursal(sucName, "omitidos");
-                const asisCall = getMediaForSucursal(sucName, "callCenter");
-                const asisSuc = getMediaForSucursal(sucName, "sucursal");
-                const sTotal = asisFlota + asisOmitidos + asisCall + asisSuc;
- 
-                return (
-                  <div key={sucName} className="border border-white/10 bg-zinc-900/40 rounded-2xl overflow-hidden flex flex-col shadow-xl backdrop-blur-md hover:border-white/20 transition-all duration-300">
-                    <div className="bg-zinc-950/40 px-4 py-3 border-b border-white/10">
-                      <span className="text-[11px] font-extrabold text-white block text-center tracking-wider truncate uppercase">{sucName}</span>
-                    </div>
-                    <div className="p-3 flex-grow">
-                      <table className="w-full text-[11px]">
-                        <thead className="border-b border-white/5 text-[10px] uppercase text-slate-400 font-semibold">
-                          <tr>
-                            <th className="pb-2 text-left">MEDIO</th>
-                            <th className="pb-2 text-right">CONTEO</th>
-                            <th className="pb-2 text-right">%</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-white/5 text-slate-205 font-bold font-mono">
-                          <tr className="hover:bg-white/5 transition-colors">
-                            <td className="py-2 text-left text-slate-300 font-medium font-sans">FLOTA</td>
-                            <td className="py-2 text-right text-white">{asisFlota}</td>
-                            <td className="py-2 text-right text-amber-400 font-extrabold">
-                              {sTotal > 0 ? ((asisFlota / sTotal) * 100).toFixed(0) : "0"}%
-                            </td>
-                          </tr>
-                          <tr className="hover:bg-white/5 transition-colors">
-                            <td className="py-2 text-left text-slate-300 font-medium font-sans">OMITIDOS</td>
-                            <td className="py-2 text-right text-white">{asisOmitidos}</td>
-                            <td className="py-2 text-right text-amber-400 font-extrabold">
-                              {sTotal > 0 ? ((asisOmitidos / sTotal) * 100).toFixed(0) : "0"}%
-                            </td>
-                          </tr>
-                          <tr className="hover:bg-white/5 transition-colors">
-                            <td className="py-2 text-left text-slate-300 font-medium font-sans">CALL CENTER</td>
-                            <td className="py-2 text-right text-white">{asisCall}</td>
-                            <td className="py-2 text-right text-amber-400 font-extrabold">
-                              {sTotal > 0 ? ((asisCall / sTotal) * 100).toFixed(0) : "0"}%
-                            </td>
-                          </tr>
-                          <tr className="hover:bg-white/5 transition-colors">
-                            <td className="py-2 text-left text-slate-200 font-medium">SUCURSAL</td>
-                            <td className="py-2 text-right text-white">{asisSuc}</td>
-                            <td className="py-2 text-right text-amber-400 font-extrabold">
-                              {sTotal > 0 ? ((asisSuc / sTotal) * 100).toFixed(0) : "0"}%
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                    <div className="bg-zinc-950/65 px-4 py-2 border-t border-white/10 flex justify-between items-center text-[10px] font-bold">
-                      <span className="text-slate-400">TOTAL SUCURSAL</span>
-                      <span className="font-mono text-amber-400 font-black">{sTotal}</span>
-                    </div>
+
+              {/* GRÁFICO COMPARATIVO DE MEDIOS POR SUCURSAL */}
+              <div className="lg:col-span-8 border border-white/10 bg-zinc-900/60 rounded-2xl p-5 flex flex-col shadow-xl backdrop-blur-md text-white">
+                <div className="flex items-center gap-2 mb-4 pb-3 border-b border-white/5">
+                  <div className="w-1.5 h-4.5 bg-amber-400 rounded-full"></div>
+                  <div>
+                    <h3 className="text-xs font-black uppercase tracking-wider text-white">
+                      Análisis Comparativo de Asistencias por Sucursal ({monthlyData[activeMonthIndex].mes})
+                    </h3>
+                    <p className="text-[10px] text-slate-450 font-bold mt-0.5 font-sans">
+                      Distribución de canales de ingreso por cada punto de atención
+                    </p>
                   </div>
-                );
-              })}
+                </div>
+                <div className="w-full h-[230px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={SUCURSALES_LIST.map(sucName => {
+                        const asisFlota = getMediaForSucursal(sucName, "flota");
+                        const asisOmitidos = getMediaForSucursal(sucName, "omitidos");
+                        const asisCall = getMediaForSucursal(sucName, "callCenter");
+                        const asisSuc = getMediaForSucursal(sucName, "sucursal");
+                        return {
+                          name: sucName,
+                          "FLOTA": asisFlota,
+                          "OMITIDOS": asisOmitidos,
+                          "CALL CENTER": asisCall,
+                          "SUCURSAL": asisSuc,
+                        };
+                      })}
+                      margin={{ top: 10, right: 10, left: -25, bottom: 0 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" opacity={0.1} />
+                      <XAxis 
+                        dataKey="name" 
+                        tick={{ fill: '#cbd5e1', fontSize: 9, fontWeight: '700' }} 
+                        stroke="#cbd5e1" 
+                      />
+                      <YAxis 
+                        tick={{ fill: '#cbd5e1', fontSize: 9, fontWeight: '600' }} 
+                        stroke="#cbd5e1" 
+                      />
+                      <Tooltip 
+                        cursor={{ fill: 'rgba(255, 255, 255, 0.05)' }}
+                        content={({ active, payload, label }) => {
+                          if (active && payload && payload.length) {
+                            const tot = payload.reduce((sum, entry) => sum + (entry.value as number), 0);
+                            return (
+                              <div className="bg-zinc-950/95 backdrop-blur-md border border-white/10 p-3 rounded-xl shadow-2xl text-[11px] font-sans text-slate-200">
+                                <p className="font-extrabold text-amber-400 uppercase mb-2 tracking-wider">{label}</p>
+                                <div className="space-y-1">
+                                  {payload.map((entry, index) => (
+                                    <div key={index} className="flex justify-between gap-6">
+                                      <span className="flex items-center gap-1.5 font-medium text-slate-300">
+                                        <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: entry.color }} />
+                                        {entry.name}:
+                                      </span>
+                                      <span className="font-mono font-black text-white">{entry.value || 0}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                                <div className="border-t border-white/15 pt-1.5 mt-1.5 font-black flex justify-between gap-10">
+                                  <span className="text-slate-400">Total Sucursal:</span>
+                                  <span className="font-mono text-amber-300">{tot}</span>
+                                </div>
+                              </div>
+                            );
+                          }
+                          return null;
+                        }}
+                      />
+                      <Legend 
+                        verticalAlign="top" 
+                        height={32} 
+                        iconType="circle" 
+                        wrapperStyle={{ fontSize: '9px', fontWeight: 'bold', color: '#ffffff' }} 
+                      />
+                      <Bar dataKey="FLOTA" stackId="a" fill="#38bdf8" name="Flota" />
+                      <Bar dataKey="OMITIDOS" stackId="a" fill="#f43f5e" name="Omitidos" />
+                      <Bar dataKey="CALL CENTER" stackId="a" fill="#10b981" name="Call Center" />
+                      <Bar dataKey="SUCURSAL" stackId="a" fill="#f59e0b" name="Sucursal" radius={[3, 3, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+
+            {/* DETALLES DE SUCURSAL INVIDIDUAL */}
+            <div className="space-y-3 pt-2">
+              <span className="text-[10px] uppercase font-black tracking-widest text-slate-400 block">
+                Detalle Individual por Sucursal ({monthlyData[activeMonthIndex].mes})
+              </span>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+                {SUCURSALES_LIST.map(sucName => {
+                  const asisFlota = getMediaForSucursal(sucName, "flota");
+                  const asisOmitidos = getMediaForSucursal(sucName, "omitidos");
+                  const asisCall = getMediaForSucursal(sucName, "callCenter");
+                  const asisSuc = getMediaForSucursal(sucName, "sucursal");
+                  const sTotal = asisFlota + asisOmitidos + asisCall + asisSuc;
+
+                  return (
+                    <div key={sucName} className="border border-white/10 bg-zinc-900/40 rounded-2xl overflow-hidden flex flex-col shadow-xl backdrop-blur-md hover:border-white/20 transition-all duration-300">
+                      <div className="bg-zinc-950/40 px-4 py-2.5 border-b border-white/10">
+                        <span className="text-[11px] font-extrabold text-white block text-center tracking-wider truncate uppercase">{sucName}</span>
+                      </div>
+                      <div className="p-3 flex-grow">
+                        <table className="w-full text-[10px]">
+                          <thead className="border-b border-white/5 text-[9px] uppercase text-slate-400 font-semibold">
+                            <tr>
+                              <th className="pb-1 text-left">MEDIO</th>
+                              <th className="pb-1 text-right">CONT.</th>
+                              <th className="pb-1 text-right">%</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-white/5 text-slate-205 font-bold font-mono">
+                            <tr className="hover:bg-white/5 transition-colors">
+                              <td className="py-1.5 text-left text-slate-300 font-medium font-sans">FLOTA</td>
+                              <td className="py-1.5 text-right text-white">{asisFlota === 0 ? "" : asisFlota}</td>
+                              <td className="py-1.5 text-right text-amber-400 font-extrabold">
+                                {asisFlota === 0 ? "" : sTotal > 0 ? `${((asisFlota / sTotal) * 100).toFixed(0)}%` : ""}
+                              </td>
+                            </tr>
+                            <tr className="hover:bg-white/5 transition-colors">
+                              <td className="py-1.5 text-left text-slate-300 font-medium font-sans">OMITIDOS</td>
+                              <td className="py-1.5 text-right text-white">{asisOmitidos === 0 ? "" : asisOmitidos}</td>
+                              <td className="py-1.5 text-right text-amber-400 font-extrabold">
+                                {asisOmitidos === 0 ? "" : sTotal > 0 ? `${((asisOmitidos / sTotal) * 100).toFixed(0)}%` : ""}
+                              </td>
+                            </tr>
+                            <tr className="hover:bg-white/5 transition-colors">
+                              <td className="py-1.5 text-left text-slate-300 font-medium font-sans">CALL</td>
+                              <td className="py-1.5 text-right text-white">{asisCall === 0 ? "" : asisCall}</td>
+                              <td className="py-1.5 text-right text-amber-400 font-extrabold">
+                                {asisCall === 0 ? "" : sTotal > 0 ? `${((asisCall / sTotal) * 100).toFixed(0)}%` : ""}
+                              </td>
+                            </tr>
+                            <tr className="hover:bg-white/5 transition-colors">
+                              <td className="py-1.5 text-left text-slate-205 font-medium font-sans">SUC</td>
+                              <td className="py-1.5 text-right text-white">{asisSuc === 0 ? "" : asisSuc}</td>
+                              <td className="py-1.5 text-right text-amber-400 font-extrabold">
+                                {asisSuc === 0 ? "" : sTotal > 0 ? `${((asisSuc / sTotal) * 100).toFixed(0)}%` : ""}
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div className="bg-zinc-950/65 px-4 py-2 border-t border-white/10 flex justify-between items-center text-[10px] font-bold">
+                        <span className="text-slate-400">TOTAL</span>
+                        <span className="font-mono text-amber-400 font-black">{sTotal === 0 ? "" : sTotal}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
  
@@ -2023,29 +2625,33 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                           
                           {MESES_ABR.map((m, mIdx) => {
                             const val = sucItem.meses[m] || 0;
-                            const isEditableFieldOpen = isEditing;
+                            const isEditableFieldOpen = isEditing && (mIdx > activeMonthIndex || isSuperAdminActive);
 
                             return (
                               <td 
                                 key={m} 
-                                className={`p-1.5 text-center font-mono text-xs ${mIdx === activeMonthIndex ? "bg-amber-500/15 text-amber-305 font-extrabold border-x border-white/5" : "text-white"}`}
+                                className={`p-1.5 text-center font-mono text-xs transition-all duration-300 ${mIdx === activeMonthIndex ? "bg-amber-500/15 text-amber-305 font-extrabold border-x border-white/5" : "text-white"} ${isEditableFieldOpen ? "bg-emerald-950/20 text-emerald-300 border border-emerald-500/10" : ""}`}
                               >
                                 {isEditableFieldOpen ? (
                                   <input
                                     type="number"
-                                    value={val}
+                                    value={val === 0 ? "" : val}
                                     onChange={(e) => handleSucursalChange(sIdx, m, e.target.value)}
-                                    className="w-12 bg-zinc-950 text-slate-100 border border-white/15 hover:border-amber-400 rounded font-bold font-mono text-center text-[11px] focus:outline-none focus:border-amber-500 py-0.5"
+                                    className="w-12 bg-emerald-950/40 text-emerald-350 border border-emerald-500/40 hover:border-emerald-300 rounded font-black font-mono text-center text-[11px] focus:outline-none focus:border-emerald-300 focus:ring-1 focus:ring-emerald-300 py-0.5"
                                   />
                                 ) : (
-                                  val
+                                  val === 0 ? "" : val
                                 )}
                               </td>
                             );
                           })}
 
-                          <td className="p-3 text-right font-mono text-amber-350 font-black bg-zinc-950/80 border-l border-white/10">{totalRowSum}</td>
-                          <td className="p-3 text-right font-mono text-slate-300">{averagePerMonth.toFixed(1)}</td>
+                          <td className="p-3 text-right font-mono text-amber-350 font-black bg-zinc-950/80 border-l border-white/10">
+                            {totalRowSum === 0 ? "" : totalRowSum}
+                          </td>
+                          <td className="p-3 text-right font-mono text-slate-300">
+                            {totalRowSum === 0 ? "" : averagePerMonth.toFixed(1)}
+                          </td>
                         </tr>
                       );
                     })}
@@ -2060,21 +2666,27 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                             key={m} 
                             className={`p-2 text-center font-mono font-black text-xs ${mIdx === activeMonthIndex ? "bg-amber-500/20 text-amber-305 font-bold border-x border-white/5 font-black" : ""}`}
                           >
-                            {colSum}
+                            {colSum === 0 ? "" : colSum}
                           </td>
                         );
                       })}
                       <td className="p-3 text-right font-mono text-amber-350 font-black bg-zinc-950 border-l border-white/10">
-                        {resolvedSucursalListData.reduce((sum, item) => {
-                          const rowSum = MESES_ABR.reduce((rSum, m) => rSum + (item.meses[m] || 0), 0);
-                          return sum + rowSum;
-                        }, 0)}
+                        {(() => {
+                          const val = resolvedSucursalListData.reduce((sum, item) => {
+                            const rowSum = MESES_ABR.reduce((rSum, m) => rSum + (item.meses[m] || 0), 0);
+                            return sum + rowSum;
+                          }, 0);
+                          return val === 0 ? "" : val;
+                        })()}
                       </td>
                       <td className="p-3 text-right font-mono text-slate-300">
-                        {(resolvedSucursalListData.reduce((sum, item) => {
-                          const rowSum = MESES_ABR.reduce((rSum, m) => rSum + (item.meses[m] || 0), 0);
-                          return sum + rowSum;
-                        }, 0) / (SUCURSALES_LIST.length || 1)).toFixed(1)}
+                        {(() => {
+                          const totalSucs = resolvedSucursalListData.reduce((sum, item) => {
+                            const rowSum = MESES_ABR.reduce((rSum, m) => rSum + (item.meses[m] || 0), 0);
+                            return sum + rowSum;
+                          }, 0);
+                          return totalSucs === 0 ? "" : (totalSucs / (SUCURSALES_LIST.length || 1)).toFixed(1);
+                        })()}
                       </td>
                     </tr>
                   </tbody>
@@ -2164,19 +2776,18 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                   </LineChart>
                 </ResponsiveContainer>
               </div>
-            </div>
-            
-            <div className="border border-white/10 bg-zinc-900/40 rounded-2xl overflow-hidden shadow-2xl p-1 max-w-full lg:max-w-6xl">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse text-xs min-w-[700px]">
-                  <thead className="bg-zinc-950 text-slate-300 font-extrabold text-[10px] tracking-wider uppercase border-b border-white/10 h-11">
+
+              {/* Contenedor de la tabla scrollable */}
+              <div className="overflow-x-auto rounded-xl border border-white/10 bg-zinc-950/40 mt-6">
+                <table className="w-full text-left border-collapse text-[11.5px] min-w-[700px]">
+                  <thead className="bg-zinc-950 text-slate-300 font-extrabold text-[9px] tracking-wider uppercase border-b border-white/10 h-8">
                     <tr>
-                      <th className="p-3 pl-4">MES</th>
-                      <th className="p-3 text-center font-mono">AÑO 2025</th>
-                      <th className="p-3 text-center font-mono">AÑO 2026</th>
-                      <th className="p-3 text-center font-mono">DIFERENCIA</th>
-                      <th className="p-3 text-center font-mono">% CAMBIO YOY</th>
-                      <th className="p-3 text-center font-mono whitespace-nowrap">vs MES ANTERIOR (26)</th>
+                      <th className="py-1 px-3 pl-4">MES</th>
+                      <th className="py-1 px-3 text-center font-mono">AÑO 2025</th>
+                      <th className="py-1 px-3 text-center font-mono">AÑO 2026</th>
+                      <th className="py-1 px-3 text-center font-mono">DIFERENCIA</th>
+                      <th className="py-1 px-3 text-center font-mono">% CAMBIO YOY</th>
+                      <th className="py-1 px-3 text-center font-mono whitespace-nowrap">vs MES ANTERIOR (26)</th>
                     </tr>
                   </thead>
                   
@@ -2214,55 +2825,55 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                       else if (pctChangeMonth < 0) pctMonthColor = "text-rose-400 font-semibold";
 
                       const isEditable2025 = isEditing;
-                      const isEditable2026 = isEditing && !isCurrentSelected;
+                      const isEditable2026 = isEditing && (idx > activeMonthIndex || isSuperAdminActive);
 
                       return (
-                        <tr key={item.mes} className={`hover:bg-white/5 transition h-11 ${isCurrentSelected ? "bg-amber-500/10 text-amber-300" : "text-white"}`}>
-                          <td className="p-3 pl-4">
-                             <span className={`text-xs uppercase font-extrabold ${isCurrentSelected ? "text-amber-400 font-black" : "text-white"}`}>{item.mes}</span>
+                        <tr key={item.mes} className={`hover:bg-white/5 transition h-8 ${isCurrentSelected ? "bg-amber-500/10 text-amber-300" : "text-white"}`}>
+                          <td className="py-1 px-3 pl-4">
+                             <span className={`text-[11px] uppercase font-extrabold ${isCurrentSelected ? "text-amber-400 font-black" : "text-white"}`}>{item.mes}</span>
                           </td>
                 
                           {/* Celda del Año 2025 */}
-                          <td className="p-3 text-center font-mono font-bold text-white">
+                          <td className={`py-1 px-3 text-center font-mono font-bold text-white transition-all duration-300 ${isEditable2025 ? "bg-emerald-950/20 text-emerald-300 border border-emerald-500/10" : ""}`}>
                             {isEditable2025 ? (
                               <input
                                 type="number"
-                                value={item.val2025}
+                                value={item.val2025 === 0 ? "" : item.val2025}
                                 onChange={(e) => handleMonthlyChange(idx, "val2025", e.target.value)}
-                                className="w-14 bg-zinc-950 text-white border border-white/10 hover:border-amber-400 rounded font-bold font-mono text-center text-[11px] focus:outline-none focus:border-amber-500 py-0.5"
+                                className="w-14 bg-emerald-950/40 text-emerald-350 border border-emerald-500/40 hover:border-emerald-300 rounded font-black font-mono text-center text-[10.5px] focus:outline-none focus:border-emerald-300 focus:ring-1 focus:ring-emerald-300 py-0"
                               />
                             ) : (
-                              item.val2025
+                              item.val2025 === 0 ? "" : item.val2025
                             )}
                           </td>
- 
+  
                           {/* Celda del Año 2026 */}
-                          <td className={`p-3 text-center font-mono font-bold ${isCurrentSelected ? "text-amber-400 font-black" : "text-white"}`}>
+                          <td className={`py-1 px-3 text-center font-mono font-bold transition-all duration-300 ${isCurrentSelected ? "text-amber-400 font-black" : "text-white"} ${isEditable2026 ? "bg-emerald-950/20 text-emerald-300 border border-emerald-500/10" : ""}`}>
                             {isEditable2026 ? (
                               <input
                                 type="number"
-                                value={item.val2026}
+                                value={item.val2026 === 0 ? "" : item.val2026}
                                 onChange={(e) => handleMonthlyChange(idx, "val2026", e.target.value)}
-                                className="w-14 bg-zinc-950 text-white border border-white/10 hover:border-amber-400 rounded font-bold font-mono text-center text-[11px] focus:outline-none focus:border-amber-500 py-0.5"
+                                className="w-14 bg-emerald-950/40 text-emerald-350 border border-emerald-500/40 hover:border-emerald-300 rounded font-black font-mono text-center text-[10.5px] focus:outline-none focus:border-emerald-300 focus:ring-1 focus:ring-emerald-300 py-0"
                               />
                             ) : (
-                              item.val2026
+                              item.val2026 === 0 ? "" : item.val2026
                             )}
                           </td>
 
-                          <td className={`p-3 text-center font-mono font-black ${diffBg} ${diffColor}`}>
-                            {diffVal > 0 ? `+${diffVal}` : diffVal}
+                          <td className={`py-1 px-3 text-center font-mono font-black ${diffBg} ${diffColor}`}>
+                            {diffVal === 0 ? "" : (diffVal > 0 ? `+${diffVal}` : diffVal)}
                           </td>
 
-                          <td className="p-3 text-center font-mono">
-                            {item.val2025 === 0 && item.val2026 === 0 ? (
+                          <td className="py-1 px-3 text-center font-mono">
+                            {item.val2025 === 0 || item.val2026 === 0 ? (
                               <span className="text-slate-550 font-normal">-</span>
                             ) : (
                               <span className={pctColor}>{pctChangeYear >= 0 ? "+" : ""}{pctChangeYear.toFixed(1)}%</span>
                             )}
                           </td>
 
-                          <td className={`p-3 text-center font-mono ${pctMonthColor}`}>
+                          <td className={`py-1 px-3 text-center font-mono ${pctMonthColor}`}>
                             {idx === 0 || prevVal === 0 || item.val2026 === 0 ? "-" : `${pctChangeMonth >= 0 ? "+" : ""}${pctChangeMonth.toFixed(1)}%`}
                           </td>
                         </tr>
@@ -2270,15 +2881,21 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                     })}
 
                     {/* Fila del TOTAL del Comparativo */}
-                    <tr className="bg-zinc-950 border-t border-white/10 text-slate-200 font-black h-12">
-                      <td className="p-3 pl-4 font-bold uppercase text-[10px] tracking-widest text-slate-400 font-sans">TOTAL GENERAL</td>
+                    <tr className="bg-zinc-950 border-t border-white/10 text-slate-200 font-extrabold h-8">
+                      <td className="py-1 px-3 pl-4 font-bold uppercase text-[9.5px] tracking-widest text-slate-400 font-sans">TOTAL GENERAL</td>
                       
-                      <td className="p-3 text-center font-mono text-slate-100 font-extrabold text-xs">
-                        {resolvedMonthlyList.reduce((sum, i) => sum + i.val2025, 0)}
+                      <td className="py-1 px-3 text-center font-mono text-slate-100 font-black text-[11px]">
+                        {(() => {
+                          const s25 = resolvedMonthlyList.reduce((sum, i) => sum + i.val2025, 0);
+                          return s25 === 0 ? "" : s25;
+                        })()}
                       </td>
 
-                      <td className="p-3 text-center font-mono text-amber-400 font-extrabold text-xs">
-                        {resolvedMonthlyList.reduce((sum, i) => sum + i.val2026, 0)}
+                      <td className="py-1 px-3 text-center font-mono text-amber-400 font-black text-[11px]">
+                        {(() => {
+                          const s26 = resolvedMonthlyList.reduce((sum, i) => sum + i.val2026, 0);
+                          return s26 === 0 ? "" : s26;
+                        })()}
                       </td>
 
                       {/* Diferencia consolidada */}
@@ -2290,19 +2907,23 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                         
                         return (
                           <>
-                            <td className={`p-3 text-center font-mono font-extrabold text-xs ${tDiff >= 0 ? "text-emerald-400 bg-emerald-950/20" : "text-rose-400 bg-rose-950/20"}`}>
-                              {tDiff > 0 ? `+${tDiff}` : tDiff}
+                            <td className={`py-1 px-3 text-center font-mono font-black text-[11px] ${tDiff >= 0 ? "text-emerald-400 bg-emerald-950/20" : "text-rose-400 bg-rose-950/20"}`}>
+                              {tDiff === 0 ? "" : (tDiff > 0 ? `+${tDiff}` : tDiff)}
                             </td>
-                            <td className="p-3 text-center font-mono">
-                              <span className={`font-extrabold text-xs ${tPct >= 0 ? "bg-emerald-950 text-emerald-400 px-2 py-0.5 rounded-md border border-emerald-900" : "bg-rose-950 text-rose-400 px-2 py-0.5 rounded-md border border-rose-900"}`}>
-                                {tPct >= 0 ? "+" : ""}{tPct.toFixed(1)}%
-                              </span>
+                            <td className="py-1 px-3 text-center font-mono">
+                              {sum2025 === 0 || sum2026 === 0 ? (
+                                <span className="text-slate-550 font-normal">-</span>
+                              ) : (
+                                <span className={`font-black text-[10px] ${tPct >= 0 ? "bg-emerald-950 text-emerald-400 px-1.5 py-0.5 rounded border border-emerald-900" : "bg-rose-950 text-rose-400 px-1.5 py-0.5 rounded border border-rose-900"}`}>
+                                  {tPct >= 0 ? "+" : ""}{tPct.toFixed(1)}%
+                                </span>
+                              )}
                             </td>
                           </>
                         );
                       })()}
 
-                      <td className="p-3 text-center font-mono text-slate-500 font-semibold">-</td>
+                      <td className="py-1 px-3 text-center font-mono text-slate-500 font-semibold">-</td>
                     </tr>
                   </tbody>
                 </table>
@@ -2321,23 +2942,63 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                   <h3 className="text-xs font-black uppercase tracking-wider text-white">
                     Análisis de Datos Operativo & Predictivo IA
                   </h3>
-                  <p className="text-[10px] text-slate-400 font-bold font-mono">Generado de forma dinámica con IA para {monthlyData[activeMonthIndex].mes} 2026</p>
+                  <p className="text-[10px] text-slate-400 font-bold font-mono">
+                    {hasBeenAnalyzed 
+                      ? `Generado de forma dinámica con IA para ${monthlyData[activeMonthIndex].mes} 2026`
+                      : `Datos listos y precargados para análisis de ${monthlyData[activeMonthIndex].mes} 2026`
+                    }
+                  </p>
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={generateAnalysis}
-                disabled={isGeneratingAnalysis}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-950 hover:bg-zinc-900 text-amber-300 font-black rounded-xl text-[10px] cursor-pointer transition border border-white/10 disabled:opacity-50"
-              >
-                <Sparkles className="h-3 w-3 text-amber-300 animate-pulse" />
-                {isGeneratingAnalysis ? "Analizando..." : "Regenerar Análisis"}
-              </button>
+              {hasBeenAnalyzed && (
+                <button
+                  type="button"
+                  onClick={generateAnalysis}
+                  disabled={isGeneratingAnalysis}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-950 hover:bg-zinc-900 text-amber-300 font-black rounded-xl text-[10px] cursor-pointer transition border border-white/10 disabled:opacity-50"
+                >
+                  <Sparkles className="h-3 w-3 text-amber-300 animate-pulse" />
+                  {isGeneratingAnalysis ? "Analizando..." : "Regenerar Análisis"}
+                </button>
+              )}
             </div>
             
-            <div className="text-xs text-slate-205 leading-relaxed font-sans space-y-4 whitespace-pre-line bg-zinc-950/40 p-4.5 rounded-xl border border-white/5 font-bold">
-              {analysisContent}
-            </div>
+            {!hasBeenAnalyzed ? (
+              <div className="flex flex-col items-center justify-center text-center p-8 bg-zinc-950/65 rounded-xl border border-dashed border-amber-500/25 space-y-4">
+                <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-full text-amber-350 relative">
+                  <Brain className="h-8 w-8 text-amber-450 animate-pulse" />
+                  <Sparkles className="h-4 w-4 text-amber-350 absolute -top-1 -right-1 animate-bounce" />
+                </div>
+                <div className="space-y-1.5 max-w-md">
+                  <h4 className="text-xs font-black uppercase tracking-wider text-amber-450">Análisis Predictivo Listo</h4>
+                  <p className="text-[11px] text-slate-350 leading-relaxed font-bold">
+                    Las métricas comparativo-históricas interanuales de <span className="text-white font-extrabold">{monthlyData[activeMonthIndex].mes} 2026</span> han sido precargadas correctamente. Presione el botón a continuación para ejecutar el análisis operativo con IA.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={generateAnalysis}
+                  disabled={isGeneratingAnalysis}
+                  className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-450 hover:to-amber-550 text-zinc-950 font-black uppercase tracking-wider rounded-xl text-xs cursor-pointer shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 border border-amber-400 disabled:opacity-50"
+                >
+                  {isGeneratingAnalysis ? (
+                    <>
+                      <div className="h-4 w-4 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
+                      <span>Procesando Datos...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Brain className="h-4 w-4 text-zinc-950" />
+                      <span>Analizar Datos con IA</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            ) : (
+              <div className="text-xs text-slate-205 leading-relaxed font-sans space-y-4 whitespace-pre-line bg-zinc-950/40 p-4.5 rounded-xl border border-white/5 font-bold">
+                {analysisContent}
+              </div>
+            )}
           </div>
 
         </div>
@@ -2349,7 +3010,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
             <span className="text-slate-300 font-semibold">REPORTE EJECUTIVO DE ASISTENCIAS VIALES</span>
           </div>
           <div className="text-slate-300 mt-1.5 sm:mt-0 font-extrabold">
-            AUTO CENTRO S.A. • {new Date().toISOString().split("T")[0]}
+            REPORTE DIGITAL • {new Date().toISOString().split("T")[0]}
           </div>
         </div>
 
@@ -2365,6 +3026,26 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
         <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto shrink-0 justify-end">
           {isEditing ? (
             <>
+              {isSuperAdminActive ? (
+                <div 
+                  onClick={() => setIsSuperAdminActive(false)}
+                  title="Haga clic para salir del modo Súper Admin"
+                  className="flex items-center gap-1.5 h-10 px-3 border border-emerald-500/30 bg-emerald-950/80 text-emerald-350 text-[10px] uppercase font-black tracking-wider rounded-xl cursor-pointer hover:bg-emerald-900 transition-all duration-300 shadow-md animate-pulse"
+                >
+                  <Unlock className="h-4 w-4 text-emerald-400" />
+                  Súper Admin Activo
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setShowSuperAdminModal(true)}
+                  className="flex items-center justify-center gap-2 h-10 px-4 text-xs font-black uppercase tracking-wider rounded-xl transition-all duration-300 shadow-md hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] cursor-pointer border bg-zinc-950/60 hover:bg-zinc-900 border-red-500/20 hover:border-red-500/60 text-red-300"
+                  title="Desbloquear edición de meses cerrados (Clave Programador)"
+                >
+                  <Lock className="h-4 w-4 text-red-400" />
+                  Liberar Historial
+                </button>
+              )}
               <button
                 type="button"
                 onClick={saveEditedValues}
@@ -2375,7 +3056,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
               </button>
               <button
                 type="button"
-                onClick={() => setIsEditing(false)}
+                onClick={cancelEditing}
                 className="flex items-center justify-center gap-2 h-10 px-4 text-xs font-black uppercase tracking-wider rounded-xl transition-all duration-300 shadow-md hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] cursor-pointer border bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border-white/10 hover:text-white"
               >
                 Cancelar
