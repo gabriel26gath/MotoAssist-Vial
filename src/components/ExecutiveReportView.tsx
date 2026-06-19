@@ -38,7 +38,16 @@ import {
   GripVertical,
   AlignLeft,
   AlignCenter,
-  AlignRight
+  AlignRight,
+  Star,
+  Award,
+  Percent,
+  Activity,
+  LayoutDashboard,
+  BarChart3,
+  PieChart,
+  Table2,
+  Grid
 } from "lucide-react";
 import { 
   ResponsiveContainer, 
@@ -128,6 +137,77 @@ const INITIAL_SUCURSAL_MONTHS_2026: HistoricalSucursalData[] = SUCURSALES_LIST.m
   }
 }));
 
+const getAccentColorStyle = (themeName: string) => {
+  const themes = {
+    amber: {
+      text: "text-amber-600",
+      bg: "bg-amber-500",
+      bgLight: "bg-amber-50",
+      border: "border-amber-300",
+      ring: "ring-amber-400",
+      gradient: "from-amber-500 to-amber-600",
+      hex: "#f59e0b",
+      hexHover: "#d97706",
+      badge: "bg-amber-50 border-amber-200 text-amber-800",
+      pill: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+      glow: "shadow-amber-500/5 hover:shadow-amber-500/20"
+    },
+    blue: {
+      text: "text-blue-600",
+      bg: "bg-blue-500",
+      bgLight: "bg-blue-50",
+      border: "border-blue-300",
+      ring: "ring-blue-400",
+      gradient: "from-blue-500 to-blue-600",
+      hex: "#3b82f6",
+      hexHover: "#1d4ed8",
+      badge: "bg-blue-50 border-blue-200 text-blue-800",
+      pill: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+      glow: "shadow-blue-500/5 hover:shadow-blue-500/20"
+    },
+    indigo: {
+      text: "text-indigo-600",
+      bg: "bg-indigo-500",
+      bgLight: "bg-indigo-50",
+      border: "border-indigo-300",
+      ring: "ring-indigo-400",
+      gradient: "from-indigo-500 to-indigo-600",
+      hex: "#6366f1",
+      hexHover: "#4338ca",
+      badge: "bg-indigo-50 border-indigo-200 text-indigo-800",
+      pill: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
+      glow: "shadow-indigo-500/5 hover:shadow-indigo-500/20"
+    },
+    emerald: {
+      text: "text-emerald-600",
+      bg: "bg-emerald-500",
+      bgLight: "bg-emerald-50",
+      border: "border-emerald-300",
+      ring: "ring-emerald-400",
+      gradient: "from-emerald-500 to-emerald-600",
+      hex: "#10b981",
+      hexHover: "#047857",
+      badge: "bg-emerald-50 border-emerald-200 text-emerald-800",
+      pill: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+      glow: "shadow-emerald-500/5 hover:shadow-emerald-500/20"
+    },
+    rose: {
+      text: "text-rose-600",
+      bg: "bg-rose-500",
+      bgLight: "bg-rose-50",
+      border: "border-rose-300",
+      ring: "ring-rose-400",
+      gradient: "from-rose-500 to-rose-600",
+      hex: "#f43f5e",
+      hexHover: "#be123c",
+      badge: "bg-rose-50 border-rose-200 text-rose-800",
+      pill: "bg-rose-500/10 text-rose-450 border-rose-500/20",
+      glow: "shadow-rose-500/5 hover:shadow-rose-500/20"
+    }
+  };
+  return themes[themeName as keyof typeof themes] || themes.amber;
+};
+
 export default function ExecutiveReportView({ invoices }: ExecutiveReportViewProps) {
   // Año de análisis dinámico automático basado en el último ticket ingresado
   const activeYear = useMemo(() => {
@@ -166,6 +246,10 @@ export default function ExecutiveReportView({ invoices }: ExecutiveReportViewPro
   // Títulos de secciones editables antes de descargar
   const [sectionTitles, setSectionTitles] = useState({
     kpis: "RESUMEN DE INDICADORES OPERATIVOS (YTD)",
+    kpi_ytd: "KPI: ASISTENCIAS ACUMULADAS YTD",
+    kpi_leader: "KPI: CANAL O MEDIO LÍDER YTD",
+    kpi_change: "KPI: VARIACIÓN VERSUS MES ANTERIOR",
+    kpi_yoy: "KPI: VARIACIÓN ACUMULADO YoY",
     bar_trend: "EVOLUCIÓN MENSUAL COMPARADA (2025 VS 2026 YTD)",
     line_trend: "CURVAS DE EVOLUCIÓN ANUAL COMPARADA (2025 VS 2026)",
     branch_part: "PARTICIPACIÓN DE SUCURSALES (CONSOLIDADO YTD)",
@@ -191,13 +275,18 @@ export default function ExecutiveReportView({ invoices }: ExecutiveReportViewPro
   const [pdfPadding, setPdfPadding] = useState<"compact" | "normal" | "spacious">("normal");
   const [pdfAccentColor, setPdfAccentColor] = useState<"amber" | "blue" | "indigo" | "emerald" | "rose">("amber");
   const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
 
   // Estado para la ventana flotante (Modal) del Diseñador Visual de PDF
   const [isPdfDesignerOpen, setIsPdfDesignerOpen] = useState(false);
 
   // Secciones del PDF con dimensiones de formas (ancho, escala/altura, salto de página, visibilidad y orden)
   const [pdfSections, setPdfSections] = useState([
-    { id: "kpis", name: "KPIs / Indicadores Clave", visible: true, width: "100%", scale: 1.0, isPageBreakBefore: false },
+    { id: "kpis", name: "Fila de KPIs Consolidada", visible: true, width: "100%", scale: 1.0, isPageBreakBefore: false },
+    { id: "kpi_ytd", name: "KPI: Asistencias Acumuladas YTD", visible: false, width: "25%", scale: 1.0, isPageBreakBefore: false },
+    { id: "kpi_leader", name: "KPI: Canal o Medio Líder YTD", visible: false, width: "25%", scale: 1.0, isPageBreakBefore: false },
+    { id: "kpi_change", name: "KPI: Variación versus Mes Anterior", visible: false, width: "25%", scale: 1.0, isPageBreakBefore: false },
+    { id: "kpi_yoy", name: "KPI: Variación Acumulado YoY", visible: false, width: "25%", scale: 1.0, isPageBreakBefore: false },
     { id: "bar_trend", name: "Gráfico de Barras Mensuales (2025 vs 2026)", visible: true, width: "100%", scale: 1.0, isPageBreakBefore: false },
     { id: "line_trend", name: "Curvas de Evolución Anual Comparada (2025 vs 2026)", visible: true, width: "100%", scale: 1.0, isPageBreakBefore: false },
     { id: "branch_part", name: "Gráfico de Participación por Sucursales YTD", visible: true, width: "100%", scale: 1.0, isPageBreakBefore: false },
@@ -223,7 +312,25 @@ export default function ExecutiveReportView({ invoices }: ExecutiveReportViewPro
   // Activar/Ocultar elemento de la maqueta
   const handleToggleSectionVisible = (index: number) => {
     const updated = [...pdfSections];
-    updated[index].visible = !updated[index].visible;
+    const targetId = updated[index].id;
+    const currentVisible = !updated[index].visible;
+    updated[index].visible = currentVisible;
+
+    if (targetId === "kpis" && currentVisible) {
+      // Si activo consolidado, oculto los individuales
+      updated.forEach(sec => {
+        if (["kpi_ytd", "kpi_leader", "kpi_change", "kpi_yoy"].includes(sec.id)) {
+          sec.visible = false;
+        }
+      });
+    } else if (["kpi_ytd", "kpi_leader", "kpi_change", "kpi_yoy"].includes(targetId) && currentVisible) {
+      // Si activo cualquiera individual, oculto el consolidado
+      updated.forEach(sec => {
+        if (sec.id === "kpis") {
+          sec.visible = false;
+        }
+      });
+    }
     setPdfSections(updated);
   };
 
@@ -1396,8 +1503,10 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
       )}
 
       {/* VENTANA MODAL FLOTANTE: DISEÑADOR VISUAL AVANZADO DE FORMATO PDF */}
-      {isPdfDesignerOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/80 backdrop-blur-md animate-fade-in text-slate-200">
+      {isPdfDesignerOpen && (() => {
+        const accentStyle = getAccentColorStyle(pdfAccentColor);
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/80 backdrop-blur-md animate-fade-in text-slate-200">
           <div className="glass-panel relative w-full max-w-6xl rounded-3xl border border-white/10 bg-zinc-905 flex flex-col max-h-[92vh] shadow-2xl p-6 md:p-8">
             
             {/* Cabecera de la Ventana */}
@@ -1558,6 +1667,164 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                   </div>
                 </div>
 
+                {/* Gestor y Organizador de Secciones en la Barra Lateral */}
+                <div className="space-y-2 pt-4 bg-zinc-900/40 p-3.5 rounded-xl border border-white/5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[10px] font-black uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+                      <Sliders className="h-3.5 w-3.5 text-amber-400 shrink-0" />
+                      Estructura y Secuencia de Bloques
+                    </label>
+                    <span className="text-[8px] bg-amber-500/10 text-amber-300 font-mono font-black uppercase px-1.5 py-0.5 rounded border border-amber-500/20 shrink-0">
+                      INTERACTIVO
+                    </span>
+                  </div>
+                  <div className="p-3 bg-zinc-950/60 rounded-xl border border-white/5 space-y-2 mt-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[9px] font-black uppercase tracking-wider text-teal-400 flex items-center gap-1">
+                        <Grid className="h-3 w-3 text-teal-400" />
+                        DISTRIBUCIÓN DE KPIS YTD
+                      </span>
+                      <span className="text-[7.5px] bg-teal-500/10 text-teal-300 font-mono font-bold uppercase px-1 py-0.5 rounded border border-teal-500/20">
+                        SIN DUPLICIDAD
+                      </span>
+                    </div>
+                    <p className="text-[9px] text-slate-400 font-bold leading-normal">
+                      Defina con 1 clic cómo quiere presentar sus indicadores principales en la hoja:
+                    </p>
+                    <div className="grid grid-cols-2 gap-1.5 mt-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = [...pdfSections];
+                          updated.forEach(sec => {
+                            if (sec.id === "kpis") sec.visible = true;
+                            if (["kpi_ytd", "kpi_leader", "kpi_change", "kpi_yoy"].includes(sec.id)) sec.visible = false;
+                          });
+                          setPdfSections(updated);
+                        }}
+                        className={`py-1 rounded-lg text-[9px] uppercase font-bold transition duration-200 flex items-center justify-center gap-1 border cursor-pointer ${
+                          pdfSections.find(s => s.id === "kpis")?.visible
+                            ? "bg-amber-500/15 border-amber-450/40 text-amber-300 font-black shadow-lg shadow-amber-900/10"
+                            : "bg-zinc-900/80 border-white/5 text-slate-450 hover:bg-zinc-800"
+                        }`}
+                      >
+                        <LayoutDashboard className="h-3 w-3" />
+                        Fila Unificada
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = [...pdfSections];
+                          updated.forEach(sec => {
+                            if (sec.id === "kpis") sec.visible = false;
+                            if (["kpi_ytd", "kpi_leader", "kpi_change", "kpi_yoy"].includes(sec.id)) sec.visible = true;
+                          });
+                          setPdfSections(updated);
+                        }}
+                        className={`py-1 rounded-lg text-[9px] uppercase font-bold transition duration-200 flex items-center justify-center gap-1 border cursor-pointer ${
+                          !pdfSections.find(s => s.id === "kpis")?.visible && pdfSections.some(s => ["kpi_ytd", "kpi_leader", "kpi_change", "kpi_yoy"].includes(s.id) && s.visible)
+                            ? "bg-emerald-500/15 border-emerald-450/40 text-emerald-300 font-black shadow-lg shadow-emerald-900/10"
+                            : "bg-zinc-900/80 border-white/5 text-slate-450 hover:bg-zinc-800"
+                        }`}
+                      >
+                        <Grid className="h-3 w-3" />
+                        Desglosados
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="max-h-[290px] overflow-y-auto space-y-1.5 pr-1 scrollbar-thin scrollbar-thumb-white/10 text-[10px]">
+                    {pdfSections.map((sec, idx) => {
+                      const isSecVisible = sec.visible;
+                      // Seleccionar ícono según id
+                      let IconComponent = LayoutDashboard;
+                      let iconColor = "text-amber-400";
+                      
+                      if (sec.id === "kpis") { IconComponent = LayoutDashboard; iconColor = "text-amber-400"; }
+                      else if (sec.id === "kpi_ytd") { IconComponent = Star; iconColor = "text-amber-300"; }
+                      else if (sec.id === "kpi_leader") { IconComponent = Award; iconColor = "text-emerald-400"; }
+                      else if (sec.id === "kpi_change") { IconComponent = Percent; iconColor = "text-indigo-400"; }
+                      else if (sec.id === "kpi_yoy") { IconComponent = Activity; iconColor = "text-rose-450"; }
+                      else if (sec.id === "bar_trend") { IconComponent = BarChart3; iconColor = "text-amber-500"; }
+                      else if (sec.id === "line_trend") { IconComponent = TrendingUp; iconColor = "text-sky-400"; }
+                      else if (sec.id === "branch_part") { IconComponent = PieChart; iconColor = "text-emerald-500"; }
+                      else if (sec.id === "compare_tab") { IconComponent = Table2; iconColor = "text-teal-400"; }
+                      else if (sec.id === "monthly_suc") { IconComponent = Grid; iconColor = "text-blue-400"; }
+                      else if (sec.id === "analysis") { IconComponent = Sparkles; iconColor = "text-violet-400"; }
+
+                      return (
+                        <div 
+                          key={sec.id}
+                          className={`flex items-center justify-between p-2 rounded-xl border transition-all ${
+                            isSecVisible 
+                              ? "bg-zinc-900 border-white/10 text-white shadow-sm hover:border-amber-500/40" 
+                              : "bg-zinc-950/20 border-white/5 text-slate-550 opacity-50"
+                          }`}
+                        >
+                          <div className="flex items-center gap-1.5 min-w-[50%] max-w-[55%]">
+                            <span className="font-mono text-[8.5px] text-slate-500 font-extrabold shrink-0">#{idx + 1}</span>
+                            <IconComponent className={`h-3.5 w-3.5 shrink-0 ${iconColor}`} />
+                            <span className="font-bold text-[9.5px] truncate" title={sec.name}>{sec.name}</span>
+                          </div>
+
+                          <div className="flex items-center gap-1 shrink-0">
+                            {/* Subir */}
+                            <button
+                              type="button"
+                              onClick={() => handleMoveSection(idx, "up")}
+                              disabled={idx === 0}
+                              className={`p-1 rounded bg-zinc-800 hover:bg-zinc-700 transition cursor-pointer disabled:opacity-20 disabled:cursor-not-allowed`}
+                              title="Subir Sección"
+                            >
+                              <ChevronUp className="h-3 w-3 text-slate-300" />
+                            </button>
+                            
+                            {/* Bajar */}
+                            <button
+                              type="button"
+                              onClick={() => handleMoveSection(idx, "down")}
+                              disabled={idx === pdfSections.length - 1}
+                              className={`p-1 rounded bg-zinc-800 hover:bg-zinc-700 transition cursor-pointer disabled:opacity-20 disabled:cursor-not-allowed`}
+                              title="Bajar Sección"
+                            >
+                              <ChevronDown className="h-3 w-3 text-slate-300" />
+                            </button>
+
+                            {/* Mostrar/Ocultar */}
+                            <button
+                              type="button"
+                              onClick={() => handleToggleSectionVisible(idx)}
+                              className={`p-1 rounded transition cursor-pointer border ${
+                                isSecVisible
+                                  ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20"
+                                  : "bg-zinc-850 border-white/5 text-slate-400 hover:bg-zinc-800"
+                              }`}
+                              title={isSecVisible ? "Ocultar bloque" : "Activar bloque"}
+                            >
+                              {isSecVisible ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+                            </button>
+
+                            {/* Ancho */}
+                            <button
+                              type="button"
+                              onClick={() => handleCycleSectionWidth(idx)}
+                              disabled={!isSecVisible}
+                              className={`px-1.5 py-0.5 rounded text-[8px] font-black font-mono border transition shrink-0 ${
+                                !isSecVisible
+                                  ? "bg-zinc-800 border-white/5 text-slate-600 cursor-not-allowed opacity-30"
+                                  : "bg-amber-500/10 border-amber-500/30 text-amber-300 hover:bg-amber-500/20 cursor-pointer"
+                              }`}
+                              title="Cambiar ancho (100% ➔ 66% ➔ 50% ➔ 33%)"
+                            >
+                              {sec.width || "100%"}
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
                 <div className="p-3.5 bg-amber-500/5 rounded-xl border border-amber-500/10 text-slate-300 space-y-1.5 text-[10px] leading-relaxed font-sans">
                   <div className="font-extrabold text-amber-300 flex items-center gap-1.5 uppercase tracking-wide">
                     <Info className="h-3.5 w-3.5 text-amber-400 shrink-0" />
@@ -1701,14 +1968,24 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                               }}
                               onDragEnd={() => {
                                 setDraggedIdx(null);
+                                setDragOverIdx(null);
                               }}
                               onDragOver={(e) => {
                                 if (draggedIdx === null) return;
                                 e.preventDefault();
                                 e.dataTransfer.dropEffect = "move";
+                                if (dragOverIdx !== idx) {
+                                  setDragOverIdx(idx);
+                                }
+                              }}
+                              onDragLeave={() => {
+                                if (dragOverIdx === idx) {
+                                  setDragOverIdx(null);
+                                }
                               }}
                               onDrop={(e) => {
                                 e.preventDefault();
+                                setDragOverIdx(null);
                                 if (draggedIdx === null || draggedIdx === idx) return;
                                 const updated = [...pdfSections];
                                 const [removed] = updated.splice(draggedIdx, 1);
@@ -1716,169 +1993,145 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                                 setPdfSections(updated);
                                 setDraggedIdx(null);
                               }}
-                              className={`transition-all duration-300 rounded-xl border flex flex-col p-3.5 ${widthClass} ${bgClass} ${borderClass} ${
+                              className={`transition-all duration-300 rounded-2xl border flex flex-col p-4 relative group ${widthClass} ${bgClass} ${borderClass} ${
+                                dragOverIdx === idx && draggedIdx !== idx 
+                                  ? `ring-4 ${accentStyle.ring} ring-offset-2 scale-[1.01] shadow-2xl relative z-10 bg-slate-50` 
+                                  : ""
+                              } ${
                                 isVisible 
-                                  ? `hover:border-amber-500/80 hover:shadow-xl cursor-grab active:cursor-grabbing ${draggedIdx === idx ? "opacity-30 scale-[0.98] border-dashed border-amber-400 bg-amber-500/5" : ""}` 
-                                  : "bg-zinc-50/70 border-slate-200/50 opacity-35 grayscale select-none"
+                                  ? `hover:shadow-2xl hover:border-${pdfAccentColor}-400 cursor-grab active:cursor-grabbing ${draggedIdx === idx ? "opacity-30 scale-[0.98] border-dashed" : ""}` 
+                                  : "bg-zinc-50/70 border-slate-200/50 opacity-30 grayscale select-none"
                               }`}
                             >
-                              {/* Barra de Controles Interna de la Maqueta */}
-                              <div className="flex flex-wrap items-center justify-between gap-1.5 border-b border-slate-150 pb-2 mb-3">
-                                <div className="flex items-center gap-1.5 max-w-[40%]">
-                                  {isVisible && (
-                                    <span className="cursor-grab text-slate-400 hover:text-amber-500 transition-colors hidden sm:inline" title="Arrastre este bloque para cambiar su orden de impresión">
-                                      <GripVertical className="h-3.5 w-3.5" />
-                                    </span>
-                                  )}
-                                  <button
-                                    type="button"
-                                    onClick={() => handleToggleSectionVisible(idx)}
-                                    className={`p-1 rounded-lg border text-xs cursor-pointer transition shrink-0 ${
-                                      isVisible 
-                                        ? "border-emerald-200 bg-emerald-50 text-emerald-600 hover:bg-emerald-100" 
-                                        : "border-slate-300 bg-zinc-250 text-slate-500 hover:bg-zinc-350"
-                                    }`}
-                                    title={isVisible ? "Ocultar esta sección del PDF" : "Mostrar esta sección en el PDF"}
-                                  >
-                                    {isVisible ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
-                                  </button>
-                                  
-                                  {/* Input para Título Editable en Línea */}
+                              {/* Barra de Controles Flotante Moderna (WYSIWYG Hover) */}
+                              <div className="absolute -top-3.5 right-4 opacity-0 group-hover:opacity-100 transition-all duration-200 z-30 flex items-center gap-1 bg-slate-900 border border-slate-700 p-1 rounded-xl shadow-xl">
+                                {isVisible && (
+                                  <span className="cursor-grab p-1 text-slate-400 hover:text-amber-400 transition" title="Arrastrar para ordenar">
+                                    <GripVertical className="h-3 w-3" />
+                                  </span>
+                                )}
+                                
+                                <button
+                                  type="button"
+                                  onClick={() => handleToggleSectionVisible(idx)}
+                                  className={`p-1 rounded-lg text-xs cursor-pointer transition ${
+                                    isVisible 
+                                      ? "text-rose-400 hover:bg-rose-500/10" 
+                                      : "text-emerald-400 hover:bg-emerald-500/10"
+                                  }`}
+                                  title={isVisible ? "Ocultar bloque" : "Activar bloque"}
+                                >
+                                  {isVisible ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                                </button>
+
+                                <div className="h-3 w-[1px] bg-slate-800"></div>
+
+                                {/* Cambio de Ancho */}
+                                <button
+                                  type="button"
+                                  onClick={() => handleCycleSectionWidth(idx)}
+                                  className="px-1.5 py-0.5 rounded text-[8px] font-black font-mono bg-zinc-800 text-amber-350 hover:bg-zinc-700 transition"
+                                  title="Ciclar ancho: 100% -> 66% -> 50% -> 33%"
+                                >
+                                  {w}
+                                </button>
+
+                                <div className="h-3 w-[1px] bg-slate-800"></div>
+
+                                {/* Flechas Arriba/Abajo */}
+                                <button
+                                  type="button"
+                                  onClick={() => handleMoveSection(idx, 'up')}
+                                  disabled={idx === 0}
+                                  className="p-1 rounded text-slate-400 hover:text-white disabled:opacity-25"
+                                  title="Subir"
+                                >
+                                  <ChevronUp className="h-3 w-3" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleMoveSection(idx, 'down')}
+                                  disabled={idx === pdfSections.length - 1}
+                                  className="p-1 rounded text-slate-400 hover:text-white disabled:opacity-25"
+                                  title="Bajar"
+                                >
+                                  <ChevronDown className="h-3 w-3" />
+                                </button>
+
+                                <div className="h-3 w-[1px] bg-slate-800"></div>
+
+                                {/* Cambio de Fondo */}
+                                <button
+                                  type="button"
+                                  onClick={() => handleCycleSectionBgTint(idx)}
+                                  className="p-1 rounded text-slate-400 hover:text-emerald-400 transition"
+                                  title="Fondo"
+                                >
+                                  <Palette className="h-3.5 w-3.5" />
+                                </button>
+
+                                {/* Tipografía */}
+                                <button
+                                  type="button"
+                                  onClick={() => handleCycleSectionFontFamily(idx)}
+                                  className="p-1 rounded text-slate-400 hover:text-indigo-400 transition text-[8px] font-bold"
+                                  title="Tipografía"
+                                >
+                                  T
+                                </button>
+
+                                {/* Escala - / + */}
+                                <button
+                                  type="button"
+                                  onClick={() => handleSectionScaleChange(idx, 'shrink')}
+                                  disabled={scaleFactor <= 0.6}
+                                  className="p-0.5 rounded text-slate-400 hover:text-white"
+                                >
+                                  <Minus className="h-2.5 w-2.5" />
+                                </button>
+                                <span className="text-[7.5px] font-mono text-slate-300 px-0.5">{scaleFactor.toFixed(1)}x</span>
+                                <button
+                                  type="button"
+                                  onClick={() => handleSectionScaleChange(idx, 'amplify')}
+                                  disabled={scaleFactor >= 1.5}
+                                  className="p-0.5 rounded text-slate-400 hover:text-white"
+                                >
+                                  <Plus className="h-2.5 w-2.5" />
+                                </button>
+
+                                <div className="h-3 w-[1px] bg-slate-800"></div>
+
+                                {/* Salto de Página */}
+                                <button
+                                  type="button"
+                                  onClick={() => handleTogglePageBreak(idx)}
+                                  className={`p-1 rounded ${item.isPageBreakBefore ? "text-rose-400 bg-rose-500/15" : "text-slate-400 hover:text-white"}`}
+                                  title="Salto de página"
+                                >
+                                  <Scissors className="h-3 w-3" />
+                                </button>
+                              </div>
+
+                              {/* Cabecera Limpia Imprimible del Bloque */}
+                              <div className="flex items-center justify-between pb-1.5 mb-2 border-b border-slate-100">
+                                <div className="flex items-center gap-1.5 w-full">
+                                  {/* Indicador de Color según el Accent Color de la Maqueta */}
+                                  <span className={`w-2 h-2.5 rounded-sm ${accentStyle.bg}`} />
                                   <input
                                     type="text"
                                     value={sectionTitles[item.id as keyof typeof sectionTitles] || ""}
                                     onChange={(e) => handleTitleChange(item.id, e.target.value)}
-                                    className="bg-transparent border-b border-transparent hover:border-slate-300 focus:border-amber-500 focus:bg-zinc-50 text-[10px] font-black uppercase text-slate-850 py-0.5 px-1 rounded transition-all focus:outline-none w-full truncate"
+                                    className={`bg-transparent hover:bg-slate-50 focus:bg-white border-b border-transparent hover:border-slate-300 focus:border-slate-400 text-xs font-black uppercase py-0.5 px-1 rounded transition-all focus:outline-none w-full truncate ${accentStyle.text}`}
                                     disabled={!isVisible}
                                     placeholder="Nombre de sección..."
                                     title="Modifique el título del campo directamente aquí"
                                   />
                                 </div>
-
-                                {/* Grupo de Mini Controladores en la forma */}
-                                <div className="flex flex-wrap items-center gap-1 bg-zinc-100 p-0.5 rounded-lg border border-slate-200 shadow-xs shrink-0 text-slate-500 text-[10.5px]">
-                                  {/* Flechas Subir/Bajar */}
-                                  <button
-                                    type="button"
-                                    onClick={() => handleMoveSection(idx, 'up')}
-                                    disabled={idx === 0}
-                                    className={`p-1 rounded hover:bg-zinc-200 transition ${idx === 0 ? "opacity-20 cursor-not-allowed" : "cursor-pointer hover:text-slate-900"}`}
-                                    title="Mover Arriba"
-                                  >
-                                    <ChevronUp className="h-3.5 w-3.5" />
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleMoveSection(idx, 'down')}
-                                    disabled={idx === pdfSections.length - 1}
-                                    className={`p-1 rounded hover:bg-zinc-200 transition ${idx === pdfSections.length - 1 ? "opacity-20 cursor-not-allowed" : "cursor-pointer hover:text-slate-900"}`}
-                                    title="Mover Abajo"
-                                  >
-                                    <ChevronDown className="h-3.5 w-3.5" />
-                                  </button>
-
-                                  <div className="h-3.5 w-[1px] bg-zinc-300 mx-0.5"></div>
-
-                                  {/* Medios Anchos - Modular Multigrid 100%, 66%, 50%, 33% */}
-                                  <button
-                                    type="button"
-                                    onClick={() => handleCycleSectionWidth(idx)}
-                                    disabled={!isVisible}
-                                    className={`px-1.5 py-0.5 rounded text-[8.5px] font-black font-mono border uppercase transition ${
-                                      !isVisible 
-                                        ? "opacity-35 cursor-not-allowed" 
-                                        : "bg-amber-100 border-amber-300 text-amber-700 hover:bg-amber-200 font-extrabold cursor-pointer"
-                                    }`}
-                                    title="Intercambiar ancho (100% ➔ 66% ➔ 50% ➔ 33%)"
-                                  >
-                                    {w}
-                                  </button>
-
-                                  <div className="h-3.5 w-[1px] bg-zinc-300 mx-0.5"></div>
-
-                                  {/* Tono del Fondo (Palette) */}
-                                  <button
-                                    type="button"
-                                    onClick={() => handleCycleSectionBgTint(idx)}
-                                    disabled={!isVisible}
-                                    className="p-1 rounded hover:bg-zinc-200 text-slate-700 transition cursor-pointer disabled:opacity-20 flex items-center gap-1.5"
-                                    title="Paleta de fondo (Blanco, Ámbar, Gris, Esmeralda)"
-                                  >
-                                    <Palette className="h-3.5 w-3.5 text-amber-500" />
-                                    <span className="w-1.5 h-1.5 rounded-full" style={{
-                                      backgroundColor: bgT === "white" ? "#cbd5e1" : bgT === "amber" ? "#f59e0b" : bgT === "slate" ? "#64748b" : "#10b981"
-                                    }} />
-                                  </button>
-
-                                  <div className="h-3.5 w-[1px] bg-zinc-300 mx-0.5"></div>
-
-                                  {/* Tipografía (Type) */}
-                                  <button
-                                    type="button"
-                                    onClick={() => handleCycleSectionFontFamily(idx)}
-                                    disabled={!isVisible}
-                                    className="p-1 rounded hover:bg-zinc-200 text-slate-700 transition cursor-pointer disabled:opacity-20 flex items-center gap-1"
-                                    title="Tipografía (Sans, Serif, Mono)"
-                                  >
-                                    <Type className="h-3.5 w-3.5 text-indigo-500" />
-                                    <span className="text-[7.5px] font-mono font-black">{ft.toUpperCase()}</span>
-                                  </button>
-
-                                  <div className="h-3.5 w-[1px] bg-zinc-300 mx-0.5"></div>
-
-                                  {/* Estilo Borde/Marco */}
-                                  <button
-                                    type="button"
-                                    onClick={() => handleCycleSectionBorderStyle(idx)}
-                                    disabled={!isVisible}
-                                    className="px-1 py-0.5 rounded hover:bg-zinc-200 text-slate-700 transition border border-zinc-300 bg-white font-bold text-[8px] cursor-pointer disabled:opacity-20"
-                                    title="Borde/Marco (Simple, Punteado, Ámbar lateral, Índigo lateral)"
-                                  >
-                                    {bS === "solid" ? "Línea" : bS === "dashed" ? "Puntos" : bS === "accent-left" ? "MarcA" : "MarcI"}
-                                  </button>
-
-                                  <div className="h-3.5 w-[1px] bg-zinc-300 mx-0.5"></div>
-
-                                  {/* Escala */}
-                                  <button
-                                    type="button"
-                                    onClick={() => handleSectionScaleChange(idx, 'shrink')}
-                                    disabled={!isVisible || scaleFactor <= 0.6}
-                                    className="p-1 rounded hover:bg-zinc-200 disabled:opacity-20 cursor-pointer"
-                                    title="Encoger escala (Zoom -)"
-                                  >
-                                    <Minus className="h-3 w-3" />
-                                  </button>
-                                  <span className="text-[8.5px] font-mono font-black text-slate-800 w-7 text-center">{scaleFactor.toFixed(1)}x</span>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleSectionScaleChange(idx, 'amplify')}
-                                    disabled={!isVisible || scaleFactor >= 1.5}
-                                    className="p-1 rounded hover:bg-zinc-200 disabled:opacity-20 cursor-pointer"
-                                    title="Ampliar escala (Zoom +)"
-                                  >
-                                    <Plus className="h-3 w-3" />
-                                  </button>
-
-                                  <div className="h-3.5 w-[1px] bg-zinc-300 mx-0.5"></div>
-
-                                  {/* Salto de Página */}
-                                  <button
-                                    type="button"
-                                    onClick={() => handleTogglePageBreak(idx)}
-                                    disabled={!isVisible}
-                                    className={`p-1 rounded border transition ${
-                                      !isVisible 
-                                        ? "opacity-35 cursor-not-allowed" 
-                                        : item.isPageBreakBefore 
-                                          ? "bg-rose-105 border-rose-300 text-rose-600 hover:bg-rose-200" 
-                                          : "border-slate-350 bg-zinc-100 hover:bg-zinc-200 hover:text-slate-700 cursor-pointer"
-                                    }`}
-                                    title={item.isPageBreakBefore ? "Quitar salto de página" : "Añadir salto de página antes"}
-                                  >
-                                    <Scissors className="h-3 w-3" />
-                                  </button>
-                                </div>
+                                {!isVisible && (
+                                  <span className="text-[8px] font-black uppercase text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded shrink-0">
+                                    Oculto
+                                  </span>
+                                )}
                               </div>
 
                               {/* Contenido Dinámico del Reporte */}
@@ -2115,7 +2368,11 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                 type="button"
                 onClick={() => {
                   setPdfSections([
-                    { id: "kpis", name: "KPIs / Indicadores Clave", visible: true, width: "100%", scale: 1.0, isPageBreakBefore: false },
+                    { id: "kpis", name: "Fila de KPIs Consolidada", visible: true, width: "100%", scale: 1.0, isPageBreakBefore: false },
+                    { id: "kpi_ytd", name: "KPI: Asistencias Acumuladas YTD", visible: false, width: "25%", scale: 1.0, isPageBreakBefore: false },
+                    { id: "kpi_leader", name: "KPI: Canal o Medio Líder YTD", visible: false, width: "25%", scale: 1.0, isPageBreakBefore: false },
+                    { id: "kpi_change", name: "KPI: Variación versus Mes Anterior", visible: false, width: "25%", scale: 1.0, isPageBreakBefore: false },
+                    { id: "kpi_yoy", name: "KPI: Variación Acumulado YoY", visible: false, width: "25%", scale: 1.0, isPageBreakBefore: false },
                     { id: "bar_trend", name: "Gráfico de Barras Mensuales (2025 vs 2026)", visible: true, width: "100%", scale: 1.0, isPageBreakBefore: false },
                     { id: "line_trend", name: "Curvas de Evolución Anual Comparada (2025 vs 2026)", visible: true, width: "100%", scale: 1.0, isPageBreakBefore: false },
                     { id: "branch_part", name: "Gráfico de Participación por Sucursales YTD", visible: true, width: "100%", scale: 1.0, isPageBreakBefore: false },
@@ -2125,6 +2382,10 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                   ]);
                   setSectionTitles({
                     kpis: "RESUMEN DE INDICADORES OPERATIVOS (YTD)",
+                    kpi_ytd: "Asistencias YTD",
+                    kpi_leader: "Canal Líder",
+                    kpi_change: "Cambio Mensual",
+                    kpi_yoy: "Acumulado YoY",
                     bar_trend: "EVOLUCIÓN MENSUAL COMPARADA (2025 VS 2026 YTD)",
                     line_trend: "CURVAS DE EVOLUCIÓN ANUAL COMPARADA (2025 VS 2026)",
                     branch_part: "PARTICIPACIÓN DE SUCURSALES (CONSOLIDADO YTD)",
@@ -2164,7 +2425,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
 
           </div>
         </div>
-      )}
+      ); })()}
 
       {/* Información del Período Calculado Automáticamente */}
       <div className="flex flex-wrap items-center justify-between gap-4 glass-card p-5 border border-white/10 shadow-2xl text-white">
