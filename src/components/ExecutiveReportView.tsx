@@ -7,7 +7,7 @@ import {
   RotateCcw, 
   Edit3, 
   Save, 
-  Sparkles, 
+  Sparkles,
   Info,
   Layers,
   MapPin,
@@ -926,23 +926,47 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
       };
       const accent = accentHexMap[pdfAccentColor] || accentHexMap.amber;
 
-      const tableRows = resolvedMonthlyList.map(item => `
-        <tr>
-          <td style="font-weight: bold;">${item.mes}</td>
-          <td style="text-align: center; font-family: monospace;">${item.val2025}</td>
-          <td style="text-align: center; font-family: monospace; color: ${accent.hover}; font-weight: bold;">${item.val2026}</td>
-          <td style="text-align: center; font-family: monospace; font-weight: bold;">${item.val2026 - item.val2025}</td>
-          <td style="text-align: center; font-family: monospace; font-weight: bold;">${item.val2025 > 0 ? (((item.val2026 - item.val2025)/item.val2025)*100).toFixed(0) + '%' : '0%'}</td>
-        </tr>
-      `).join("");
+      const tableRows = resolvedMonthlyList.map(item => {
+        const diff = item.val2026 - item.val2025;
+        const diffText = diff > 0 ? `+${diff}` : `${diff}`;
+        const diffBg = diff > 0 ? '#e6f4ea' : diff < 0 ? '#fce8e6' : '#f1f5f9';
+        const diffColor = diff > 0 ? '#137333' : diff < 0 ? '#c5221f' : '#475569';
+        
+        const pct = item.val2025 > 0 ? ((diff / item.val2025) * 100) : 0;
+        const pctText = item.val2025 > 0 ? `${pct >= 0 ? '+' : ''}${pct.toFixed(0)}%` : '0%';
+        const pctBg = pct > 0 ? '#e6f4ea' : pct < 0 ? '#fce8e6' : '#f1f5f9';
+        const pctColor = pct > 0 ? '#137333' : pct < 0 ? '#c5221f' : '#475569';
+
+        return `
+          <tr style="transition: background 0.2s;">
+            <td style="font-weight: 700; color: #1e293b; font-family: 'Inter', sans-serif;">${item.mes}</td>
+            <td style="text-align: center; font-family: 'JetBrains Mono', monospace; font-weight: 600; color: #475569;">${item.val2025}</td>
+            <td style="text-align: center; font-family: 'JetBrains Mono', monospace; color: ${accent.hover}; font-weight: 800; background-color: ${accent.light}40;">${item.val2026}</td>
+            <td style="text-align: center;">
+              <span style="display: inline-block; padding: 4px 10px; border-radius: 9999px; font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 800; background-color: ${diffBg}; color: ${diffColor};">
+                ${diffText}
+              </span>
+            </td>
+            <td style="text-align: center;">
+              <span style="display: inline-block; padding: 4px 10px; border-radius: 9999px; font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 800; background-color: ${pctBg}; color: ${pctColor};">
+                ${pctText}
+              </span>
+            </td>
+          </tr>
+        `;
+      }).join("");
 
       const sucursalRows = resolvedSucursalListData.map(item => {
         const total = MESES_ABR.reduce((sum, m) => sum + (item.meses[m] || 0), 0);
         return `
           <tr>
-            <td style="font-weight: bold; text-transform: uppercase;">${item.sucursal}</td>
-            ${MESES_ABR.map(m => `<td style="text-align: center; font-family: monospace;">${item.meses[m] || 0}</td>`).join("")}
-            <td style="text-align: right; font-family: monospace; font-weight: bold; color: ${accent.hover};">${total}</td>
+            <td style="font-weight: 800; text-transform: uppercase; color: #0f172a; font-family: 'Inter', sans-serif; border-left: 3.5px solid ${accent.primary}; padding-left: 10px;">${item.sucursal}</td>
+            ${MESES_ABR.map(m => `
+              <td style="text-align: center; font-family: 'JetBrains Mono', monospace; font-weight: 500; ${item.meses[m] > 0 ? `color: #1e293b; font-weight: 700; background-color: ${accent.light}15;` : 'color: #94a3b8;'}">
+                ${item.meses[m] || 0}
+              </td>
+            `).join("")}
+            <td style="text-align: right; font-family: 'JetBrains Mono', monospace; font-weight: 900; color: ${accent.hover}; background-color: ${accent.light}45;">${total}</td>
           </tr>
         `;
       }).join("");
@@ -972,22 +996,22 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
         return `
           <div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-end; width: calc(100% / 12); min-width: 32px; height: ${barColumnHeight}px;">
             <!-- Variación sobre cada mes -->
-            <div style="font-size: 8px; font-weight: 800; color: ${indicatorColor}; font-family: monospace; height: 16px; margin-bottom: 2px;">
+            <div style="font-size: 8px; font-weight: 800; color: ${indicatorColor}; font-family: 'JetBrains Mono', monospace; height: 16px; margin-bottom: 2px;">
               ${varText}
             </div>
             
             <div style="display: flex; align-items: flex-end; gap: 4px; height: ${barBaseHeight}px; border-bottom: 1px solid #cbd5e1; width: 100%; justify-content: center; padding-bottom: 2px;">
               <!-- 2025 bar -->
-              <div style="height: ${h2025}px; width: 10px; background-color: #94a3b8; border-radius: 2px 2px 0 0; position: relative;">
-                ${item.val2025 > 0 ? `<span style="font-size: 7.5px; font-weight: bold; position: absolute; top: -11px; left: 50%; transform: translateX(-50%); font-family: monospace; color: #475569;">${item.val2025}</span>` : ""}
+              <div style="height: ${h2025}px; width: 11px; background: linear-gradient(180deg, #94a3b8 0%, #64748b 100%); border-radius: 3px 3px 0 0; position: relative; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                ${item.val2025 > 0 ? `<span style="font-size: 7.5px; font-weight: bold; position: absolute; top: -12px; left: 50%; transform: translateX(-50%); font-family: 'JetBrains Mono', monospace; color: #475569;">${item.val2025}</span>` : ""}
               </div>
               <!-- 2026 bar -->
-              <div style="height: ${h2026}px; width: 10px; background-color: ${accent.primary}; border-radius: 2px 2px 0 0; position: relative;">
-                ${item.val2026 > 0 ? `<span style="font-size: 7.5px; font-weight: 950; position: absolute; top: -11px; left: 50%; transform: translateX(-50%); font-family: monospace; color: ${accent.hover};">${item.val2026}</span>` : ""}
+              <div style="height: ${h2026}px; width: 11px; background: linear-gradient(180deg, ${accent.primary} 0%, ${accent.hover} 100%); border-radius: 3px 3px 0 0; position: relative; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                ${item.val2026 > 0 ? `<span style="font-size: 7.5px; font-weight: 900; position: absolute; top: -12px; left: 50%; transform: translateX(-50%); font-family: 'JetBrains Mono', monospace; color: ${accent.hover};">${item.val2026}</span>` : ""}
               </div>
             </div>
             <!-- Etiqueta de mes -->
-            <div style="font-size: 8.5px; font-weight: bold; font-family: sans-serif; color: #475569; margin-top: 6px; text-transform: uppercase;">
+            <div style="font-size: 8.5px; font-weight: 800; font-family: 'Inter', sans-serif; color: #475569; margin-top: 6px; text-transform: uppercase; letter-spacing: 0.5px;">
               ${item.mes.substring(0, 3)}
             </div>
           </div>
@@ -1005,13 +1029,13 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
         const pct = (total / maxSucValue) * 100;
         
         return `
-          <div style="margin-bottom: 10px;">
-            <div style="display: flex; justify-content: space-between; font-size: 10px; font-weight: bold; margin-bottom: 4px; text-transform: uppercase;">
-              <span>${item.sucursal}</span>
-              <span style="font-family: monospace; color: ${accent.hover};">${total} servicios YTD</span>
+          <div style="margin-bottom: 12px;">
+            <div style="display: flex; justify-content: space-between; font-size: 10px; font-weight: bold; margin-bottom: 5px; text-transform: uppercase; font-family: 'Inter', sans-serif;">
+              <span style="color: #0f172a;">${item.sucursal}</span>
+              <span style="font-family: 'JetBrains Mono', monospace; color: ${accent.hover}; font-weight: 800;">${total} servicios YTD</span>
             </div>
-            <div style="width: 100%; height: 10px; border-radius: 5px; overflow: hidden; border: 1px solid #cbd5e1; background-color: #f1f5f9;">
-              <div style="width: ${pct}%; background: linear-gradient(90deg, ${accent.primary}, ${accent.hover}); height: 100%; border-radius: 5px;"></div>
+            <div style="width: 100%; height: 11px; border-radius: 9999px; overflow: hidden; border: 1px solid #e2e8f0; background-color: #f1f5f9;">
+              <div style="width: ${pct}%; background: linear-gradient(90deg, ${accent.primary}, ${accent.hover}); height: 100%; border-radius: 9999px; box-shadow: inset 0 1px 2px rgba(255,255,255,0.25);"></div>
             </div>
           </div>
         `;
@@ -1028,13 +1052,13 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
       
       const getX = (idx: number) => xStart + (idx * (xEnd - xStart) / 11);
       const getY = (val: number) => yEnd - ((val / maxValForChartYScale) * (yEnd - yStart));
-
+      
       // Grid lines verticales punteadas en gris (sin líneas horizontales de fondo, solo etiquetas de valor en el eje Y)
       let svgVerticalGridLines = "";
       for (let idx = 0; idx < 12; idx++) {
         const gridX = getX(idx);
         svgVerticalGridLines += `
-          <line x1="${gridX}" y1="${yStart}" x2="${gridX}" y2="${yEnd}" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="3,3" opacity="0.8" />
+          <line x1="${gridX}" y1="${yStart}" x2="${gridX}" y2="${yEnd}" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="3,3" />
         `;
       }
 
@@ -1044,7 +1068,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
         const gridVal = (maxValForChartYScale / gridCount) * g;
         const gridY = getY(gridVal);
         svgGridLabels += `
-          <text x="${xStart - 10}" y="${gridY + 3}" font-size="8.5px" font-family="monospace" font-weight="bold" fill="#64748b" text-anchor="end">${gridVal.toFixed(0)}</text>
+          <text x="${xStart - 12}" y="${gridY + 3.5}" font-size="8.5px" font-family="'JetBrains Mono', monospace" font-weight="bold" fill="#64748b" text-anchor="end">${gridVal.toFixed(0)}</text>
         `;
       }
 
@@ -1060,8 +1084,8 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
       const pathD2026 = points2026.slice(0, cutoff2026Idx + 1).map((p, idx) => `${idx === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(" ");
 
       const dots2025 = points2025.map((p) => `
-        <circle cx="${p.x}" cy="${p.y}" r="4" fill="#64748b" stroke="white" stroke-width="1.2" />
-        ${p.val > 0 ? `<text x="${p.x}" y="${p.y - 7}" font-size="8px" font-family="monospace" font-weight="bold" fill="#475569" text-anchor="middle">${p.val}</text>` : ""}
+        <circle cx="${p.x}" cy="${p.y}" r="4.5" fill="#64748b" stroke="white" stroke-width="1.5" />
+        ${p.val > 0 ? `<text x="${p.x}" y="${p.y - 8}" font-size="8px" font-family="'JetBrains Mono', monospace" font-weight="bold" fill="#475569" text-anchor="middle">${p.val}</text>` : ""}
       `).join("");
 
       const dots2026 = points2026.map((p, idx) => {
@@ -1072,14 +1096,14 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
         const varText = val2025 > 0 ? `${diffPct >= 0 ? '+' : ''}${diffPct.toFixed(0)}%` : "";
         const varColor = diffPct >= 0 ? '#10b981' : '#ef4444'; // emerald vs red
         return `
-          <circle cx="${p.x}" cy="${p.y}" r="4" fill="${accent.primary}" stroke="white" stroke-width="1.2" />
-          ${val2026 > 0 ? `<text x="${p.x}" y="${p.y - 12}" font-size="7.5px" font-family="monospace" font-weight="black" fill="${accent.hover}" text-anchor="middle">${val2026}</text>` : ""}
-          ${varText ? `<text x="${p.x}" y="${p.y - 4}" font-size="6.5px" font-family="sans-serif" font-weight="black" fill="${varColor}" text-anchor="middle">${varText}</text>` : ""}
+          <circle cx="${p.x}" cy="${p.y}" r="5.5" fill="${accent.primary}" stroke="white" stroke-width="1.8" />
+          ${val2026 > 0 ? `<text x="${p.x}" y="${p.y - 12}" font-size="8.5px" font-family="'JetBrains Mono', monospace" font-weight="900" fill="${accent.hover}" text-anchor="middle">${val2026}</text>` : ""}
+          ${varText ? `<text x="${p.x}" y="${p.y + 11}" font-size="7px" font-family="'Inter', sans-serif" font-weight="800" fill="${varColor}" text-anchor="middle">${varText}</text>` : ""}
         `;
       }).join("");
 
       const xLabels = resolvedMonthlyList.map((item, idx) => `
-        <text x="${getX(idx)}" y="${yEnd + 15}" font-size="8.5px" font-family="sans-serif" font-weight="bold" fill="#475569" text-anchor="middle">${item.mes.substring(0, 3).toUpperCase()}</text>
+        <text x="${getX(idx)}" y="${yEnd + 15}" font-size="8.5px" font-family="'Inter', sans-serif" font-weight="800" fill="#475569" text-anchor="middle">${item.mes.substring(0, 3).toUpperCase()}</text>
       `).join("");
 
       const curvesSvgHtml = `
@@ -1094,13 +1118,13 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
           ${svgGridLabels}
           
           <!-- Eje horizontal inferior sutil -->
-          <line x1="${xStart}" y1="${yEnd}" x2="${xEnd}" y2="${yEnd}" stroke="#cbd5e1" stroke-width="1.2" />
+          <line x1="${xStart}" y1="${yEnd}" x2="${xEnd}" y2="${yEnd}" stroke="#cbd5e1" stroke-width="1.5" />
           
           <!-- Camino 2025 -->
-          <path d="${pathD2025}" fill="none" stroke="#64748b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="${pathD2025}" fill="none" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="1,1" />
           
           <!-- Camino 2026 -->
-          <path d="${pathD2026}" fill="none" stroke="${accent.primary}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="${pathD2026}" fill="none" stroke="${accent.primary}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" />
           
           <!-- Puntos y leyendas rápidas -->
           ${dots2025}
@@ -1114,20 +1138,20 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
         <div style="margin-bottom: ${sectionSizes.kpis === 'grande' ? '35px' : '22px'};">
           <h2 style="font-size: ${sectionSizes.kpis === 'grande' ? '15px' : '13px'};">${sectionTitles.kpis}</h2>
           <div class="grid-kpi">
-            <div class="kpi-card" style="${sectionSizes.kpis === 'grande' ? 'padding: 20px;' : ''}">
-              <div class="kpi-val" style="font-size: ${sectionSizes.kpis === 'grande' ? '25px' : '20px'};">${total2026YTD}</div>
+            <div class="kpi-card" style="border-top-color: ${accent.primary}; ${sectionSizes.kpis === 'grande' ? 'padding: 22px;' : ''}">
+              <div class="kpi-val" style="font-size: ${sectionSizes.kpis === 'grande' ? '28px' : '22px'}; color: ${accent.primary};">${total2026YTD}</div>
               <div class="kpi-lbl">Total Asistencias YTD (2026)</div>
             </div>
-            <div class="kpi-card" style="border-left-color: #10b981; ${sectionSizes.kpis === 'grande' ? 'padding: 20px;' : ''}">
-              <div class="kpi-val" style="font-size: ${sectionSizes.kpis === 'grande' ? '25px' : '20px'};">${topMediaPercentage.toFixed(1)}%</div>
+            <div class="kpi-card" style="border-top-color: #10b981; ${sectionSizes.kpis === 'grande' ? 'padding: 22px;' : ''}">
+              <div class="kpi-val" style="font-size: ${sectionSizes.kpis === 'grande' ? '28px' : '22px'}; color: #10b981;">${topMediaPercentage.toFixed(1)}%</div>
               <div class="kpi-lbl">Medio Líder (${topMediaName})</div>
             </div>
-            <div class="kpi-card" style="border-left-color: #3b82f6; ${sectionSizes.kpis === 'grande' ? 'padding: 20px;' : ''}">
-              <div class="kpi-val" style="font-size: ${sectionSizes.kpis === 'grande' ? '25px' : '20px'};">${diffVsPrevMonthPct >= 0 ? "+" : ""}${diffVsPrevMonthPct.toFixed(1)}%</div>
+            <div class="kpi-card" style="border-top-color: #3b82f6; ${sectionSizes.kpis === 'grande' ? 'padding: 22px;' : ''}">
+              <div class="kpi-val" style="font-size: ${sectionSizes.kpis === 'grande' ? '28px' : '22px'}; color: #3b82f6;">${diffVsPrevMonthPct >= 0 ? "+" : ""}${diffVsPrevMonthPct.toFixed(1)}%</div>
               <div class="kpi-lbl">vs Mes Anterior</div>
             </div>
-            <div class="kpi-card" style="border-left-color: #f59e0b; ${sectionSizes.kpis === 'grande' ? 'padding: 20px;' : ''}">
-              <div class="kpi-val" style="font-size: ${sectionSizes.kpis === 'grande' ? '25px' : '20px'};">${variationVsPriorYearPct >= 0 ? "+" : ""}${variationVsPriorYearPct.toFixed(1)}%</div>
+            <div class="kpi-card" style="border-top-color: #f59e0b; ${sectionSizes.kpis === 'grande' ? 'padding: 22px;' : ''}">
+              <div class="kpi-val" style="font-size: ${sectionSizes.kpis === 'grande' ? '28px' : '22px'}; color: #f59e0b;">${variationVsPriorYearPct >= 0 ? "+" : ""}${variationVsPriorYearPct.toFixed(1)}%</div>
               <div class="kpi-lbl">vs Histórico YTD</div>
             </div>
           </div>
@@ -1137,8 +1161,8 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
       const kpiYtdHtml = `
         <div style="margin-bottom: 12px;">
           <h2 style="font-size: 11px; margin-bottom: 5px;">${sectionTitles.kpi_ytd || "Asistencias YTD"}</h2>
-          <div class="kpi-card" style="min-height: 55px;">
-            <div class="kpi-val" style="font-size: 21px;">${total2026YTD}</div>
+          <div class="kpi-card" style="min-height: 55px; border-top-color: ${accent.primary};">
+            <div class="kpi-val" style="font-size: 21px; color: ${accent.primary};">${total2026YTD}</div>
             <div class="kpi-lbl">Total Servicios Realizados (YTD)</div>
           </div>
         </div>
@@ -1147,8 +1171,8 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
       const kpiLeaderHtml = `
         <div style="margin-bottom: 12px;">
           <h2 style="font-size: 11px; margin-bottom: 5px;">${sectionTitles.kpi_leader || "Canal Líder"}</h2>
-          <div class="kpi-card" style="border-left-color: #10b981; min-height: 55px;">
-            <div class="kpi-val" style="font-size: 21px;">${topMediaPercentage.toFixed(1)}%</div>
+          <div class="kpi-card" style="border-top-color: #10b981; min-height: 55px;">
+            <div class="kpi-val" style="font-size: 21px; color: #10b981;">${topMediaPercentage.toFixed(1)}%</div>
             <div class="kpi-lbl">Medio Líder (${topMediaName})</div>
           </div>
         </div>
@@ -1157,8 +1181,8 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
       const kpiChangeHtml = `
         <div style="margin-bottom: 12px;">
           <h2 style="font-size: 11px; margin-bottom: 5px;">${sectionTitles.kpi_change || "Cambio Mensual"}</h2>
-          <div class="kpi-card" style="border-left-color: #3b82f6; min-height: 55px;">
-            <div class="kpi-val" style="font-size: 21px;">${diffVsPrevMonthPct >= 0 ? "+" : ""}${diffVsPrevMonthPct.toFixed(1)}%</div>
+          <div class="kpi-card" style="border-top-color: #3b82f6; min-height: 55px;">
+            <div class="kpi-val" style="font-size: 21px; color: #3b82f6;">${diffVsPrevMonthPct >= 0 ? "+" : ""}${diffVsPrevMonthPct.toFixed(1)}%</div>
             <div class="kpi-lbl">vs Mes Anterior</div>
           </div>
         </div>
@@ -1167,8 +1191,8 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
       const kpiYoyHtml = `
         <div style="margin-bottom: 12px;">
           <h2 style="font-size: 11px; margin-bottom: 5px;">${sectionTitles.kpi_yoy || "Acumulado YoY"}</h2>
-          <div class="kpi-card" style="border-left-color: #f59e0b; min-height: 55px;">
-            <div class="kpi-val" style="font-size: 21px;">${variationVsPriorYearPct >= 0 ? "+" : ""}${variationVsPriorYearPct.toFixed(1)}%</div>
+          <div class="kpi-card" style="border-top-color: #f59e0b; min-height: 55px;">
+            <div class="kpi-val" style="font-size: 21px; color: #f59e0b;">${variationVsPriorYearPct >= 0 ? "+" : ""}${variationVsPriorYearPct.toFixed(1)}%</div>
             <div class="kpi-lbl">vs Histórico YTD</div>
           </div>
         </div>
@@ -1177,15 +1201,15 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
       const barTrendHtml = `
         <div style="margin-bottom: 25px;">
           <h2 style="font-size: 13px;">${sectionTitles.bar_trend}</h2>
-          <div class="chart-box" style="padding: 16px; height: auto; min-height: ${sectionSizes.charts === 'grande' ? '280px' : '205px'}; display: flex; flex-direction: column; justify-content: space-between;">
-            <div style="display: flex; gap: 12px; margin-bottom: 12px; font-size: 9px; font-weight: bold;">
-              <div style="display: flex; align-items: center; gap: 4px;">
-                <div style="width: 10px; height: 10px; background-color: #94a3b8; border-radius: 2px;"></div>
-                <span style="color: #475569;">Año 2025 (Histórico)</span>
+          <div class="chart-box" style="padding: 18px; height: auto; min-height: ${sectionSizes.charts === 'grande' ? '280px' : '205px'}; display: flex; flex-direction: column; justify-content: space-between;">
+            <div style="display: flex; gap: 14px; margin-bottom: 14px; font-size: 9px; font-weight: 800; font-family: 'Inter', sans-serif;">
+              <div style="display: flex; align-items: center; gap: 5px;">
+                <div style="width: 12px; height: 12px; background: linear-gradient(180deg, #94a3b8 0%, #64748b 100%); border-radius: 3px;"></div>
+                <span style="color: #475569;">Año 2025 (Histórico general)</span>
               </div>
-              <div style="display: flex; align-items: center; gap: 4px;">
-                <div style="width: 10px; height: 10px; background-color: ${accent.primary}; border-radius: 2px;"></div>
-                <span style="color: #475569;">Año 2026 (YTD Real)</span>
+              <div style="display: flex; align-items: center; gap: 5px;">
+                <div style="width: 12px; height: 12px; background: linear-gradient(180deg, ${accent.primary} 0%, ${accent.hover} 100%); border-radius: 3px;"></div>
+                <span style="color: #475569;">Año 2026 (YTD Período Real)</span>
               </div>
             </div>
             
@@ -1200,6 +1224,16 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
         <div style="margin-bottom: 25px;">
           <h2 style="font-size: 13px;">${sectionTitles.line_trend}</h2>
           <div class="chart-box" style="padding: 16px 20px; height: auto; background-color: white; box-sizing: border-box;">
+            <div style="display: flex; gap: 14px; margin-bottom: 12px; font-size: 9px; font-weight: 800; font-family: 'Inter', sans-serif;">
+              <div style="display: flex; align-items: center; gap: 5px;">
+                <div style="width: 18px; height: 3px; background-color: #94a3b8; border-radius: 2px;"></div>
+                <span style="color: #475569;">Evolución 2025</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 5px;">
+                <div style="width: 18px; height: 3.5px; background-color: ${accent.primary}; border-radius: 2px;"></div>
+                <span style="color: #475569;">Comportamiento 2026 (YTD Real)</span>
+              </div>
+            </div>
             <div style="width: 100%; box-sizing: border-box;">
               ${curvesSvgHtml}
             </div>
@@ -1210,7 +1244,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
       const branchPartHtml = `
         <div style="margin-bottom: 25px;">
           <h2 style="font-size: 13px;">${sectionTitles.branch_part}</h2>
-          <div class="chart-box" style="padding: 18px; min-height: 140px;">
+          <div class="chart-box" style="padding: 20px; min-height: 140px; background: linear-gradient(180deg, #ffffff 0%, #fcfdfe 100%);">
             <div style="display: flex; flex-direction: column; justify-content: center;">
               ${sucursalProgressHtml}
             </div>
@@ -1224,11 +1258,11 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
           <table>
             <thead>
               <tr>
-                <th>Mes</th>
-                <th style="text-align: center;">Año 2025 (Histórico)</th>
-                <th style="text-align: center;">Año 2026 (Actual)</th>
-                <th style="text-align: center;">Diferencia Absoluta</th>
-                <th style="text-align: center;">% Cambio YoY</th>
+                <th style="background: ${accent.light}35; color: #0f172a;">Mes</th>
+                <th style="text-align: center; background: ${accent.light}35; color: #0f172a;">Año 2025 (Histórico)</th>
+                <th style="text-align: center; background: ${accent.light}35; color: #0f172a;">Año 2026 (Actual)</th>
+                <th style="text-align: center; background: ${accent.light}35; color: #0f172a;">Diferencia Absoluta</th>
+                <th style="text-align: center; background: ${accent.light}35; color: #0f172a;">% Cambio YoY</th>
               </tr>
             </thead>
             <tbody>
@@ -1244,9 +1278,9 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
           <table>
             <thead>
               <tr>
-                <th>Sucursal</th>
-                ${MESES_ABR.map(m => `<th style="text-align: center;">${m}</th>`).join("")}
-                <th style="text-align: right;">Total YTD</th>
+                <th style="background: ${accent.light}35; color: #0f172a;">Sucursal</th>
+                ${MESES_ABR.map(m => `<th style="text-align: center; background: ${accent.light}35; color: #0f172a;">${m}</th>`).join("")}
+                <th style="text-align: right; background: ${accent.light}35; color: #0f172a;">Total YTD</th>
               </tr>
             </thead>
             <tbody>
@@ -1312,67 +1346,173 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
         <head>
           <title>${pdfTitle}</title>
           <style>
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;700;800&display=swap');
+            
             body { 
-              font-family: ${
-                pdfTitleStyle === "serif" ? '"Playfair Display", Georgia, serif' :
-                pdfTitleStyle === "mono" ? 'Consolas, "Fira Code", monospace' :
-                '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
-              }; 
+              font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
               padding: ${pdfPadding === "compact" ? "20px" : pdfPadding === "spacious" ? "65px" : "40px"}; 
-              color: #1e293b; 
+              color: #334155; 
               background: white; 
-              line-height: 1.5;
+              line-height: 1.6;
               zoom: ${parseInt(printScale) / 100};
             }
             h1 { 
-              font-size: 22px; 
+              font-family: ${
+                pdfTitleStyle === "serif" ? '"Playfair Display", Georgia, serif' :
+                pdfTitleStyle === "mono" ? '"JetBrains Mono", monospace' :
+                "'Inter', sans-serif"
+              };
+              font-size: 26px; 
               text-transform: uppercase; 
-              border-bottom: 3px solid ${accent.primary}; 
-              padding-bottom: 8px; 
-              margin-bottom: 4px; 
               color: #0f172a; 
-              font-weight: 800;
-              text-align: ${pdfTitleAlign === "center" ? "center" : pdfTitleAlign === "right" ? "right" : "left"};
+              font-weight: 900;
+              letter-spacing: -1px;
+              margin: 0;
             }
             .subtitle { 
+              font-family: 'Inter', sans-serif;
               font-size: 10px; 
               text-transform: uppercase; 
-              letter-spacing: 1.5px; 
+              letter-spacing: 2px; 
               color: #64748b; 
-              margin-bottom: 30px; 
-              font-weight: bold;
-              text-align: ${pdfTitleAlign === "center" ? "center" : pdfTitleAlign === "right" ? "right" : "left"};
+              font-weight: 800;
+              margin-top: 4px;
             }
-            .grid-kpi { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px; }
+            
+            /* BARRA DE METADATOS EJECUTIVOS PREMIUM */
+            .metadata-bar {
+              display: grid;
+              grid-template-columns: repeat(4, 1fr);
+              gap: 12px;
+              border-top: 2px solid #cbd5e1;
+              border-bottom: 2px solid #cbd5e1;
+              padding: 14px 10px;
+              margin-bottom: 35px;
+              font-size: 9.5px;
+              text-transform: uppercase;
+              color: #475569;
+              font-weight: bold;
+              background: #f8fafc;
+              border-radius: 8px;
+            }
+            .metadata-item span {
+              display: block;
+              font-size: 7.5px;
+              color: #94a3b8;
+              margin-bottom: 3px;
+              letter-spacing: 0.5px;
+            }
+            .metadata-value-highlight {
+              color: ${accent.hover};
+              font-weight: 900;
+              font-family: 'JetBrains Mono', monospace;
+              font-size: 10.5px;
+            }
+
+            .grid-kpi { 
+              display: grid; 
+              grid-template-columns: repeat(4, 1fr); 
+              gap: 16px; 
+              margin-bottom: 25px; 
+            }
             .kpi-card { 
               border: 1px solid #e2e8f0; 
-              padding: 14px; 
+              padding: 16px; 
               border-radius: 12px; 
-              background: #f8fafc; 
-              border-left: 4px solid ${accent.primary}; 
+              background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); 
+              border-top: 4px solid ${accent.primary}; 
+              box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03), 0 2px 4px -1px rgba(0, 0, 0, 0.01);
             }
-            .kpi-val { font-size: 21px; font-weight: 950; font-family: monospace; color: #0f172a; margin-bottom: 4px; }
-            .kpi-lbl { font-size: 9px; text-transform: uppercase; color: #64748b; font-weight: 800; letter-spacing: 0.5px; }
-            h2 { 
-              font-size: 12.5px; 
-              text-transform: uppercase; 
-              border-bottom: 2px solid #cbd5e1; 
-              padding-bottom: 5px; 
-              margin-top: 25px; 
-              margin-bottom: 11px; 
+            .kpi-val { 
+              font-size: 26px; 
+              font-weight: 950; 
+              font-family: 'JetBrains Mono', monospace; 
               color: #0f172a; 
-              font-weight: 850; 
-              letter-spacing: 0.5px; 
+              margin-bottom: 2px;
+              letter-spacing: -1px;
             }
-            table { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 20px; }
+            .kpi-lbl { 
+              font-size: 8.5px; 
+              text-transform: uppercase; 
+              color: #64748b; 
+              font-weight: 800; 
+              letter-spacing: 0.6px; 
+            }
+            
+            h2 { 
+              font-family: 'Inter', sans-serif;
+              font-size: 13.5px; 
+              text-transform: uppercase; 
+              border-bottom: 2px solid ${accent.light}; 
+              padding-bottom: 6px; 
+              margin-top: 35px; 
+              margin-bottom: 15px; 
+              color: #0f172a; 
+              font-weight: 900; 
+              letter-spacing: 0.8px; 
+              position: relative;
+            }
+            h2::after {
+              content: '';
+              position: absolute;
+              bottom: -2px;
+              left: 0;
+              width: 55px;
+              height: 2px;
+              background-color: ${accent.primary};
+            }
+            
+            table { 
+              width: 100%; 
+              border-collapse: collapse; 
+              font-size: 11px; 
+              margin-bottom: 25px; 
+              box-shadow: 0 1px 3px rgba(0, 0, 0, 0.01);
+              background: #ffffff;
+              border-radius: 8px;
+              overflow: hidden;
+            }
             th, td { 
-              border: 1px solid #cbd5e1; 
-              padding: ${pdfPadding === "compact" ? "4px 6px" : pdfPadding === "spacious" ? "11px 15px" : "6px 9px"}; 
-              text-align: left; 
+              padding: ${pdfPadding === "compact" ? "6px 8px" : pdfPadding === "spacious" ? "12px 16px" : "8px 12px"}; 
+              vertical-align: middle;
             }
-            th { background: #f1f5f9; font-weight: bold; text-transform: uppercase; font-size: 8.5px; color: #475569; letter-spacing: 0.5px; }
-            .analysis-box { background: #fafafa; border: 1px solid #e2e8f0; padding: 18px; border-radius: 12px; font-size: 11.5px; line-height: 1.6; color: #27272a; font-weight: 500; font-family: sans-serif; }
-            .chart-box { border: 1px solid #e2e8f0; border-radius: 12px; background: #f8fafc; box-sizing: border-box; }
+            th { 
+              background: #f1f5f9; 
+              font-weight: 800; 
+              text-transform: uppercase; 
+              font-size: 8.5px; 
+              color: #334155; 
+              letter-spacing: 0.8px; 
+              border-bottom: 2px solid #cbd5e1;
+            }
+            td {
+              border-bottom: 1px solid #f1f5f9;
+              color: #334155;
+            }
+            tr:nth-child(even) td {
+              background-color: #f8fafc;
+            }
+            
+            .analysis-box { 
+              background: #f8fafc; 
+              border: 1px solid #e2e8f0; 
+              border-left: 5px solid ${accent.primary}; 
+              padding: 20px; 
+              border-radius: 12px; 
+              font-size: 11.5px; 
+              line-height: 1.7; 
+              color: #334155; 
+              font-weight: 500; 
+              font-family: sans-serif;
+              box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+            }
+            .chart-box { 
+              border: 1px solid #e2e8f0; 
+              border-radius: 12px; 
+              background: #ffffff; 
+              box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.01);
+              box-sizing: border-box; 
+            }
             @media print {
               body { padding: 0; }
               .no-print { display: none; }
@@ -1380,15 +1520,61 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
           </style>
         </head>
         <body>
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <div style="width: 100%;">
-              <h1>${pdfTitle}</h1>
-              <div class="subtitle">${pdfSubtitle}</div>
+          <!-- CABECERA CORPORATIVA DE ULTRA LUJO -->
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 22px; border-bottom: 2.5px solid ${accent.primary}; padding-bottom: 18px;">
+            <div style="display: flex; align-items: center; gap: 14px;">
+              <div style="width: 44px; height: 44px; background: linear-gradient(135deg, ${accent.primary} 0%, ${accent.hover} 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 900; font-family: 'Inter', sans-serif; font-size: 18px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); letter-spacing: -0.5px;">
+                SAI
+              </div>
+              <div>
+                <h1>${pdfTitle}</h1>
+                <div class="subtitle">${pdfSubtitle}</div>
+              </div>
             </div>
-            <button class="no-print" onclick="window.print()" style="padding: 10px 18px; background: ${accent.primary}; border: none; font-weight: bold; border-radius: 8px; cursor: pointer; color: ${pdfAccentColor === 'amber' ? 'black' : 'white'}; font-size: 11px; text-transform: uppercase; shrink-0; margin-left: 20px;">Imprimir PDF</button>
+            <button class="no-print" onclick="window.print()" style="padding: 10px 18px; background: ${accent.primary}; border: none; font-weight: bold; border-radius: 8px; cursor: pointer; color: ${pdfAccentColor === 'amber' ? 'black' : 'white'}; font-size: 11px; text-transform: uppercase; shrink-0; box-shadow: 0 3px 6px rgba(0,0,0,0.05); font-family: 'Inter', sans-serif;">Imprimir PDF</button>
+          </div>
+
+          <!-- BARRA DE METADATOS EJECUTIVOS -->
+          <div class="metadata-bar">
+            <div class="metadata-item">
+              <span>Tipo de Documento</span>
+              INFORME DE EFICIENCIA OPERATIVA
+            </div>
+            <div class="metadata-item">
+              <span>Origen / Emisor</span>
+              SISTEMA DE ASISTENCIA INTEGRAL
+            </div>
+            <div class="metadata-item">
+              <span>Período Evaluado</span>
+              <div class="metadata-value-highlight">${monthlyData[activeMonthIndex].mes} ${activeYear}</div>
+            </div>
+            <div class="metadata-item">
+              <span>Fecha de Emisión YTD</span>
+              ${new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}
+            </div>
           </div>
 
           ${customReportContent}
+
+          <!-- BLOQUE DE FIRMAS CORPORATIVAS Y CONTROL DE CALIDAD -->
+          <div style="margin-top: 55px; border-top: 2px solid #cbd5e1; padding-top: 25px; margin-bottom: 20px; page-break-inside: avoid;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px;">
+              <div style="text-align: center;">
+                <div style="width: 180px; border-bottom: 1.5px solid #cbd5e1; margin: 0 auto 10px auto; height: 40px;"></div>
+                <div style="font-size: 10px; font-weight: 800; text-transform: uppercase; color: #1e293b; font-family: 'Inter', sans-serif;">Analista de Control y Eficiencia</div>
+                <div style="font-size: 8px; color: #64748b; font-family: 'Inter', sans-serif; margin-top: 2px;">Sistema de Asistencia Integral SAI</div>
+              </div>
+              <div style="text-align: center;">
+                <div style="width: 180px; border-bottom: 1.5px solid #cbd5e1; margin: 0 auto 10px auto; height: 40px;"></div>
+                <div style="font-size: 10px; font-weight: 800; text-transform: uppercase; color: #1e293b; font-family: 'Inter', sans-serif;">Director Ejecutivo Operativo</div>
+                <div style="font-size: 8px; color: #64748b; font-family: 'Inter', sans-serif; margin-top: 2px;">Firma de Conformidad de Gestión</div>
+              </div>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 35px; border-top: 1px solid #f1f5f9; padding-top: 12px; font-size: 8px; color: #94a3b8; font-family: 'Inter', sans-serif; text-transform: uppercase; letter-spacing: 0.5px;">
+              <span>Documento de validez operativa generado legalmente por SAI</span>
+              <span>Página 1 de 1</span>
+            </div>
+          </div>
 
           <script>
             window.onload = function() {
@@ -2579,7 +2765,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
         <div className="p-6 md:p-8 space-y-10">
           
           {/* SECCIÓN 1: GRÁFICO INTEGRADOR EN EL CONTEXTO DEL REPORTE */}
-          <div className="backdrop-blur-md bg-zinc-900/50 border border-amber-500/30 p-5 rounded-2xl shadow-md text-white">
+          <div className="glass-card border border-amber-500/30 p-5 rounded-2xl text-white hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(251,191,36,0.3)] hover:border-amber-500/40 transition-all duration-300 cursor-pointer">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 pb-3 border-b border-white/10 gap-2">
               <div className="flex items-center gap-2">
                 <div className="w-1.5 h-4.5 bg-amber-400 rounded-full"></div>
@@ -2666,7 +2852,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
             {/* NOVEDAD: BLOQUE DE ANÁLISIS SUPERIOR (MEDIO CONSOLIDADO + GRÁFICO DE SUCURSALES AL LADO) */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
               {/* MEDIO CONSOLIDADO MINI COMPONENT (Dorado premium accent border) */}
-              <div className="lg:col-span-4 border border-amber-500/40 bg-zinc-900/40 rounded-2xl overflow-hidden flex flex-col shadow-xl backdrop-blur-md">
+              <div className="lg:col-span-4 glass-card border border-amber-500/40 rounded-2xl overflow-hidden flex flex-col hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(251,191,36,0.3)] hover:border-amber-500/40 transition-all duration-300 cursor-pointer">
                 <div className="bg-zinc-900/40 px-4 py-3 border-b border-amber-500/20">
                   <span className="text-[11px] font-extrabold text-amber-300 block text-center tracking-widest uppercase">MEDIO CONSOLIDADO</span>
                 </div>
@@ -2718,7 +2904,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
               </div>
 
               {/* GRÁFICO COMPARATIVO DE MEDIOS POR SUCURSAL */}
-              <div className="lg:col-span-8 border border-white/10 bg-zinc-900/40 rounded-2xl p-5 flex flex-col shadow-xl backdrop-blur-md text-white">
+              <div className="lg:col-span-8 glass-card border border-white/10 rounded-2xl p-5 flex flex-col hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(251,191,36,0.3)] hover:border-amber-500/40 transition-all duration-300 cursor-pointer text-white">
                 <div className="flex items-center gap-2 mb-4 pb-3 border-b border-white/5">
                   <div className="w-1.5 h-4.5 bg-amber-400 rounded-full"></div>
                   <div>
@@ -2815,7 +3001,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                   const sTotal = asisFlota + asisOmitidos + asisCall + asisSuc;
 
                   return (
-                    <div key={sucName} className="border border-white/10 bg-zinc-900/40 rounded-2xl overflow-hidden flex flex-col shadow-xl backdrop-blur-md hover:border-white/20 transition-all duration-300">
+                    <div key={sucName} className="glass-card rounded-2xl overflow-hidden flex flex-col hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(251,191,36,0.30)] hover:border-amber-500/40 transition-all duration-300 cursor-pointer">
                       <div className="bg-zinc-950/40 px-4 py-2.5 border-b border-white/10">
                         <span className="text-[11px] font-extrabold text-white block text-center tracking-wider truncate uppercase">{sucName}</span>
                       </div>
@@ -2878,7 +3064,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
               MATRIZ DE ASISTENCIAS MENSUALES POR SUCURSAL
             </span>
             
-            <div className="bg-zinc-900/15 rounded-2xl overflow-hidden shadow-2xl p-0">
+            <div className="rounded-2xl hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(251,191,36,0.30)] hover:border-amber-500/40 transition-all duration-300 cursor-pointer overflow-hidden p-0">
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse text-xs table-fixed min-w-[1000px]">
                   {/* Definición de anchos de columnas fijos para que no se aprieten */}
@@ -2998,7 +3184,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
             </span>
 
             {/* adicional COMPARATIVA ANUAL TRANSVERSAL FISCAL (2025 VS 2026) agregale grafico curvas */}
-                        <div className="backdrop-blur-sm bg-zinc-900/40 border border-white/10 p-5 rounded-2xl shadow-xl max-w-full lg:max-w-6xl text-slate-200">
+            <div className="glass-card p-5 rounded-2xl border border-white/10 max-w-full lg:max-w-6xl text-slate-200 hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(251,191,36,0.30)] hover:border-amber-500/40 transition-all duration-300 cursor-pointer">
               <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/10">
                 <div className="flex items-center gap-2">
                   <div className="w-1.5 h-4.5 bg-indigo-500 rounded-full"></div>
@@ -3074,7 +3260,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
             </div>
 
             {/* Contenedor de la tabla scrollable - Completamente separado y distinguido en su propio panel */}
-            <div className="backdrop-blur-sm bg-zinc-900/40 border border-white/10 p-5 rounded-2xl shadow-xl max-w-full lg:max-w-6xl text-slate-200 mt-6">
+            <div className="glass-card p-5 rounded-2xl border border-white/10 max-w-full lg:max-w-6xl text-slate-200 mt-6 hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(251,191,36,0.30)] hover:border-amber-500/40 transition-all duration-300 cursor-pointer">
               <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/10">
                 <div className="flex items-center gap-2">
                   <div className="w-1.5 h-4.5 bg-sky-500 rounded-full"></div>
