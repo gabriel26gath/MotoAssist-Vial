@@ -9,7 +9,10 @@ import {
   Layers,
   ChevronRight,
   Calculator,
-  MapPin
+  MapPin,
+  FolderOpen,
+  Coins,
+  DollarSign
 } from "lucide-react";
 import { Invoice, Motorizado } from "../types";
 import { exportInvoicesToCSV } from "../utils/csvExport";
@@ -377,24 +380,39 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
       {/* METRICAS DEL RESUMEN FILTRADO */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Total Venta Filtrado */}
-        <div className="glass-card p-5 rounded-2xl shadow-2xl">
-          <span className="text-[9px] font-black uppercase text-slate-400 tracking-wider">Monto Filtrado de Ventas</span>
-          <p className="text-xl font-black font-mono text-[#FFB300] mt-0.5">${filteredTotal.toLocaleString("es-PA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-          <p className="text-[10px] text-slate-400 mt-1">{filteredInvoices.length} copias registradas</p>
+        <div className="glass-card p-5 rounded-2xl shadow-2xl flex items-center justify-between hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(251,191,36,0.3)] hover:border-amber-500/40 hover:bg-zinc-900/50 transition-all duration-300 cursor-pointer group border border-white/5">
+          <div className="space-y-1">
+            <span className="text-[9px] font-black uppercase text-slate-400 tracking-wider">Monto Filtrado de Ventas</span>
+            <p className="text-xl font-black font-mono text-[#FFB300] mt-0.5">${filteredTotal.toLocaleString("es-PA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+            <p className="text-[10px] text-slate-400 mt-1">{filteredInvoices.length} copias registradas</p>
+          </div>
+          <div className="p-3 bg-amber-500/10 text-amber-300 rounded-xl shrink-0 border border-amber-500/20 group-hover:scale-110 group-hover:text-amber-200 transition-all duration-300">
+            <DollarSign className="h-5.5 w-5.5" />
+          </div>
         </div>
 
         {/* Subtotal Gasto Filtrado */}
-        <div className="glass-card p-5 rounded-2xl shadow-2xl">
-          <span className="text-[9px] font-black uppercase text-slate-400 tracking-wider">Base Gravable (Subtotal)</span>
-          <p className="text-xl font-black font-mono text-white mt-0.5">${filteredSubtotal.toLocaleString("es-PA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-          <p className="text-[10px] text-slate-400 mt-1">Excluye impuestos ITBMS</p>
+        <div className="glass-card p-5 rounded-2xl shadow-2xl flex items-center justify-between hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(251,191,36,0.3)] hover:border-amber-500/40 hover:bg-zinc-900/50 transition-all duration-300 cursor-pointer group border border-white/5">
+          <div className="space-y-1">
+            <span className="text-[9px] font-black uppercase text-slate-400 tracking-wider">Base Gravable (Subtotal)</span>
+            <p className="text-xl font-black font-mono text-white mt-0.5">${filteredSubtotal.toLocaleString("es-PA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+            <p className="text-[10px] text-slate-400 mt-1">Excluye impuestos ITBMS</p>
+          </div>
+          <div className="p-3 bg-amber-500/10 text-amber-300 rounded-xl shrink-0 border border-amber-500/20 group-hover:scale-110 group-hover:text-amber-200 transition-all duration-300">
+            <Receipt className="h-5.5 w-5.5" />
+          </div>
         </div>
 
         {/* Total ITBMS Filtrado */}
-        <div className="glass-card p-5 rounded-2xl shadow-2xl">
-          <span className="text-[9px] font-black uppercase text-slate-400 tracking-wider">Impuestos Acumulados (ITBMS)</span>
-          <p className="text-xl font-black font-mono text-amber-500 mt-0.5">${filteredTax.toLocaleString("es-PA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-          <p className="text-[10px] text-slate-400 mt-1">Impuestos de venta estimados</p>
+        <div className="glass-card p-5 rounded-2xl shadow-2xl flex items-center justify-between hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(251,191,36,0.3)] hover:border-amber-500/40 hover:bg-zinc-900/50 transition-all duration-300 cursor-pointer group border border-white/5">
+          <div className="space-y-1">
+            <span className="text-[9px] font-black uppercase text-slate-400 tracking-wider">Impuestos Acumulados (ITBMS)</span>
+            <p className="text-xl font-black font-mono text-amber-500 mt-0.5">${filteredTax.toLocaleString("es-PA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+            <p className="text-[10px] text-slate-400 mt-1">Impuestos de venta estimados</p>
+          </div>
+          <div className="p-3 bg-amber-500/10 text-amber-300 rounded-xl shrink-0 border border-amber-500/20 group-hover:scale-110 group-hover:text-amber-200 transition-all duration-300">
+            <Coins className="h-5.5 w-5.5" />
+          </div>
         </div>
       </div>
 
@@ -425,7 +443,10 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
                   <th className="p-3">Sucursal / Punto de Emisión</th>
                   {allInvoiceTypes.map(type => (
                     <th key={type} className="p-3 text-center whitespace-nowrap min-w-[150px]">
-                      📂 {type}
+                      <div className="flex items-center justify-center gap-1">
+                        <FolderOpen className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                        <span>{type}</span>
+                      </div>
                     </th>
                   ))}
                   <th className="p-3 text-center font-black text-amber-400 whitespace-nowrap">Total Tickets</th>
@@ -437,8 +458,9 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
                   const totalForThisBranch = allInvoiceTypes.reduce((sum, t) => sum + (matrixStats[sucName]?.[t] || 0), 0);
                   return (
                     <tr key={sucName} className="hover:bg-amber-500/10 transition">
-                      <td className="p-3 font-bold text-white flex items-center gap-2 whitespace-nowrap">
-                        <span className="text-slate-400">📍</span> {sucName}
+                      <td className="p-3 font-bold text-white flex items-center gap-1.5 whitespace-nowrap">
+                        <MapPin className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                        <span>{sucName}</span>
                       </td>
                       {allInvoiceTypes.map(type => {
                         const count = matrixStats[sucName]?.[type] || 0;
@@ -505,8 +527,9 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
               sucursalStatsList.map((suc) => (
                 <div key={suc.name} className="bg-zinc-950/30 p-3 rounded-xl border border-white/10 shadow-inner space-y-2">
                   <div className="flex justify-between items-center">
-                    <span className="font-extrabold text-white text-xs truncate max-w-[170px]" title={suc.name}>
-                      📍 {suc.name}
+                    <span className="font-extrabold text-white text-xs truncate max-w-[170px] flex items-center gap-1.5" title={suc.name}>
+                      <MapPin className="h-3 w-3 text-amber-500 shrink-0" />
+                      <span>{suc.name}</span>
                     </span>
                     <span className="font-mono text-xs font-black text-amber-400">
                       ${suc.ventasTotal.toLocaleString("es-PA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}

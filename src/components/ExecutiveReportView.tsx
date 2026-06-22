@@ -47,7 +47,12 @@ import {
   BarChart3,
   PieChart,
   Table2,
-  Grid
+  Grid,
+  Share2,
+  Check,
+  Copy,
+  ShieldCheck,
+  ExternalLink
 } from "lucide-react";
 import { 
   ResponsiveContainer, 
@@ -66,6 +71,7 @@ import { Invoice } from "../types";
 
 interface ExecutiveReportViewProps {
   invoices: Invoice[];
+  isSharedView?: boolean;
 }
 
 // Estructuras de datos para los históricos de 2025 y 2026
@@ -208,7 +214,7 @@ const getAccentColorStyle = (themeName: string) => {
   return themes[themeName as keyof typeof themes] || themes.amber;
 };
 
-export default function ExecutiveReportView({ invoices }: ExecutiveReportViewProps) {
+export default function ExecutiveReportView({ invoices, isSharedView = false }: ExecutiveReportViewProps) {
   // Año de análisis dinámico automático basado en el último ticket ingresado
   const activeYear = useMemo(() => {
     const years = invoices
@@ -237,6 +243,18 @@ export default function ExecutiveReportView({ invoices }: ExecutiveReportViewPro
   const [superAdminError, setSuperAdminError] = useState("");
   const [editedMonthly, setEditedMonthly] = useState<HistoricalMonthlyData[]>([]);
   const [editedSucursales, setEditedSucursales] = useState<HistoricalSucursalData[]>([]);
+
+  // Feedback de copiado y enlace de compartir público
+  const [copiedFeedback, setCopiedFeedback] = useState(false);
+  const handleCopyShareLink = () => {
+    if (typeof window === "undefined") return;
+    const baseUrl = window.location.origin + window.location.pathname;
+    const shareUrl = `${baseUrl}?view=executive-public`;
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      setCopiedFeedback(true);
+      setTimeout(() => setCopiedFeedback(false), 3000);
+    });
+  };
 
   // Estados para personalización del PDF
   const [pdfTitle, setPdfTitle] = useState("REPORTE EJECUTIVO DE ASISTENCIAS VIALES");
@@ -936,9 +954,13 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
       );
 
       // Generar barras gráficas en HTML/CSS para el reporte de evolución mensual interanual (Gráfico de barras)
+      const isGrandeBars = sectionSizes.charts === "grande";
+      const barBaseHeight = isGrandeBars ? 180 : 110;
+      const barColumnHeight = isGrandeBars ? 240 : 165;
+
       const monthlyBarsHtml = resolvedMonthlyList.map(item => {
-        const h2025 = (item.val2025 / maxValForChartYScale) * 110; // altura max de 110px
-        const h2026 = (item.val2026 / maxValForChartYScale) * 110;
+        const h2025 = (item.val2025 / maxValForChartYScale) * barBaseHeight;
+        const h2026 = (item.val2026 / maxValForChartYScale) * barBaseHeight;
         
         // Calcular porcentaje de variación
         const diff = item.val2026 - item.val2025;
@@ -948,13 +970,13 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
         const varText = item.val2025 > 0 && item.val2026 > 0 ? `${sign}${varPct}%` : "";
 
         return `
-          <div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-end; width: calc(100% / 12); min-width: 32px; height: 165px;">
+          <div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-end; width: calc(100% / 12); min-width: 32px; height: ${barColumnHeight}px;">
             <!-- Variación sobre cada mes -->
             <div style="font-size: 8px; font-weight: 800; color: ${indicatorColor}; font-family: monospace; height: 16px; margin-bottom: 2px;">
               ${varText}
             </div>
             
-            <div style="display: flex; align-items: flex-end; gap: 4px; height: 110px; border-bottom: 1px solid #cbd5e1; width: 100%; justify-content: center; padding-bottom: 2px;">
+            <div style="display: flex; align-items: flex-end; gap: 4px; height: ${barBaseHeight}px; border-bottom: 1px solid #cbd5e1; width: 100%; justify-content: center; padding-bottom: 2px;">
               <!-- 2025 bar -->
               <div style="height: ${h2025}px; width: 10px; background-color: #94a3b8; border-radius: 2px 2px 0 0; position: relative;">
                 ${item.val2025 > 0 ? `<span style="font-size: 7.5px; font-weight: bold; position: absolute; top: -11px; left: 50%; transform: translateX(-50%); font-family: monospace; color: #475569;">${item.val2025}</span>` : ""}
@@ -996,25 +1018,33 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
       }).join("");
 
       // Generar Gráfico de Curvas de Evolución Anual (Vectorial SVG) para el PDF
-      const svgWidth = 650;
-      const svgHeight = 220;
+      const isGrandeCharts = sectionSizes.charts === "grande";
+      const svgWidth = 720;
+      const svgHeight = isGrandeCharts ? 260 : 190;
       const xStart = 45;
-      const xEnd = 610;
+      const xEnd = 685;
       const yStart = 30;
-      const yEnd = 180;
+      const yEnd = svgHeight - 35;
       
       const getX = (idx: number) => xStart + (idx * (xEnd - xStart) / 11);
       const getY = (val: number) => yEnd - ((val / maxValForChartYScale) * (yEnd - yStart));
 
-      // Grid lines horizontales
+      // Grid lines verticales punteadas en gris (sin líneas horizontales de fondo, solo etiquetas de valor en el eje Y)
+      let svgVerticalGridLines = "";
+      for (let idx = 0; idx < 12; idx++) {
+        const gridX = getX(idx);
+        svgVerticalGridLines += `
+          <line x1="${gridX}" y1="${yStart}" x2="${gridX}" y2="${yEnd}" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="3,3" opacity="0.8" />
+        `;
+      }
+
       const gridCount = 4;
-      let svgGridLines = "";
+      let svgGridLabels = "";
       for (let g = 0; g <= gridCount; g++) {
         const gridVal = (maxValForChartYScale / gridCount) * g;
         const gridY = getY(gridVal);
-        svgGridLines += `
-          <line x1="${xStart}" y1="${gridY}" x2="${xEnd}" y2="${gridY}" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="3,3" />
-          <text x="${xStart - 10}" y="${gridY + 3}" font-size="8px" font-family="monospace" fill="#64748b" text-anchor="end">${gridVal.toFixed(0)}</text>
+        svgGridLabels += `
+          <text x="${xStart - 10}" y="${gridY + 3}" font-size="8.5px" font-family="monospace" font-weight="bold" fill="#64748b" text-anchor="end">${gridVal.toFixed(0)}</text>
         `;
       }
 
@@ -1022,8 +1052,12 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
       const points2025 = resolvedMonthlyList.map((item, idx) => ({ x: getX(idx), y: getY(item.val2025), val: item.val2025 }));
       const points2026 = resolvedMonthlyList.map((item, idx) => ({ x: getX(idx), y: getY(item.val2026), val: item.val2026 }));
 
+      // Encontrar el último mes con datos reales para el año actual para no dbuijar caídas hacia cero
+      const lastActive2026Idx = [...resolvedMonthlyList].reverse().findIndex(item => item.val2026 > 0);
+      const cutoff2026Idx = lastActive2026Idx === -1 ? 0 : resolvedMonthlyList.length - 1 - lastActive2026Idx;
+
       const pathD2025 = points2025.map((p, idx) => `${idx === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(" ");
-      const pathD2026 = points2026.map((p, idx) => `${idx === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(" ");
+      const pathD2026 = points2026.slice(0, cutoff2026Idx + 1).map((p, idx) => `${idx === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(" ");
 
       const dots2025 = points2025.map((p) => `
         <circle cx="${p.x}" cy="${p.y}" r="4" fill="#64748b" stroke="white" stroke-width="1.2" />
@@ -1033,6 +1067,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
       const dots2026 = points2026.map((p, idx) => {
         const val2025 = points2025[idx]?.val || 0;
         const val2026 = p.val;
+        if (idx > cutoff2026Idx || val2026 <= 0) return ""; // Evitar círculos y etiquetas de cambio vacías para meses futuros
         const diffPct = val2025 > 0 ? ((val2026 - val2025) / val2025) * 100 : 0;
         const varText = val2025 > 0 ? `${diffPct >= 0 ? '+' : ''}${diffPct.toFixed(0)}%` : "";
         const varColor = diffPct >= 0 ? '#10b981' : '#ef4444'; // emerald vs red
@@ -1048,16 +1083,18 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
       `).join("");
 
       const curvesSvgHtml = `
-        <svg viewBox="0 0 ${svgWidth} ${svgHeight}" style="width: 100%; height: 100%; display: block;">
+        <svg viewBox="0 0 ${svgWidth} ${svgHeight}" style="width: 100%; height: auto; max-width: 100%; display: block;">
           <!-- Fondo blanco puro -->
           <rect x="0" y="0" width="${svgWidth}" height="${svgHeight}" fill="#ffffff" />
           
-          <!-- Rejilla trasera -->
-          ${svgGridLines}
+          <!-- Rejilla trasera vertical -->
+          ${svgVerticalGridLines}
           
-          <!-- Ejes cartesianos -->
-          <line x1="${xStart}" y1="${yEnd}" x2="${xEnd}" y2="${yEnd}" stroke="#94a3b8" stroke-width="1.5" />
-          <line x1="${xStart}" y1="${yStart}" x2="${xStart}" y2="${yEnd}" stroke="#94a3b8" stroke-width="1.5" />
+          <!-- Etiquetas Y -->
+          ${svgGridLabels}
+          
+          <!-- Eje horizontal inferior sutil -->
+          <line x1="${xStart}" y1="${yEnd}" x2="${xEnd}" y2="${yEnd}" stroke="#cbd5e1" stroke-width="1.2" />
           
           <!-- Camino 2025 -->
           <path d="${pathD2025}" fill="none" stroke="#64748b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
@@ -1140,14 +1177,14 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
       const barTrendHtml = `
         <div style="margin-bottom: 25px;">
           <h2 style="font-size: 13px;">${sectionTitles.bar_trend}</h2>
-          <div class="chart-box" style="padding: 16px; height: ${sectionSizes.charts === 'grande' ? '260px' : '180px'}; display: flex; flex-direction: column; justify-content: space-between;">
-            <div style="display: flex; gap: 12px; margin-bottom: 8px; font-size: 9px; font-weight: bold;">
+          <div class="chart-box" style="padding: 16px; height: auto; min-height: ${sectionSizes.charts === 'grande' ? '280px' : '205px'}; display: flex; flex-direction: column; justify-content: space-between;">
+            <div style="display: flex; gap: 12px; margin-bottom: 12px; font-size: 9px; font-weight: bold;">
               <div style="display: flex; align-items: center; gap: 4px;">
                 <div style="width: 10px; height: 10px; background-color: #94a3b8; border-radius: 2px;"></div>
                 <span style="color: #475569;">Año 2025 (Histórico)</span>
               </div>
               <div style="display: flex; align-items: center; gap: 4px;">
-                <div style="width: 10px; height: 10px; background-color: #f59e0b; border-radius: 2px;"></div>
+                <div style="width: 10px; height: 10px; background-color: ${accent.primary}; border-radius: 2px;"></div>
                 <span style="color: #475569;">Año 2026 (YTD Real)</span>
               </div>
             </div>
@@ -1162,8 +1199,8 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
       const lineTrendHtml = `
         <div style="margin-bottom: 25px;">
           <h2 style="font-size: 13px;">${sectionTitles.line_trend}</h2>
-          <div class="chart-box" style="padding: 16px; height: ${sectionSizes.charts === 'grande' ? '260px' : '180px'}; display: flex; align-items: center; justify-content: center; background-color: white;">
-            <div style="width: 100%; height: 100%;">
+          <div class="chart-box" style="padding: 16px 20px; height: auto; background-color: white; box-sizing: border-box;">
+            <div style="width: 100%; box-sizing: border-box;">
               ${curvesSvgHtml}
             </div>
           </div>
@@ -1471,7 +1508,8 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                 />
                 {superAdminError && (
                   <p className="text-[10px] text-red-400 font-bold mt-1.5 flex items-center gap-1 font-mono">
-                    <span>⚠️ {superAdminError}</span>
+                    <ShieldAlert className="w-3.5 h-3.5 text-red-400 shrink-0" />
+                    <span>{superAdminError}</span>
                   </p>
                 )}
               </div>
@@ -1503,7 +1541,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
       )}
 
       {/* VENTANA MODAL FLOTANTE: DISEÑADOR VISUAL AVANZADO DE FORMATO PDF */}
-      {isPdfDesignerOpen && (() => {
+      {isPdfDesignerOpen && !isSharedView && (() => {
         const accentStyle = getAccentColorStyle(pdfAccentColor);
         return (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/80 backdrop-blur-md animate-fade-in text-slate-200">
@@ -2199,7 +2237,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                                       <div className="w-full" style={{ height: `${resolvedHeight}px`, minHeight: `${resolvedHeight}px` }}>
                                         <ResponsiveContainer width="100%" height="100%">
                                           <BarChart data={chartData} margin={{ top: 10, right: 10, left: -32, bottom: 0 }}>
-                                            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" opacity={0.5} />
+                                            <CartesianGrid horizontal={false} vertical={true} strokeDasharray="3 3" stroke="#94a3b8" opacity={0.4} />
                                             <XAxis dataKey="name" tick={{ fontSize: 7.5, fill: "#475569", fontWeight: "900" }} stroke="#cbd5e1" />
                                             <YAxis tick={{ fontSize: 7.5, fill: "#475569" }} stroke="#cbd5e1" />
                                             <Tooltip wrapperStyle={{ fontSize: "9px" }} />
@@ -2216,7 +2254,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                                     <div className="w-full" style={{ height: `${resolvedHeight}px`, minHeight: `${resolvedHeight}px` }}>
                                       <ResponsiveContainer width="100%" height="100%">
                                         <LineChart data={chartData} margin={{ top: 10, right: 10, left: -32, bottom: 0 }}>
-                                          <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" opacity={0.5} />
+                                          <CartesianGrid horizontal={false} vertical={true} strokeDasharray="3 3" stroke="#94a3b8" opacity={0.4} />
                                           <XAxis dataKey="name" tick={{ fontSize: 7.5, fill: "#475569", fontWeight: "900" }} stroke="#cbd5e1" />
                                           <YAxis tick={{ fontSize: 7.5, fill: "#475569" }} stroke="#cbd5e1" />
                                           <Tooltip wrapperStyle={{ fontSize: "9px" }} />
@@ -2439,15 +2477,13 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
               <span className="text-sm font-black text-amber-400 uppercase tracking-wider font-mono">
                 {monthlyData[activeMonthIndex].mes} {activeYear} (Comparación de {activeYear - 1} vs {activeYear})
               </span>
-              <span className="text-[9px] font-extrabold text-emerald-400 bg-emerald-950/40 border border-emerald-900 px-2.5 py-0.5 rounded-lg uppercase tracking-wider animate-pulse font-sans">
-                Dinámico Autocalculado
+              <span className="text-[1px] font-extrabold text-amber-400 bg-amber-500/70 border border-amber-500 px-1 py-1 rounded-lg uppercase tracking-tighter animate-pulse font-sans">
               </span>
             </div>
           </div>
         </div>
         
         <div className="text-[10px] text-slate-450 font-mono font-bold max-w-xs text-right leading-relaxed select-none hidden sm:block">
-          *Determinado automáticamente por el año del último ticket ingresado y el mes anterior al curso actual.
         </div>
       </div>
 
@@ -2455,20 +2491,20 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         
         {/* KPI 1: TOTAL ASISTENCIAS (YTD) */}
-        <div className="glass-panel text-white p-5 rounded-2xl flex items-center justify-between shadow-2xl relative overflow-hidden group border border-white/10 hover:border-amber-500/30 transition-all duration-350">
+        <div className="glass-panel text-white p-5 rounded-2xl flex items-center justify-between shadow-2xl relative overflow-hidden group border border-white/10 hover:border-amber-500/40 hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(251,191,36,0.25)] transition-all duration-300 cursor-pointer">
           <div className="space-y-1 z-10">
             <span className="text-3xl font-mono font-black tracking-tight text-white block">{total2026YTD}</span>
             <span className="text-[10px] font-bold text-slate-300 block uppercase tracking-wider">TOTAL ASISTENCIAS YTD</span>
             <span className="text-[9px] font-black text-amber-400 block uppercase tracking-wide">A {monthlyData[activeMonthIndex].mes} {activeYear}</span>
           </div>
-          <div className="p-3 bg-amber-500/10 rounded-xl text-amber-300 border border-amber-500/20 z-10">
+          <div className="p-3 bg-amber-500/10 rounded-xl text-amber-300 border border-amber-500/20 z-10 group-hover:scale-110 group-hover:text-amber-200 transition-all duration-300">
             <FileSpreadsheet className="h-5.5 w-5.5" />
           </div>
           <div className="absolute top-0 left-0 w-1 h-full bg-amber-500"></div>
         </div>
 
         {/* KPI 2: MEDIO PRINCIPAL */}
-        <div className="glass-panel text-white p-5 rounded-2xl flex items-center justify-between shadow-2xl relative overflow-hidden group border border-white/10 hover:border-emerald-500/30 transition-all duration-350">
+        <div className="glass-panel text-white p-5 rounded-2xl flex items-center justify-between shadow-2xl relative overflow-hidden group border border-white/10 hover:border-amber-500/40 hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(251,191,36,0.25)] transition-all duration-300 cursor-pointer">
           <div className="space-y-1 z-10">
             <span className="text-3xl font-mono font-black tracking-tight text-emerald-400 block">{topMediaPercentage.toFixed(1)}%</span>
             <span className="text-[10px] font-bold text-slate-300 block uppercase tracking-wider">MEDIO LÍDER: {topMediaName}</span>
@@ -2476,14 +2512,14 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
               {topMediaCount} de {mediaConsolidadoTotal} asistencias
             </span>
           </div>
-          <div className="p-3 bg-emerald-500/15 rounded-xl text-emerald-300 border border-emerald-500/20 z-10">
+          <div className="p-3 bg-amber-500/10 rounded-xl text-amber-300 border border-amber-500/20 z-10 group-hover:scale-110 group-hover:text-amber-200 transition-all duration-300">
             <Layers className="h-5.5 w-5.5" />
           </div>
-          <div className="absolute top-0 left-0 w-1 h-full bg-emerald-400"></div>
+          <div className="absolute top-0 left-0 w-1 h-full bg-amber-500"></div>
         </div>
 
         {/* KPI 3: VARIACIÓN VS MES ANTERIOR */}
-        <div className="glass-panel text-white p-5 rounded-2xl flex items-center justify-between shadow-2xl relative overflow-hidden group border border-white/10 hover:border-slate-500/30 transition-all duration-350">
+        <div className="glass-panel text-white p-5 rounded-2xl flex items-center justify-between shadow-2xl relative overflow-hidden group border border-white/10 hover:border-amber-500/40 hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(251,191,36,0.25)] transition-all duration-300 cursor-pointer">
           <div className="space-y-1 z-10">
             <span className={`text-3xl font-mono font-black tracking-tight block ${diffVsPrevMonthPct >= 0 ? "text-emerald-400 font-black" : "text-rose-400 font-black"}`}>
               {diffVsPrevMonthPct >= 0 ? "+" : ""}{diffVsPrevMonthPct.toFixed(1)}%
@@ -2493,14 +2529,14 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
               {valPrevMonth2026PctStr}% cambio en mes previo
             </span>
           </div>
-          <div className={`p-3 rounded-xl border z-10 ${diffVsPrevMonthPct >= 0 ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/20" : "bg-rose-500/15 text-rose-400 border-rose-500/20"}`}>
+          <div className="p-3 bg-amber-500/10 rounded-xl text-amber-300 border border-amber-500/20 z-10 group-hover:scale-110 group-hover:text-amber-200 transition-all duration-300">
             {diffVsPrevMonthPct >= 0 ? <TrendingUp className="h-5.5 w-5.5" /> : <TrendingDown className="h-5.5 w-5.5" />}
           </div>
-          <div className={`absolute top-0 left-0 w-1 h-full ${diffVsPrevMonthPct >= 0 ? "bg-emerald-400" : "bg-rose-400"}`}></div>
+          <div className="absolute top-0 left-0 w-1 h-full bg-amber-500"></div>
         </div>
 
         {/* KPI 4: VARIACIÓN COMPARADO AL HISTÓRICO YTD */}
-        <div className="glass-panel text-white p-5 rounded-2xl flex items-center justify-between shadow-2xl relative overflow-hidden group border border-white/10 hover:border-amber-500/30 transition-all duration-350">
+        <div className="glass-panel text-white p-5 rounded-2xl flex items-center justify-between shadow-2xl relative overflow-hidden group border border-white/10 hover:border-amber-500/40 hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(251,191,36,0.25)] transition-all duration-300 cursor-pointer">
           <div className="space-y-1 z-10">
             <span className={`text-3xl font-mono font-black tracking-tight block ${variationVsPriorYearPct >= 0 ? "text-emerald-400 font-extrabold" : "text-rose-400 font-extrabold"}`}>
               {variationVsPriorYearPct >= 0 ? "+" : ""}{variationVsPriorYearPct.toFixed(1)}%
@@ -2508,10 +2544,10 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
             <span className="text-[10px] font-bold text-slate-300 block uppercase tracking-wider">VARIACIÓN VS 2025 YTD</span>
             <span className="text-[9px] font-black text-amber-400 block uppercase tracking-wide">CONSOLIDADO GENERAL</span>
           </div>
-          <div className={`p-3 rounded-xl border z-10 ${variationVsPriorYearPct >= 0 ? "bg-amber-500/10 text-amber-400 border-amber-500/20" : "bg-rose-500/15 text-rose-400 border-rose-500/20"}`}>
+          <div className="p-3 bg-amber-500/10 rounded-xl text-amber-300 border border-amber-500/20 z-10 group-hover:scale-110 group-hover:text-amber-200 transition-all duration-300">
             {variationVsPriorYearPct >= 0 ? <TrendingUp className="h-5.5 w-5.5" /> : <TrendingDown className="h-5.5 w-5.5" />}
           </div>
-          <div className={`absolute top-0 left-0 w-1 h-full ${variationVsPriorYearPct >= 0 ? "bg-emerald-400" : "bg-rose-400"}`}></div>
+          <div className="absolute top-0 left-0 w-1 h-full bg-amber-500"></div>
         </div>
 
       </div>
@@ -2527,7 +2563,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
             </div>
             <div>
               <h1 className="text-base font-display font-black uppercase text-white tracking-wider flex items-center gap-2">
-                <span>MATRIZ EJECUTIVA DE ASISTENCIAS VIALES</span>
+                <span>REPORTE EJECUTIVO DE ASISTENCIAS VIALES</span>
               </h1>
               <p className="text-[10px] text-slate-350 font-extrabold uppercase tracking-widest mt-0.5">Control de Eficiencia Operativa Integral e Interanual</p>
             </div>
@@ -2540,10 +2576,10 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
         </div>
 
         {/* CONTENEDOR DE LA CARPETA CON EXCELENTE VISIBILIDAD (Fondo de color gris slate/zinc cambiado a ámbar cálido) */}
-        <div className="p-6 md:p-8 space-y-10 bg-zinc-500/5">
+        <div className="p-6 md:p-8 space-y-10">
           
           {/* SECCIÓN 1: GRÁFICO INTEGRADOR EN EL CONTEXTO DEL REPORTE */}
-          <div className="glass-panel border border-amber-500/30 bg-amber-950/20 p-5 rounded-2xl shadow-sm text-white">
+          <div className="backdrop-blur-md bg-zinc-900/50 border border-amber-500/30 p-5 rounded-2xl shadow-md text-white">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 pb-3 border-b border-white/10 gap-2">
               <div className="flex items-center gap-2">
                 <div className="w-1.5 h-4.5 bg-amber-400 rounded-full"></div>
@@ -2564,7 +2600,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
             <div className="w-full h-[260px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData} margin={{ top: 20, right: 10, left: -25, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" opacity={0.1} />
+                  <CartesianGrid horizontal={false} vertical={true} strokeDasharray="3 3" stroke="#94a3b8" opacity={0.15} />
                   <XAxis 
                     dataKey="name" 
                     tick={{ fill: '#cbd5e1', fontSize: 10, fontWeight: '700' }} 
@@ -2630,13 +2666,13 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
             {/* NOVEDAD: BLOQUE DE ANÁLISIS SUPERIOR (MEDIO CONSOLIDADO + GRÁFICO DE SUCURSALES AL LADO) */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
               {/* MEDIO CONSOLIDADO MINI COMPONENT (Dorado premium accent border) */}
-              <div className="lg:col-span-4 border border-amber-500/40 bg-zinc-900/60 rounded-2xl overflow-hidden flex flex-col shadow-xl backdrop-blur-md">
-                <div className="bg-amber-500/10 px-4 py-3 border-b border-amber-500/20">
+              <div className="lg:col-span-4 border border-amber-500/40 bg-zinc-900/40 rounded-2xl overflow-hidden flex flex-col shadow-xl backdrop-blur-md">
+                <div className="bg-zinc-900/40 px-4 py-3 border-b border-amber-500/20">
                   <span className="text-[11px] font-extrabold text-amber-300 block text-center tracking-widest uppercase">MEDIO CONSOLIDADO</span>
                 </div>
                 <div className="p-4 flex-grow">
                   <table className="w-full text-[11px]">
-                    <thead className="border-b border-white/10 text-[10px] uppercase text-slate-300 font-black font-sans">
+                    <thead className="border-b border-white/10 text-[10px] uppercase text-white font-black font-sans">
                       <tr>
                         <th className="pb-2 text-left">MEDIO</th>
                         <th className="pb-2 text-right">ASIST.</th>
@@ -2645,30 +2681,30 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                     </thead>
                     <tbody className="divide-y divide-white/5 text-white font-extrabold font-mono font-black">
                       <tr className="hover:bg-white/5 transition-colors">
-                        <td className="py-2.5 text-left text-slate-200 font-semibold font-sans">FLOTA</td>
+                        <td className="py-2.5 text-left text-white font-semibold font-sans">FLOTA</td>
                         <td className="py-2.5 text-right text-white">{mediaConsolidadoValues.flota === 0 ? "" : mediaConsolidadoValues.flota}</td>
-                        <td className="py-2.5 text-right text-amber-400">
+                        <td className="py-2.5 text-right text-white">
                           {mediaConsolidadoValues.flota === 0 ? "" : mediaConsolidadoTotal > 0 ? `${((mediaConsolidadoValues.flota / mediaConsolidadoTotal) * 105).toFixed(0)}%` : ""}
                         </td>
                       </tr>
                       <tr className="hover:bg-white/5 transition-colors">
-                        <td className="py-2.5 text-left text-slate-200 font-semibold font-sans">OMITIDOS</td>
+                        <td className="py-2.5 text-left text-white font-semibold font-sans">OMITIDOS</td>
                         <td className="py-2.5 text-right text-white">{mediaConsolidadoValues.omitidos === 0 ? "" : mediaConsolidadoValues.omitidos}</td>
-                        <td className="py-2.5 text-right text-amber-400">
+                        <td className="py-2.5 text-right text-white">
                           {mediaConsolidadoValues.omitidos === 0 ? "" : mediaConsolidadoTotal > 0 ? `${((mediaConsolidadoValues.omitidos / mediaConsolidadoTotal) * 105).toFixed(0)}%` : ""}
                         </td>
                       </tr>
                       <tr className="hover:bg-white/5 transition-colors">
-                        <td className="py-2.5 text-left text-slate-200 font-semibold font-sans">CALL CENTER</td>
+                        <td className="py-2.5 text-left text-white font-semibold font-sans">CALL CENTER</td>
                         <td className="py-2.5 text-right text-white">{mediaConsolidadoValues.callCenter === 0 ? "" : mediaConsolidadoValues.callCenter}</td>
-                        <td className="py-2.5 text-right text-amber-400">
+                        <td className="py-2.5 text-right text-white">
                           {mediaConsolidadoValues.callCenter === 0 ? "" : mediaConsolidadoTotal > 0 ? `${((mediaConsolidadoValues.callCenter / mediaConsolidadoTotal) * 105).toFixed(0)}%` : ""}
                         </td>
                       </tr>
                       <tr className="hover:bg-white/5 transition-colors">
-                        <td className="py-2.5 text-left text-slate-200 font-semibold font-sans">SUCURSAL</td>
+                        <td className="py-2.5 text-left text-white font-semibold font-sans">SUCURSAL</td>
                         <td className="py-2.5 text-right text-white">{mediaConsolidadoValues.sucursal === 0 ? "" : mediaConsolidadoValues.sucursal}</td>
-                        <td className="py-2.5 text-right text-amber-400">
+                        <td className="py-2.5 text-right text-white">
                           {mediaConsolidadoValues.sucursal === 0 ? "" : mediaConsolidadoTotal > 0 ? `${((mediaConsolidadoValues.sucursal / mediaConsolidadoTotal) * 105).toFixed(0)}%` : ""}
                         </td>
                       </tr>
@@ -2676,13 +2712,13 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                   </table>
                 </div>
                 <div className="bg-zinc-950/60 px-4 py-2.5 border-t border-white/10 flex justify-between items-center text-[11px] font-black">
-                  <span className="text-slate-400 font-sans">TOTAL CONSOLIDADO</span>
-                  <span className="font-mono text-amber-400">{mediaConsolidadoTotal === 0 ? "" : mediaConsolidadoTotal}</span>
+                  <span className="text-white font-sans">TOTAL CONSOLIDADO</span>
+                  <span className="font-mono text-white">{mediaConsolidadoTotal === 0 ? "" : mediaConsolidadoTotal}</span>
                 </div>
               </div>
 
               {/* GRÁFICO COMPARATIVO DE MEDIOS POR SUCURSAL */}
-              <div className="lg:col-span-8 border border-white/10 bg-zinc-900/60 rounded-2xl p-5 flex flex-col shadow-xl backdrop-blur-md text-white">
+              <div className="lg:col-span-8 border border-white/10 bg-zinc-900/40 rounded-2xl p-5 flex flex-col shadow-xl backdrop-blur-md text-white">
                 <div className="flex items-center gap-2 mb-4 pb-3 border-b border-white/5">
                   <div className="w-1.5 h-4.5 bg-amber-400 rounded-full"></div>
                   <div>
@@ -2712,7 +2748,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                       })}
                       margin={{ top: 10, right: 10, left: -25, bottom: 0 }}
                     >
-                      <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" opacity={0.1} />
+                      <CartesianGrid horizontal={false} vertical={true} strokeDasharray="3 3" stroke="#94a3b8" opacity={0.15} />
                       <XAxis 
                         dataKey="name" 
                         tick={{ fill: '#cbd5e1', fontSize: 9, fontWeight: '700' }} 
@@ -2767,8 +2803,8 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
               </div>
             </div>
             {/* DETALLES DE SUCURSAL INVIDIDUAL */}
-            <div className="space-y-3 pt-2">
-              <span className="glass-card text-[11px] uppercase font-zinc tracking-widest text-slate-205 flex items-center gap-2 bg-zinc-900/0 border border-white/10 px-4 py-2 rounded-xl w-fit">
+            <div className="space-y-1 pt-0">
+              <span className="glass-panel text-[11px] uppercase font-zinc tracking-widest text-slate-205 flex items-center gap-2 bg-zinc-900/99 border border-white/10 px-0 py-0 rounded-xl w-fit">
               </span>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
                 {SUCURSALES_LIST.map(sucName => {
@@ -2785,39 +2821,39 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                       </div>
                       <div className="p-3 flex-grow">
                         <table className="w-full text-[10px]">
-                          <thead className="border-b border-white/5 text-[9px] uppercase text-slate-400 font-semibold">
+                          <thead className="border-b border-white/5 text-[9px] uppercase text-white font-semibold">
                             <tr>
                               <th className="pb-1 text-left">MEDIO</th>
                               <th className="pb-1 text-right">CONT.</th>
                               <th className="pb-1 text-right">%</th>
                             </tr>
                           </thead>
-                          <tbody className="divide-y divide-white/5 text-slate-205 font-bold font-mono">
+                          <tbody className="divide-y divide-white/5 text-white font-bold font-mono">
                             <tr className="hover:bg-white/5 transition-colors">
-                              <td className="py-1.5 text-left text-slate-300 font-medium font-sans">FLOTA</td>
+                              <td className="py-1.5 text-left text-white font-medium font-sans">FLOTA</td>
                               <td className="py-1.5 text-right text-white">{asisFlota === 0 ? "" : asisFlota}</td>
-                              <td className="py-1.5 text-right text-amber-400 font-extrabold">
+                              <td className="py-1.5 text-right text-white font-extrabold">
                                 {asisFlota === 0 ? "" : sTotal > 0 ? `${((asisFlota / sTotal) * 100).toFixed(0)}%` : ""}
                               </td>
                             </tr>
                             <tr className="hover:bg-white/5 transition-colors">
-                              <td className="py-1.5 text-left text-slate-300 font-medium font-sans">OMITIDOS</td>
+                              <td className="py-1.5 text-left text-white font-medium font-sans">OMITIDOS</td>
                               <td className="py-1.5 text-right text-white">{asisOmitidos === 0 ? "" : asisOmitidos}</td>
-                              <td className="py-1.5 text-right text-amber-400 font-extrabold">
+                              <td className="py-1.5 text-right text-white font-extrabold">
                                 {asisOmitidos === 0 ? "" : sTotal > 0 ? `${((asisOmitidos / sTotal) * 100).toFixed(0)}%` : ""}
                               </td>
                             </tr>
                             <tr className="hover:bg-white/5 transition-colors">
-                              <td className="py-1.5 text-left text-slate-300 font-medium font-sans">CALL</td>
+                              <td className="py-1.5 text-left text-white font-medium font-sans">CALL</td>
                               <td className="py-1.5 text-right text-white">{asisCall === 0 ? "" : asisCall}</td>
-                              <td className="py-1.5 text-right text-amber-400 font-extrabold">
+                              <td className="py-1.5 text-right text-white font-extrabold">
                                 {asisCall === 0 ? "" : sTotal > 0 ? `${((asisCall / sTotal) * 100).toFixed(0)}%` : ""}
                               </td>
                             </tr>
                             <tr className="hover:bg-white/5 transition-colors">
-                              <td className="py-1.5 text-left text-slate-205 font-medium font-sans">SUC</td>
+                              <td className="py-1.5 text-left text-white font-medium font-sans">SUC</td>
                               <td className="py-1.5 text-right text-white">{asisSuc === 0 ? "" : asisSuc}</td>
-                              <td className="py-1.5 text-right text-amber-400 font-extrabold">
+                              <td className="py-1.5 text-right text-white font-extrabold">
                                 {asisSuc === 0 ? "" : sTotal > 0 ? `${((asisSuc / sTotal) * 100).toFixed(0)}%` : ""}
                               </td>
                             </tr>
@@ -2825,8 +2861,8 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                         </table>
                       </div>
                       <div className="bg-zinc-950/65 px-4 py-2 border-t border-white/10 flex justify-between items-center text-[10px] font-bold">
-                        <span className="text-slate-400">TOTAL</span>
-                        <span className="font-mono text-amber-400 font-black">{sTotal === 0 ? "" : sTotal}</span>
+                        <span className="text-white">TOTAL</span>
+                        <span className="font-mono text-white font-black">{sTotal === 0 ? "" : sTotal}</span>
                       </div>
                     </div>
                   );
@@ -2842,7 +2878,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
               MATRIZ DE ASISTENCIAS MENSUALES POR SUCURSAL
             </span>
             
-            <div className="bg-zinc-500/40 rounded-2xl overflow-hidden shadow-2xl p-0">
+            <div className="bg-zinc-900/15 rounded-2xl overflow-hidden shadow-2xl p-0">
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse text-xs table-fixed min-w-[1000px]">
                   {/* Definición de anchos de columnas fijos para que no se aprieten */}
@@ -2871,7 +2907,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                     </tr>
                   </thead>
                   
-                  <tbody className="backdrop-blur-md divide-y divide-white/10 text-slate-205 font-extrabold bg-zinc-900/40">
+                  <tbody className="backdrop-blur-sm divide-y divide-white/10 text-slate-205 font-extrabold bg-zinc-900/40">
                     {resolvedSucursalListData.map((sucItem, sIdx) => {
                       const valuesArray = MESES_ABR.map(m => sucItem.meses[m] || 0);
                       const totalRowSum = valuesArray.reduce((sum, v) => sum + v, 0);
@@ -2962,7 +2998,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
             </span>
 
             {/* adicional COMPARATIVA ANUAL TRANSVERSAL FISCAL (2025 VS 2026) agregale grafico curvas */}
-                        <div className="glass-panel border border-white/10 p-5 rounded-2xl shadow-xl max-w-full lg:max-w-6xl text-slate-200">
+                        <div className="backdrop-blur-sm bg-zinc-900/40 border border-white/10 p-5 rounded-2xl shadow-xl max-w-full lg:max-w-6xl text-slate-200">
               <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/10">
                 <div className="flex items-center gap-2">
                   <div className="w-1.5 h-4.5 bg-indigo-500 rounded-full"></div>
@@ -2975,7 +3011,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
               <div className="w-full h-[260px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={chartData} margin={{ top: 20, right: 10, left: -25, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.3} />
+                    <CartesianGrid horizontal={false} vertical={true} strokeDasharray="3 3" stroke="#475569" opacity={0.4} />
                     <XAxis 
                       dataKey="name" 
                       tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: '700' }} 
@@ -3035,8 +3071,20 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                   </LineChart>
                 </ResponsiveContainer>
               </div>
-             {/* Contenedor de la tabla scrollable */}
-              <div className="overflow-x-auto rounded-xl border border-white/10 bg-zinc-500/40 mt-6">
+            </div>
+
+            {/* Contenedor de la tabla scrollable - Completamente separado y distinguido en su propio panel */}
+            <div className="backdrop-blur-sm bg-zinc-900/40 border border-white/10 p-5 rounded-2xl shadow-xl max-w-full lg:max-w-6xl text-slate-200 mt-6">
+              <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/10">
+                <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-4.5 bg-sky-500 rounded-full"></div>
+                  <h3 className="text-xs font-black uppercase tracking-wider text-white select-none">
+                    Matriz de Métricas Comparativas YoY ({activeYear - 1} vs {activeYear})
+                  </h3>
+                </div>
+                <span className="text-[10px] text-slate-400 tracking-wider font-bold uppercase select-none">Consolidado Mensual</span>
+              </div>
+              <div className="overflow-x-auto rounded-xl border border-white/10">
                 <table className="w-full text-left border-collapse text-[11.5px] min-w-[700px]">
                   <thead className="bg-zinc-950 text-slate-300 font-extrabold text-[9px] tracking-wider uppercase border-b border-white/10 h-8">
                     <tr>
@@ -3049,7 +3097,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                     </tr>
                   </thead>
                   
-                  <tbody className="divide-y divide-white/10 text-white font-extrabold bg-zinc-500/40">
+                  <tbody className="divide-y divide-white/10 text-white font-extrabold">
                     {resolvedMonthlyList.map((item, idx) => {
                       const isCurrentSelected = idx === activeMonthIndex;
                       const prevVal = idx > 0 ? (resolvedMonthlyList[idx - 1]?.val2026 || 0) : 0;
@@ -3197,17 +3245,17 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                 </div>
                 <div>
                   <h3 className="text-xs font-black uppercase tracking-wider text-white">
-                    Análisis de Datos Operativo & Predictivo IA
+                    Análisis de Datos Operativo & Predictivo
                   </h3>
                   <p className="text-[10px] text-slate-400 font-bold font-mono">
                     {hasBeenAnalyzed 
                       ? `Generado de forma dinámica con IA para ${monthlyData[activeMonthIndex].mes} 2026`
-                      : `Datos listos y precargados para análisis de ${monthlyData[activeMonthIndex].mes} 2026`
+                      : `${monthlyData[activeMonthIndex].mes} 2026`
                     }
                   </p>
                 </div>
               </div>
-              {hasBeenAnalyzed && (
+              {hasBeenAnalyzed && !isSharedView && (
                 <button
                   type="button"
                   onClick={generateAnalysis}
@@ -3221,36 +3269,45 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
             </div>
             
             {!hasBeenAnalyzed ? (
-              <div className="flex flex-col items-center justify-center text-center p-8 bg-zinc-950/65 rounded-xl border border-dashed border-amber-500/25 space-y-4">
-                <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-full text-amber-350 relative">
-                  <Brain className="h-8 w-8 text-amber-450 animate-pulse" />
-                  <Sparkles className="h-4 w-4 text-amber-350 absolute -top-1 -right-1 animate-bounce" />
-                </div>
-                <div className="space-y-1.5 max-w-md">
-                  <h4 className="text-xs font-black uppercase tracking-wider text-amber-450">Análisis Predictivo Listo</h4>
-                  <p className="text-[11px] text-slate-350 leading-relaxed font-bold">
-                    Las métricas comparativo-históricas interanuales de <span className="text-white font-extrabold">{monthlyData[activeMonthIndex].mes} 2026</span> han sido precargadas correctamente. Presione el botón a continuación para ejecutar el análisis operativo con IA.
+              isSharedView ? (
+                <div className="flex flex-col items-center justify-center text-center p-8 bg-zinc-950/40 rounded-xl border border-dashed border-white/5 space-y-2">
+                  <Brain className="h-5 w-5 text-slate-500 animate-pulse" />
+                  <p className="text-[11px] text-slate-400 font-bold uppercase tracking-wide">
+                    No se ha generado un análisis para este período.
                   </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={generateAnalysis}
-                  disabled={isGeneratingAnalysis}
-                  className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-450 hover:to-amber-550 text-zinc-950 font-black uppercase tracking-wider rounded-xl text-xs cursor-pointer shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 border border-amber-400 disabled:opacity-50"
-                >
-                  {isGeneratingAnalysis ? (
-                    <>
-                      <div className="h-4 w-4 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
-                      <span>Procesando Datos...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Brain className="h-4 w-4 text-zinc-950" />
-                      <span>Analizar Datos con IA</span>
-                    </>
-                  )}
-                </button>
-              </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center text-center p-8 bg-zinc-950/65 rounded-xl border border-dashed border-amber-500/25 space-y-4">
+                  <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-full text-amber-350 relative">
+                    <Brain className="h-8 w-8 text-amber-450 animate-pulse" />
+                    <Sparkles className="h-4 w-4 text-amber-350 absolute -top-1 -right-1 animate-bounce" />
+                  </div>
+                  <div className="space-y-1.5 max-w-md">
+                    <h4 className="text-xs font-black uppercase tracking-wider text-amber-450">Análisis Predictivo Listo</h4>
+                    <p className="text-[11px] text-slate-350 leading-relaxed font-bold">
+                      Las métricas comparativo-históricas interanuales de <span className="text-white font-extrabold">{monthlyData[activeMonthIndex].mes} 2026</span> han sido precargadas correctamente. Presione el botón a continuación para ejecutar el análisis operativo con IA.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={generateAnalysis}
+                    disabled={isGeneratingAnalysis}
+                    className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-450 hover:to-amber-550 text-zinc-950 font-black uppercase tracking-wider rounded-xl text-xs cursor-pointer shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 border border-amber-400 disabled:opacity-50"
+                  >
+                    {isGeneratingAnalysis ? (
+                      <>
+                        <div className="h-4 w-4 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
+                        <span>Procesando Datos...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Brain className="h-4 w-4 text-zinc-950" />
+                        <span>Analizar Datos con IA</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              )
             ) : (
               <div className="text-xs text-slate-205 leading-relaxed font-sans space-y-4 whitespace-pre-line bg-zinc-950/40 p-4.5 rounded-xl border border-white/5 font-bold">
                 {analysisContent}
@@ -3274,20 +3331,36 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
       </div>
 
       {/* Botones y controles de edición manual */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 glass-panel p-5 rounded-2xl border border-white/10 shadow-2xl text-white mt-10">
-        <div>
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 glass-panel p-5 md:p-6 rounded-2xl border border-white/10 shadow-2xl text-white mt-10">
+        <div className="space-y-1">
           <h4 className="text-xs font-black uppercase text-amber-400 tracking-wider">Historial de Asistencias Manuales</h4>
-          <p className="text-[10px] text-zinc-200 mt-0.5 font-bold">Consolide y edite los valores de asistencias del histórico comparativo</p>
+          <p className="text-[10px] text-zinc-300 font-bold uppercase tracking-wide">Consolide y edite los valores de asistencias del histórico comparativo</p>
         </div>
         
-        <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto shrink-0 justify-end">
-          {isEditing ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:flex md:flex-wrap items-center gap-2.5 w-full lg:w-auto justify-stretch md:justify-end">
+          {isSharedView ? (
+            <>
+              <div className="flex items-center justify-center gap-2 bg-blue-950/40 text-blue-300 border border-blue-500/20 px-3.5 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-wider select-none w-full sm:w-auto">
+                <Eye className="h-4 w-4 text-blue-400" />
+                Solo Visualización
+              </div>
+              <button
+                type="button"
+                onClick={handleDownloadPDF}
+                className="flex items-center justify-center gap-2 h-10 px-4 text-[11px] font-black uppercase tracking-wider rounded-xl transition-all duration-300 shadow-md hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] cursor-pointer border bg-amber-500 hover:bg-amber-400 text-zinc-950 border-amber-500 w-full sm:w-auto"
+                title="Descargar el reporte en formato PDF"
+              >
+                <Download className="h-4 w-4" />
+                Descargar Reporte PDF
+              </button>
+            </>
+          ) : isEditing ? (
             <>
               {isSuperAdminActive ? (
                 <div 
                   onClick={() => setIsSuperAdminActive(false)}
                   title="Haga clic para salir del modo Súper Admin"
-                  className="flex items-center gap-1.5 h-10 px-3 border border-emerald-500/30 bg-emerald-950/80 text-emerald-350 text-[10px] uppercase font-black tracking-wider rounded-xl cursor-pointer hover:bg-emerald-900 transition-all duration-300 shadow-md animate-pulse"
+                  className="flex items-center justify-center gap-1.5 h-10 px-3 border border-emerald-500/30 bg-emerald-950/80 text-emerald-350 text-[10px] uppercase font-black tracking-wider rounded-xl cursor-pointer hover:bg-emerald-900 transition-all duration-300 shadow-md animate-pulse w-full sm:w-auto"
                 >
                   <Unlock className="h-4 w-4 text-emerald-400" />
                   Súper Admin Activo
@@ -3296,7 +3369,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                 <button
                   type="button"
                   onClick={() => setShowSuperAdminModal(true)}
-                  className="flex items-center justify-center gap-2 h-10 px-4 text-xs font-black uppercase tracking-wider rounded-xl transition-all duration-300 shadow-md hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] cursor-pointer border bg-zinc-950/60 hover:bg-zinc-900 border-red-500/20 hover:border-red-500/60 text-red-300"
+                  className="flex items-center justify-center gap-2 h-10 px-4 text-[11px] font-black uppercase tracking-wider rounded-xl transition-all duration-300 shadow-md hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] cursor-pointer border bg-zinc-950/60 hover:bg-zinc-900 border-red-500/20 hover:border-red-500/60 text-red-300 w-full sm:w-auto"
                   title="Desbloquear edición de meses cerrados (Clave Programador)"
                 >
                   <Lock className="h-4 w-4 text-red-400" />
@@ -3306,7 +3379,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
               <button
                 type="button"
                 onClick={saveEditedValues}
-                className="flex items-center justify-center gap-2 h-10 px-4 text-xs font-black uppercase tracking-wider rounded-xl transition-all duration-300 shadow-md hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] cursor-pointer border bg-emerald-600 hover:bg-emerald-500 text-white border-emerald-500"
+                className="flex items-center justify-center gap-2 h-10 px-4 text-[11px] font-black uppercase tracking-wider rounded-xl transition-all duration-300 shadow-md hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] cursor-pointer border bg-emerald-600 hover:bg-emerald-500 text-white border-emerald-500 w-full sm:w-auto"
               >
                 <Save className="h-4 w-4" />
                 Guardar Cambios
@@ -3314,7 +3387,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
               <button
                 type="button"
                 onClick={cancelEditing}
-                className="flex items-center justify-center gap-2 h-10 px-4 text-xs font-black uppercase tracking-wider rounded-xl transition-all duration-300 shadow-md hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] cursor-pointer border bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border-white/10 hover:text-white"
+                className="flex items-center justify-center gap-2 h-10 px-4 text-[11px] font-black uppercase tracking-wider rounded-xl transition-all duration-300 shadow-md hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] cursor-pointer border bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border-white/10 hover:text-white w-full sm:w-auto"
               >
                 Cancelar
               </button>
@@ -3323,8 +3396,17 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
             <>
               <button
                 type="button"
+                onClick={handleCopyShareLink}
+                className={`flex items-center justify-center gap-2 h-10 px-3.5 text-[11px] font-black uppercase tracking-wider rounded-xl transition-all duration-300 shadow-md hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] cursor-pointer border w-full md:w-auto ${copiedFeedback ? "bg-emerald-600 text-white border-emerald-500" : "bg-gradient-to-r from-[#1E2022] to-zinc-850 hover:bg-zinc-800 text-amber-400 border-amber-500/30 hover:border-amber-500"}`}
+                title="Copiar enlace de visualización pública para este reporte"
+              >
+                {copiedFeedback ? <Check className="h-4 w-4 text-white" /> : <Share2 className="h-4 w-4" />}
+                {copiedFeedback ? "¡Enlace Copiado!" : "Compartir Reporte"}
+              </button>
+              <button
+                type="button"
                 onClick={startEditMode}
-                className="flex items-center justify-center gap-2 h-10 px-4 text-xs font-black uppercase tracking-wider rounded-xl transition-all duration-300 shadow-md hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] cursor-pointer border bg-amber-500 hover:bg-amber-400 text-zinc-950 border-amber-500"
+                className="flex items-center justify-center gap-2 h-10 px-3.5 text-[11px] font-black uppercase tracking-wider rounded-xl transition-all duration-300 shadow-md hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] cursor-pointer border bg-amber-500 hover:bg-amber-400 text-zinc-950 border-amber-500 w-full md:w-auto"
               >
                 <Edit3 className="h-4 w-4" />
                 Editar Historial Manual
@@ -3332,7 +3414,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
               <button
                 type="button"
                 onClick={resetToImageDefaults}
-                className="flex items-center justify-center gap-2 h-10 px-4 text-xs font-black uppercase tracking-wider rounded-xl transition-all duration-300 shadow-md hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] cursor-pointer border bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border-white/10 hover:text-white"
+                className="flex items-center justify-center gap-2 h-10 px-3.5 text-[11px] font-black uppercase tracking-wider rounded-xl transition-all duration-300 shadow-md hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] cursor-pointer border bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border-white/10 hover:text-white w-full md:w-auto"
                 title="Regresa a los números exactos de la foto"
               >
                 <RotateCcw className="h-4 w-4" />
@@ -3343,7 +3425,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
               <button
                 type="button"
                 onClick={() => setIsPdfDesignerOpen(true)}
-                className="flex items-center justify-center gap-2 h-10 px-4 text-xs font-black uppercase tracking-wider rounded-xl transition-all duration-300 shadow-md hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] cursor-pointer border bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border-white/10 hover:text-white"
+                className="flex items-center justify-center gap-2 h-10 px-3.5 text-[11px] font-black uppercase tracking-wider rounded-xl transition-all duration-300 shadow-md hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] cursor-pointer border bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border-white/10 hover:text-white w-full md:w-auto"
                 title="Diseñador visual avanzado de formas PDF"
               >
                 <Sliders className="h-4 w-4" />
@@ -3353,7 +3435,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
               <button
                 type="button"
                 onClick={handleDownloadPDF}
-                className="flex items-center justify-center gap-2 h-10 px-4 text-xs font-black uppercase tracking-wider rounded-xl transition-all duration-300 shadow-md hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] cursor-pointer border bg-amber-500 hover:bg-amber-400 text-zinc-950 border-amber-500"
+                className="flex items-center justify-center gap-2 h-10 px-4 text-[11px] font-black uppercase tracking-wider rounded-xl transition-all duration-300 shadow-md hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] cursor-pointer border bg-amber-500 hover:bg-amber-350 text-zinc-950 border-amber-500 w-full md:w-auto"
                 title="Descargar el reporte en formato PDF"
               >
                 <Download className="h-4 w-4" />

@@ -20,7 +20,11 @@ import {
   LayoutGrid,
   ClipboardList,
   Info,
-  Calculator
+  Calculator,
+  Headphones,
+  MapPin,
+  Briefcase,
+  MinusCircle
 } from "lucide-react";
 import { Motorizado, Invoice, VehicleIncident } from "../types";
 
@@ -502,54 +506,69 @@ export default function MotorizadosView({
                 
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-3.5">
                   {/* CALL CENTER */}
-                  <div className="glass-card rounded-xl p-2.5 text-center flex flex-col justify-between">
-                    <span className="text-[9px] font-black uppercase text-amber-500 tracking-wider">Call Center</span>
-                    <p className="text-lg font-black font-mono text-white mt-1">{statsByType["CALL CENTER"]}</p>
+                  <div className="glass-card rounded-xl p-3 text-center flex flex-col justify-between hover:-translate-y-0.5 hover:shadow-[0_0_25px_rgba(251,191,36,0.25)] hover:border-amber-500/40 transition-all duration-300 cursor-pointer group border border-white/5">
+                    <div className="flex items-center justify-between w-full">
+                      <span className="text-[9px] font-black uppercase text-amber-500 tracking-wider">Call Center</span>
+                      <Headphones className="h-3.5 w-3.5 text-amber-500 group-hover:scale-110 transition-transform" />
+                    </div>
+                    <p className="text-xl font-black font-mono text-white mt-1">{statsByType["CALL CENTER"]}</p>
                     <span className="text-[9px] text-slate-400 font-bold">instalados</span>
                   </div>
 
                   {/* SUCURSAL */}
-                  <div className="glass-card rounded-xl p-2.5 text-center flex flex-col justify-between">
-                    <span className="text-[9px] font-black uppercase text-emerald-400 tracking-wider">Sucursal</span>
-                    <p className="text-lg font-black font-mono text-white mt-1">{statsByType["SUCURSAL"]}</p>
+                  <div className="glass-card rounded-xl p-3 text-center flex flex-col justify-between hover:-translate-y-0.5 hover:shadow-[0_0_25px_rgba(251,191,36,0.25)] hover:border-amber-500/40 transition-all duration-300 cursor-pointer group border border-white/5">
+                    <div className="flex items-center justify-between w-full">
+                      <span className="text-[9px] font-black uppercase text-emerald-400 tracking-wider">Sucursal</span>
+                      <MapPin className="h-3.5 w-3.5 text-emerald-400 group-hover:scale-110 transition-transform" />
+                    </div>
+                    <p className="text-xl font-black font-mono text-white mt-1">{statsByType["SUCURSAL"]}</p>
                     <span className="text-[9px] text-slate-400 font-bold">instalados</span>
                   </div>
 
                   {/* FLOTA */}
-                  <div className="glass-card rounded-xl p-2.5 text-center flex flex-col justify-between">
-                    <span className="text-[9px] font-black uppercase text-orange-400 tracking-wider">Flota</span>
-                    <p className="text-lg font-black font-mono text-white mt-1">{statsByType["FLOTA"]}</p>
+                  <div className="glass-card rounded-xl p-3 text-center flex flex-col justify-between hover:-translate-y-0.5 hover:shadow-[0_0_25px_rgba(251,191,36,0.25)] hover:border-amber-500/40 transition-all duration-300 cursor-pointer group border border-white/5">
+                    <div className="flex items-center justify-between w-full">
+                      <span className="text-[9px] font-black uppercase text-orange-400 tracking-wider">Flota</span>
+                      <Smartphone className="h-3.5 w-3.5 text-orange-400 group-hover:scale-110 transition-transform" />
+                    </div>
+                    <p className="text-xl font-black font-mono text-white mt-1">{statsByType["FLOTA"]}</p>
                     <span className="text-[9px] text-slate-400 font-bold">instalados</span>
                   </div>
 
                   {/* GERENTE DE LINEA */}
-                  <div className="glass-card rounded-xl p-2.5 text-center flex flex-col justify-between">
-                    <span className="text-[9px] font-black uppercase text-rose-400 tracking-wider">Gerente</span>
-                    <p className="text-lg font-black font-mono text-white mt-1">{statsByType["GERENTE DE LINEA"]}</p>
+                  <div className="glass-card rounded-xl p-3 text-center flex flex-col justify-between hover:-translate-y-0.5 hover:shadow-[0_0_25px_rgba(251,191,36,0.25)] hover:border-amber-500/40 transition-all duration-300 cursor-pointer group border border-white/5">
+                    <div className="flex items-center justify-between w-full">
+                      <span className="text-[9px] font-black uppercase text-rose-400 tracking-wider">Gerente</span>
+                      <Briefcase className="h-3.5 w-3.5 text-rose-400 group-hover:scale-110 transition-transform" />
+                    </div>
+                    <p className="text-xl font-black font-mono text-white mt-1">{statsByType["GERENTE DE LINEA"]}</p>
                     <span className="text-[9px] text-slate-400 font-bold">instalados</span>
                   </div>
 
                   {/* OMITIDO */}
-                  <div className="glass-card rounded-xl p-2.5 text-center flex flex-col justify-between col-span-2 sm:col-span-1">
-                    <span className="text-[9px] font-black uppercase text-slate-400 tracking-wider">Omitido</span>
-                    <p className="text-lg font-black font-mono text-white mt-1">{statsByType["OMITIDO"]}</p>
+                  <div className="glass-card rounded-xl p-3 text-center flex flex-col justify-between col-span-2 sm:col-span-1 hover:-translate-y-0.5 hover:shadow-[0_0_25px_rgba(251,191,36,0.25)] hover:border-amber-500/40 transition-all duration-300 cursor-pointer group border border-white/5">
+                    <div className="flex items-center justify-between w-full">
+                      <span className="text-[9px] font-black uppercase text-slate-400 tracking-wider">Omitido</span>
+                      <MinusCircle className="h-3.5 w-3.5 text-slate-400 group-hover:scale-110 transition-transform" />
+                    </div>
+                    <p className="text-xl font-black font-mono text-white mt-1">{statsByType["OMITIDO"]}</p>
                     <span className="text-[9px] text-slate-400 font-bold">omitidos</span>
                   </div>
                 </div>
 
                 {/* KPI de Ganancia por Asistencia Vial BAT */}
-                <div className="glass-card rounded-2xl p-4 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xl mt-3">
+                <div className="glass-card rounded-2xl p-4 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xl mt-3 hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(251,191,36,0.25)] hover:border-amber-500/40 hover:bg-zinc-900/50 transition-all duration-300 cursor-pointer group border border-white/5">
                   <div className="space-y-1">
                     <div className="flex items-center gap-1.5 text-amber-400 font-black uppercase text-[10px] tracking-wider">
-                      <Coins className="h-4 w-4" />
+                      <Coins className="h-4 w-4 text-amber-400 group-hover:scale-115 transition-transform" />
                       <span>Ingreso Acumulable BAT</span>
                     </div>
                     <h5 className="text-sm font-black text-white leading-tight">Ganancia Total por Asistencias</h5>
-                    <p className="text-[10.5px] text-slate-350 font-medium">
-                      Monto total proveniente de los fletes que en su descripción o comentarios digan: <strong className="text-amber-400 underline font-mono">"asistencia vial bat"</strong>.
+                    <p className="text-[10.5px] text-slate-350 font-medium font-sans">
+                      Monto total proveniente de los fletes que en su descripción o comentarios digan: <strong className="text-amber-450 font-sans font-black underline">"asistencia vial bat"</strong>.
                     </p>
                   </div>
-                  <div className="text-right shrink-0 bg-zinc-950/55 p-3 rounded-xl border border-white/10 shadow-inner">
+                  <div className="text-right shrink-0 bg-zinc-950/55 p-3 rounded-xl border border-white/10 shadow-inner group-hover:border-amber-500/30 transition-all duration-300">
                     <span className="text-[9px] uppercase font-black tracking-widest text-slate-400">Total Ganado</span>
                     <p className="text-2xl font-black font-mono text-[#FFB300] mt-0.5">${totalVialBat.toLocaleString("es-PA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                   </div>

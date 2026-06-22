@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { 
   Camera, 
   Upload, 
@@ -112,62 +112,57 @@ const DEMO_EXTRACTION_MOCK: Invoice = {
 
 const LogoSVG = ({ className = "h-8 w-8 text-white" }: { className?: string }) => (
   <svg 
-    viewBox="0 0 100 100" 
+    viewBox="0 0 512 512" 
     className={className} 
     fill="currentColor"
     xmlns="http://www.w3.org/2000/svg"
   >
-    {/* Ruedas */}
-    <circle cx="28" cy="72" r="10" stroke="currentColor" strokeWidth="5.5" fill="none" />
-    <circle cx="28" cy="72" r="3.5" fill="currentColor" />
-    <circle cx="80" cy="72" r="10" stroke="currentColor" strokeWidth="5.5" fill="none" />
-    <circle cx="80" cy="72" r="3.5" fill="currentColor" />
+    <defs>
+      <mask id="logo-mask">
+        <rect width="512" height="512" fill="white" />
+        {/* Visor cutout in helmet */}
+        <path d="M 275 102 L 314 114 L 308 138 L 270 124 Z" fill="black" stroke="black" strokeWidth="3" strokeLinejoin="round" />
+        {/* Lightning cutout in battery box */}
+        <polygon points="126,234 94,272 116,272 104,310 138,264 116,264" fill="black" />
+      </mask>
+    </defs>
     
-    {/* Chasis y Guardabarros */}
-    <path 
-      d="M 28 72 L 36 71 L 41 58 L 72 58 L 78 72" 
-      stroke="currentColor" 
-      strokeWidth="5.5" 
-      strokeLinecap="round" 
-      strokeLinejoin="round" 
-      fill="none" 
-    />
-    
-    {/* Manubrio / Dirección */}
-    <path 
-      d="M 68 58 L 75 40 L 68 39" 
-      stroke="currentColor" 
-      strokeWidth="5.5" 
-      strokeLinecap="round" 
-      strokeLinejoin="round" 
-      fill="none" 
-    />
-    
-    {/* Conductor Cuerpo y Casco */}
-    <path 
-      d="M 47 56 C 45 42, 53 32, 63 32 C 66 32, 68 34, 68 38 L 56 56 Z" 
-      fill="currentColor" 
-    />
-    <path 
-      d="M 52 42 L 67 43 L 71 40" 
-      stroke="currentColor" 
-      strokeWidth="4" 
-      strokeLinecap="round" 
-      strokeLinejoin="round" 
-      fill="none" 
-    />
-    <circle cx="53" cy="22" r="9" fill="currentColor" />
-    {/* Visor del Casco (Transparente/Blanco) */}
-    <path d="M 54 18 L 60 20 L 59 24 L 53 22 Z" fill="white" />
-
-    {/* Batería Gigante (Caja de Distribución en parrilla) */}
-    <path d="M 12 58 L 32 58" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
-    <rect x="7" y="36" width="28" height="20" rx="3.5" fill="currentColor" />
-    {/* Bornes superiores de la batería */}
-    <rect x="13" y="32" width="5" height="4" rx="1" fill="currentColor" />
-    <rect x="24" y="32" width="5" height="4" rx="1" fill="currentColor" />
-    {/* Rayo de Energía interior */}
-    <polygon points="23,40 16,47 21,47 19,53 26,45 21,45" fill="white" />
+    <g mask="url(#logo-mask)">
+      {/* Battery (Bornes + Tapa + Cuerpo) */}
+      <rect x="35" y="218" width="162" height="106" rx="4" />
+      <rect x="28" y="198" width="176" height="20" rx="3" />
+      <rect x="46" y="188" width="22" height="10" rx="1.5" />
+      <rect x="51" y="180" width="12" height="8" rx="1" />
+      <rect x="164" y="188" width="22" height="10" rx="1.5" />
+      <rect x="169" y="180" width="12" height="8" rx="1" />
+      
+      {/* Soporte Parrilla */}
+      <rect x="15" y="324" width="195" height="10" rx="2" />
+      
+      {/* Tubo de Escape */}
+      <path d="M 12 344 L 54 344" stroke="currentColor" strokeWidth="12" strokeLinecap="round" />
+      
+      {/* Asiento y Cuerpo de la Moto */}
+      <path d="M 210 324 L 285 324 C 295 324, 300 332, 298 342 L 292 384 L 210 384 Z" />
+      
+      {/* Conductor (Cuerpo, Cabeza, Brazos, Piernas, Pies) */}
+      <circle cx="275" cy="115" r="48" />
+      <path d="M 252 161 Q 256 135, 270 144" stroke="currentColor" strokeWidth="16" strokeLinecap="round" />
+      <path d="M 248 160 C 220 180, 210 240, 215 310 L 290 310 C 285 270, 280 240, 255 160 Z" />
+      <path d="M 248 175 C 285 195, 305 210, 365 228" fill="none" stroke="currentColor" strokeWidth="28" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M 225 305 Q 340 312, 340 385" fill="none" stroke="currentColor" strokeWidth="32" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M 330 384 L 375 384" stroke="currentColor" strokeWidth="22" strokeLinecap="round" />
+      
+      {/* Plataforma de Pies y Guardabarros / Frontal */}
+      <path d="M 215 396 L 360 396" stroke="currentColor" strokeWidth="24" strokeLinecap="round" />
+      <path d="M 355 396 L 415 285" stroke="currentColor" strokeWidth="24" strokeLinecap="round" />
+      <path d="M 412 285 L 388 235" stroke="currentColor" strokeWidth="20" strokeLinecap="round" />
+      <path d="M 354 246 C 360 240, 392 232, 388 235 L 392 258" stroke="currentColor" strokeWidth="18" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+      
+      {/* Ruedas */}
+      <circle cx="150" cy="410" r="36" stroke="currentColor" strokeWidth="24" fill="none" />
+      <circle cx="440" cy="410" r="36" stroke="currentColor" strokeWidth="24" fill="none" />
+    </g>
   </svg>
 );
 
@@ -204,8 +199,28 @@ export default function App() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [motorizados, setMotorizados] = useState<Motorizado[]>([]);
   const [loadingList, setLoadingList] = useState(false);
-  const [activeTab, setActiveTab ] = useState<"dashboard" | "tickets" | "fleet" | "reports" | "executive">("tickets");
+
+  // Detectar visualización compartida pública
+  const isExecutivePublicShared = useMemo(() => {
+    if (typeof window === "undefined") return false;
+    const search = window.location.search;
+    return search.includes("view=executive-public") || 
+           search.includes("share=executive") || 
+           search.includes("view=executive-readonly") ||
+           search.includes("shared=executive");
+  }, []);
+
+  const [activeTab, setActiveTab ] = useState<"dashboard" | "tickets" | "fleet" | "reports" | "executive">(
+    isExecutivePublicShared ? "executive" : "tickets"
+  );
   const [mobileOptimized, setMobileOptimized] = useState<boolean>(false);
+
+  // Forzar tab de reporte en modo público
+  useEffect(() => {
+    if (isExecutivePublicShared) {
+      setActiveTab("executive");
+    }
+  }, [isExecutivePublicShared]);
   
   // Custom columns configuration for main Tickets list export
   const [selectedExportFields, setSelectedExportFields] = useState<string[]>(EXPORT_COLUMNS);
@@ -369,7 +384,7 @@ export default function App() {
     let unsubscribeMotorizados = () => {};
     let unsubscribeIncidents = () => {};
 
-    if (isFirebaseConfigured && currentUser) {
+    if (isFirebaseConfigured && (currentUser || isExecutivePublicShared)) {
       setLoadingList(true);
       
       // Invoices Snapshot (unrestricted - shared database)
@@ -452,7 +467,7 @@ export default function App() {
       setMotorizados([]);
       setIncidents([]);
     }
-  }, [currentUser]);
+  }, [currentUser, isExecutivePublicShared]);
 
   // Login / Logout Flow
   const [authError, setAuthError] = useState<string | null>(null);
@@ -521,7 +536,7 @@ export default function App() {
       });
 
       showFirebaseToast(
-        "✓ Acceso Autorizado",
+        "Acceso Autorizado",
         `Has iniciado sesión como ${determinedRole === "admin" ? "ADMINISTRADOR (Acceso Total)" : "VISOR (Restricción de Borrado)"}.`,
         "success"
       );
@@ -539,7 +554,7 @@ export default function App() {
       
       setAuthError(helperErr);
       showFirebaseToast(
-        "❌ Error de Autenticación",
+        "Error de Autenticación",
         helperErr,
         "error"
       );
@@ -690,12 +705,12 @@ export default function App() {
   // CRUD Invoices
   const handleSaveInvoice = async () => {
     if (!formValues.issuer.trim()) {
-      triggerConfirm("🚫 Campo Requerido", "El nombre del establecimiento / emisor es obligatorio.", () => {}, "warning");
+      triggerConfirm("Campo Requerido", "El nombre del establecimiento / emisor es obligatorio.", () => {}, "warning");
       return;
     }
     if (!formValues.invoiceType || formValues.invoiceType.trim() === "") {
       triggerConfirm(
-        "🚫 Tipo de Factura Obligatoria", 
+        "Tipo de Factura Obligatoria", 
         "Por favor elija el tipo de factura correspondiente: CALL CENTER, SUCURSAL, FLOTA, GERENTE DE LINEA, u OMITIDO.", 
         () => {}, 
         "warning"
@@ -704,7 +719,7 @@ export default function App() {
     }
     if (!formValues.motorizadoId || formValues.motorizadoId.trim() === "") {
       triggerConfirm(
-        "🚫 Motorizado Requerido", 
+        "Motorizado Requerido", 
         "Debe asociar la factura de flete a un chofer o motorizado de la flota.", 
         () => {}, 
         "warning"
@@ -729,7 +744,7 @@ export default function App() {
         const { id, ...cleanData } = payload;
         await updateDoc(docRef, cleanData);
         showFirebaseToast(
-          "✓ ¡Guardado en Firebase!",
+          "¡Guardado en Firebase!",
           `La factura #${payload.invoiceNumber || ""} fue actualizada exitosamente en Firebase Cloud Firestore.`,
           "success"
         );
@@ -737,7 +752,7 @@ export default function App() {
         const { id, ...cleanData } = payload;
         await addDoc(collection(db, "invoices"), cleanData);
         showFirebaseToast(
-          "✓ ¡Guardado en Firebase!",
+          "¡Guardado en Firebase!",
           `El nuevo ticket #${payload.invoiceNumber || ""} fue transmitido y guardado exitosamente en la base de datos de Firebase.`,
           "success"
         );
@@ -760,7 +775,7 @@ export default function App() {
   const handleDeleteInvoice = (id: string) => {
     if (currentUser?.role !== "admin") {
       triggerConfirm(
-        "🚫 Acción Denegada",
+        "Acción Denegada",
         "Los usuarios con rol de Visor no pueden realizar operaciones de eliminación en la base de datos.",
         () => {},
         "warning"
@@ -778,7 +793,7 @@ export default function App() {
 
           await deleteDoc(doc(db, "invoices", id));
           showFirebaseToast(
-            "✓ Eliminado de Firebase",
+            "Eliminado de Firebase",
             "La factura de flete fue eliminada permanentemente del servidor Firebase Cloud Firestore.",
             "success"
           );
@@ -812,14 +827,14 @@ export default function App() {
         const docRef = doc(db, "motorizados", editId);
         await updateDoc(docRef, { ...motData });
         showFirebaseToast(
-          "✓ Conductor Guardado",
+          "Conductor Guardado",
           `Los datos de ${motData.name} se han actualizado correctamente en Firebase Cloud Firestore.`,
           "success"
         );
       } else {
         await addDoc(collection(db, "motorizados"), payload);
         showFirebaseToast(
-          "✓ Conductor Registrado",
+          "Conductor Registrado",
           `El perfil del motorizado ${payload.name} ha sido sincronizado en Firebase Cloud Firestore.`,
           "success"
         );
@@ -837,7 +852,7 @@ export default function App() {
   const handleDeleteMotorizado = async (id: string) => {
     if (currentUser?.role !== "admin") {
       triggerConfirm(
-        "🚫 Acción Denegada",
+        "Acción Denegada",
         "Los usuarios con rol de Visor no pueden realizar operaciones de eliminación en la base de datos.",
         () => {},
         "warning"
@@ -847,7 +862,7 @@ export default function App() {
 
     if (invoices.some(i => i.motorizadoId === id)) {
       triggerConfirm(
-        "🚫 No es posible eliminar",
+        "No es posible eliminar",
         "Este motorizado tiene facturas de flete asociadas en el sistema. Desvincúlelo primero de cada factura antes de eliminarlo.",
         () => {},
         "warning"
@@ -866,7 +881,7 @@ export default function App() {
 
           await deleteDoc(doc(db, "motorizados", id));
           showFirebaseToast(
-            "✓ Conductor Eliminado",
+            "Conductor Eliminado",
             "El conductor ha sido eliminado permanentemente de Firebase Cloud Firestore.",
             "success"
           );
@@ -877,7 +892,7 @@ export default function App() {
     );
   };
 
-  if (!currentUser) {
+  if (!currentUser && !isExecutivePublicShared) {
     return (
       <div 
         className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden" 
@@ -981,7 +996,7 @@ export default function App() {
               type="button"
               onClick={() => {
                 setLoginEmail("admin@acsa.com");
-                showFirebaseToast("⚡ Auto-completado", "Correo de Administrador cargado. Por favor, introduzca su contraseña.", "info");
+                showFirebaseToast("Auto-completado", "Correo de Administrador cargado. Por favor, introduzca su contraseña.", "info");
               }}
               className="p-2.5 text-left rounded-xl bg-zinc-950/40 hover:bg-zinc-950/80 border border-white/5 hover:border-amber-500/50 shadow-sm hover:shadow-[0_0_12px_rgba(245,158,11,0.15)] transition-all duration-300 cursor-pointer group"
             >
@@ -998,7 +1013,7 @@ export default function App() {
               type="button"
               onClick={() => {
                 setLoginEmail("moto@acsa.com");
-                showFirebaseToast("⚡ Auto-completado", "Correo de Visor cargado. Por favor, introduzca su contraseña.", "info");
+                showFirebaseToast("Auto-completado", "Correo de Visor cargado. Por favor, introduzca su contraseña.", "info");
               }}
               className="p-2.5 text-left rounded-xl bg-zinc-950/40 hover:bg-zinc-950/80 border border-white/5 hover:border-amber-500/50 shadow-sm hover:shadow-[0_0_12px_rgba(245,158,11,0.15)] transition-all duration-300 cursor-pointer group"
             >
@@ -1014,8 +1029,18 @@ export default function App() {
 
           {/* Información Adicional Conexión */}
           <div className="mt-5 text-center">
-            <span className="px-2.5 py-1 text-[8px] font-extrabold text-slate-400 bg-zinc-950/50 border border-white/5 rounded-full uppercase tracking-wider select-none">
-              {isFirebaseConfigured ? "🔥 Base de datos sincronizada" : "⚠ Modo Desconectado Activo"}
+            <span className="px-2.5 py-1 text-[8px] font-extrabold bg-zinc-950/50 border border-white/5 rounded-full uppercase tracking-wider select-none inline-flex items-center gap-1">
+              {isFirebaseConfigured ? (
+                <>
+                  <Database className="h-2.5 w-2.5 text-emerald-400 shrink-0" />
+                  <span className="text-emerald-400">Base de datos sincronizada</span>
+                </>
+              ) : (
+                <>
+                  <AlertTriangle className="h-2.5 w-2.5 text-amber-500 shrink-0 animate-pulse" />
+                  <span className="text-amber-400">Modo Desconectado Activo</span>
+                </>
+              )}
             </span>
           </div>
         </div>
@@ -1040,13 +1065,14 @@ export default function App() {
       <div className={`flex flex-col min-h-screen ${mobileOptimized ? "" : "md:flex-row"}`}>
         
         {/* SIDEBAR ADAPTATIVO PREMIUM (Con estilo Glass Asfalto y Ámbar de Tránsito) */}
-        <aside className={`w-full bg-zinc-950/60 backdrop-blur-md text-white flex flex-col shrink-0 border-b border-amber-500/10 shadow-2xl relative z-10 ${
-          mobileOptimized ? "" : "md:w-64 md:border-r md:border-b-0"
-        }`}>
-          <div className="p-6 border-b border-amber-500/10 flex items-center gap-3">
-            <div className="p-1.5 bg-amber-500/10 rounded-xl flex items-center justify-center shadow-inner shrink-0 border border-amber-500/20">
-              <LogoSVG className="h-10 w-10 text-[#FF9100] drop-shadow-[0_2px_8px_rgba(255,145,0,0.6)] shrink-0" />
-            </div>
+        {!isExecutivePublicShared && (
+          <aside className={`w-full bg-zinc-950/60 backdrop-blur-md text-white flex flex-col shrink-0 border-b border-amber-500/10 shadow-2xl relative z-10 ${
+            mobileOptimized ? "" : "md:w-64 md:border-r md:border-b-0"
+          }`}>
+            <div className="p-6 border-b border-amber-500/10 flex items-center gap-3">
+              <div className="p-1.5 bg-amber-500/10 rounded-xl flex items-center justify-center shadow-inner shrink-0 border border-amber-500/20">
+                <LogoSVG className="h-10 w-10 text-[#FF9100] drop-shadow-[0_2px_8px_rgba(255,145,0,0.6)] shrink-0" />
+              </div>
             <div>
               <h1 className="text-sm font-display font-black tracking-tight text-white leading-none">MotoAssist Vial</h1>
               <p className="text-[9px] text-amber-400 font-extrabold uppercase tracking-widest mt-1.5 leading-none">Monitoreo Vial Activo</p>
@@ -1163,6 +1189,7 @@ export default function App() {
             )}
           </div>
         </aside>
+        )}
 
         {/* CONTAINER CONTENIDO PRINCIPAL */}
         <main className="flex-grow flex flex-col min-h-screen">
@@ -1171,20 +1198,58 @@ export default function App() {
             <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h2 className="text-xl md:text-2xl font-display font-black tracking-tight text-white flex items-center gap-2">
-                  <span>
-                    {activeTab === "tickets" && "⚡ Asistencia Vial & Registro de Ventas"}
-                    {activeTab === "fleet" && "📋 Flota de Motorizados"}
-                    {activeTab === "reports" && "📊 Reportes & Exportación"}
-                    {activeTab === "dashboard" && "⚡ Panel de Monitoreo Vial"}
-                    {activeTab === "executive" && "📊 Reporte Ejecutivo de Asistencias"}
-                  </span>
+                  {isExecutivePublicShared ? (
+                    <>
+                      <Layers className="h-5 w-5 text-indigo-400 shrink-0" />
+                      <span>MotoAssist Vial - Reporte Ejecutivo (Solo Visualización)</span>
+                    </>
+                  ) : (
+                    <>
+                      {activeTab === "tickets" && (
+                        <>
+                          <Receipt className="h-5 w-5 text-amber-500 shrink-0" />
+                          <span>Asistencia Vial & Registro de Ventas</span>
+                        </>
+                      )}
+                      {activeTab === "fleet" && (
+                        <>
+                          <Users className="h-5 w-5 text-amber-500 shrink-0" />
+                          <span>Flota de Motorizados</span>
+                        </>
+                      )}
+                      {activeTab === "reports" && (
+                        <>
+                          <Filter className="h-5 w-5 text-amber-500 shrink-0" />
+                          <span>Reportes & Exportación</span>
+                        </>
+                      )}
+                      {activeTab === "dashboard" && (
+                        <>
+                          <BarChart3 className="h-5 w-5 text-amber-500 shrink-0" />
+                          <span>Panel de Monitoreo Vial</span>
+                        </>
+                      )}
+                      {activeTab === "executive" && (
+                        <>
+                          <Layers className="h-5 w-5 text-indigo-400 shrink-0" />
+                          <span>Reporte Ejecutivo de Asistencias</span>
+                        </>
+                      )}
+                    </>
+                  )}
                 </h2>
                 <p className="text-xs text-slate-300 mt-1">
-                  {activeTab === "tickets" && "Almacena copia de ventas de asistencia e instala tus reportes en tiempo real"}
-                  {activeTab === "fleet" && "Control de choferes, matrículas, fletes, KPI por motorizado e incidentes de motocicleta"}
-                  {activeTab === "reports" && "Filtros inteligentes de impuestos y descargas personalizadas Excel/CSV"}
-                  {activeTab === "dashboard" && "Inspección de KPI por sucursal, incidentes activos de motos y flujo temporal"}
-                  {activeTab === "executive" && "Matriz ejecutiva consolidada de medios, sucursales y evolución interanual 2025 vs 2026"}
+                  {isExecutivePublicShared ? (
+                    "Matriz ejecutiva consolidada de medios, sucursales y evolución interanual (Enlace compartido público)"
+                  ) : (
+                    <>
+                      {activeTab === "tickets" && "Almacena copia de ventas de asistencia e instala tus reportes en tiempo real"}
+                      {activeTab === "fleet" && "Control de choferes, matrículas, fletes, KPI por motorizado e incidentes de motocicleta"}
+                      {activeTab === "reports" && "Filtros inteligentes de impuestos y descargas personalizadas Excel/CSV"}
+                      {activeTab === "dashboard" && "Inspección de KPI por sucursal, incidentes activos de motos y flujo temporal"}
+                      {activeTab === "executive" && "Matriz ejecutiva consolidada de medios, sucursales y evolución interanual 2025 vs 2026"}
+                    </>
+                  )}
                 </p>
               </div>
 
@@ -1240,7 +1305,7 @@ export default function App() {
             )}
 
             {activeTab === "executive" && (
-              <ExecutiveReportView invoices={invoices} />
+              <ExecutiveReportView invoices={invoices} isSharedView={isExecutivePublicShared} />
             )}
 
             {activeTab === "tickets" && (

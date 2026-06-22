@@ -186,7 +186,7 @@ export default function DashboardView({ invoices, motorizados, incidents }: Dash
       {/* TARJETAS DE MÉTRICAS PRINCIPALES */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {/* Total Ventas Instaladas */}
-        <div className="glass-card p-5 rounded-2xl flex items-center justify-between hover:-translate-y-0.5 hover:shadow-[0_0_25px_rgba(245,158,11,0.18)] hover:border-amber-500/35 hover:bg-zinc-900/50 transition-all duration-300 cursor-pointer">
+        <div className="glass-card p-5 rounded-2xl flex items-center justify-between hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(251,191,36,0.3)] hover:border-amber-500/40 hover:bg-zinc-900/50 transition-all duration-300 cursor-pointer">
           <div className="space-y-1">
             <span className="text-[9.5px] font-black uppercase text-slate-400 tracking-wider">Ventas Instaladas</span>
             <p className="text-xl font-black font-mono text-white">${totalSalesVal.toLocaleString("es-PA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
@@ -201,7 +201,7 @@ export default function DashboardView({ invoices, motorizados, incidents }: Dash
         </div>
 
         {/* Total Tickets Registrados */}
-        <div className="glass-card p-5 rounded-2xl flex items-center justify-between hover:-translate-y-0.5 hover:shadow-[0_0_25px_rgba(245,158,11,0.15)] hover:border-amber-500/35 hover:bg-zinc-900/50 transition-all duration-300 cursor-pointer">
+        <div className="glass-card p-5 rounded-2xl flex items-center justify-between hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(251,191,36,0.3)] hover:border-amber-500/40 hover:bg-zinc-900/50 transition-all duration-300 cursor-pointer">
           <div className="space-y-1">
             <span className="text-[9.5px] font-black uppercase text-slate-400 tracking-wider">Tickets Totales</span>
             <p className="text-xl font-black font-mono text-white">{totalInvoices}</p>
@@ -213,7 +213,7 @@ export default function DashboardView({ invoices, motorizados, incidents }: Dash
         </div>
 
         {/* Ganancia por Asistencias Vial BAT (20% del Ticket) */}
-        <div className="glass-card p-5 rounded-2xl border-l-4 border-l-amber-500 flex items-center justify-between hover:-translate-y-0.5 hover:shadow-[0_0_25px_rgba(245,158,11,0.18)] hover:border-amber-500/35 hover:bg-zinc-900/50 transition-all duration-300 cursor-pointer">
+        <div className="glass-card p-5 rounded-2xl border-l-4 border-l-amber-500 flex items-center justify-between hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(251,191,36,0.3)] hover:border-amber-500/40 hover:bg-zinc-900/50 transition-all duration-300 cursor-pointer">
           <div className="space-y-1">
             <span className="text-[9.5px] font-black uppercase text-amber-400 tracking-wider flex items-center gap-1">
               <span>Ganancias BAT (20%)</span>
@@ -221,25 +221,25 @@ export default function DashboardView({ invoices, motorizados, incidents }: Dash
             <p className="text-xl font-black font-mono text-white">${totalVialBatSum.toLocaleString("es-PA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
             <p className="text-[9px] text-slate-450 font-bold uppercase">Asistencias 20%</p>
           </div>
-          <div className="p-3 bg-[#FFB300]/15 text-[#FFB300] rounded-xl shrink-0 border border-[#FFB300]/25">
-            <Coins className="h-5.5 w-5.5 text-[#FFB300]" />
+          <div className="p-3 bg-amber-500/15 text-amber-300 rounded-xl shrink-0 border border-amber-500/25">
+            <Coins className="h-5.5 w-5.5 text-amber-300" />
           </div>
         </div>
 
         {/* Flota Activa */}
-        <div className="glass-card p-5 rounded-2xl flex items-center justify-between hover:-translate-y-0.5 hover:shadow-[0_0_25px_rgba(245,158,11,0.15)] hover:border-amber-500/35 hover:bg-zinc-900/50 transition-all duration-300 cursor-pointer">
+        <div className="glass-card p-5 rounded-2xl flex items-center justify-between hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(251,191,36,0.3)] hover:border-amber-500/40 hover:bg-zinc-900/50 transition-all duration-300 cursor-pointer">
           <div className="space-y-1">
             <span className="text-[9.5px] font-black uppercase text-slate-400 tracking-wider">Flota Activa</span>
             <p className="text-xl font-black font-mono text-white">{activeRiders} / {motorizados.length}</p>
             <p className="text-[9px] text-slate-400 font-semibold">Motorizados Activos</p>
           </div>
           <div className="p-3 bg-amber-500/10 text-amber-300 rounded-xl shrink-0 border border-amber-500/20">
-            <Users className="h-5.5 w-5.5 text-amber-300" />
+            <Users className="h-5.5 w-5.5 text-amber-350" />
           </div>
         </div>
 
         {/* Valor Promedio de Venta */}
-        <div className="glass-card p-5 rounded-2xl flex items-center justify-between hover:-translate-y-0.5 hover:shadow-[0_0_25px_rgba(245,158,11,0.15)] hover:border-amber-500/35 hover:bg-zinc-900/50 transition-all duration-300 cursor-pointer">
+        <div className="glass-card p-5 rounded-2xl flex items-center justify-between hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(251,191,36,0.3)] hover:border-amber-500/40 hover:bg-zinc-900/50 transition-all duration-300 cursor-pointer">
           <div className="space-y-1">
             <span className="text-[9.5px] font-black uppercase text-slate-400 tracking-wider">Promedio Venta</span>
             <p className="text-xl font-black font-mono text-white">${averageSaleValue.toLocaleString("es-PA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>

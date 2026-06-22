@@ -216,8 +216,9 @@ export default function TicketEditForm({
               <p className="text-xs font-bold text-slate-200 font-display transition-all duration-500">
                 {scanProgress < 95 ? "Leyendo comprobante térmico..." : "Finalizando estructuración de datos..."}
               </p>
-              <p className="text-[10px] text-amber-400/80 font-mono mt-1 min-h-[16px] animate-fade-in">
-                ⚡ {scanSteps[currentStep]}
+              <p className="text-[10px] text-amber-400/80 font-mono mt-1 min-h-[16px] animate-fade-in flex items-center gap-1">
+                <Sparkles className="h-3 w-3 text-amber-500 shrink-0 animate-pulse" />
+                <span>{scanSteps[currentStep]}</span>
               </p>
             </div>
           </div>
