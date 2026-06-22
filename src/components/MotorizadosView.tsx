@@ -655,7 +655,7 @@ export default function MotorizadosView({
                 </div>
 
                 {/* Formulario para registrar incidente */}
-                <div className="lg:col-span-5 glass-card rounded-2xl p-4.5 space-y-3.5">
+                <div className="lg:col-span-5 glass-card rounded-2xl p-4.5 space-y-3.5 hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(251,191,36,0.30)] hover:border-amber-500/40 hover:bg-zinc-900/50 transition-all duration-300 cursor-pointer border border-white/5">
                   <div className="space-y-0.5">
                     <span className="text-[9px] font-black uppercase text-slate-400 tracking-wider">Registrar Evento</span>
                     <h5 className="text-[11px] font-bold text-slate-250 uppercase">Nuevo Incidente con la Moto</h5>

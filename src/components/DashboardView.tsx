@@ -255,7 +255,7 @@ export default function DashboardView({ invoices, motorizados, incidents }: Dash
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         {/* TENDENCIA DE VENTAS INSTALADAS */}
-        <div className="lg:col-span-8 glass-card p-5.5 rounded-2xl space-y-4">
+        <div className="lg:col-span-8 glass-card p-5.5 rounded-2xl space-y-4 hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(251,191,36,0.3)] hover:border-amber-500/40 hover:bg-zinc-900/50 transition-all duration-300 cursor-pointer border border-white/5">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <h3 className="font-extrabold text-white text-sm flex items-center gap-2 font-display">
@@ -298,7 +298,7 @@ export default function DashboardView({ invoices, motorizados, incidents }: Dash
         </div>
 
         {/* DISTRIBUCIÓN DE TICKETS POR SUCURSAL */}
-        <div className="lg:col-span-4 glass-card p-5.5 rounded-2xl lg:space-y-4 flex flex-col justify-between">
+        <div className="lg:col-span-4 glass-card p-5.5 rounded-2xl lg:space-y-4 flex flex-col justify-between hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(251,191,36,0.3)] hover:border-amber-500/40 hover:bg-zinc-900/50 transition-all duration-300 cursor-pointer border border-white/5">
           <div>
             <h3 className="font-extrabold text-white text-sm flex items-center gap-2">
               <MapPin className="h-4 w-4 text-amber-500 shrink-0" />
@@ -335,7 +335,7 @@ export default function DashboardView({ invoices, motorizados, incidents }: Dash
         </div>
 
         {/* MÉTODOS DE PAGO DE VENTAS */}
-        <div className="lg:col-span-4 glass-card p-5 rounded-2xl space-y-4">
+        <div className="lg:col-span-4 glass-card p-5 rounded-2xl space-y-4 hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(251,191,36,0.3)] hover:border-amber-500/40 hover:bg-zinc-900/50 transition-all duration-300 cursor-pointer border border-white/5">
           <div>
             <h3 className="font-extrabold text-white text-sm flex items-center gap-2">
               <CreditCard className="h-4 w-4 text-amber-500 shrink-0" />
@@ -375,7 +375,7 @@ export default function DashboardView({ invoices, motorizados, incidents }: Dash
         </div>
 
         {/* VENTAS POR MOTORIZADO */}
-        <div className="lg:col-span-8 glass-card p-5 rounded-2xl space-y-4">
+        <div className="lg:col-span-8 glass-card p-5 rounded-2xl space-y-4 hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(251,191,36,0.3)] hover:border-amber-500/40 hover:bg-zinc-900/50 transition-all duration-300 cursor-pointer border border-white/5">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="font-extrabold text-white text-sm flex items-center gap-2">

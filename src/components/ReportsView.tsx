@@ -197,7 +197,7 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
   return (
     <div id="reports-module-view" className="space-y-6 animate-fade-in text-white pb-12">
       {/* PANEL DE CONFIGURACIÓN DE FILTROS */}
-      <div className="glass-card rounded-2xl p-5.5 shadow-2xl space-y-4">
+      <div className="glass-card rounded-2xl p-5.5 shadow-2xl space-y-4 hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(251,191,36,0.3)] hover:border-amber-500/40 hover:bg-zinc-900/50 transition-all duration-300 cursor-pointer border border-white/5">
         <div>
           <h4 className="text-xs font-black uppercase text-amber-400 tracking-wider">Filtros Avanzados del Reporte de Ventas</h4>
           <p className="text-[11px] text-slate-400 mt-0.5 font-semibold">Restringe las copias de ventas para exportar o auditar sus valores de instalaciones</p>
@@ -417,7 +417,7 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
       </div>
 
       {/* SECTOR DASHBOARD: CANTIDAD DE TICKET POR SUCURSAL Y TIPO DE FACTURA */}
-      <div className="glass-card p-5.5 rounded-2xl shadow-2xl space-y-4">
+      <div className="glass-card p-5.5 rounded-2xl shadow-2xl space-y-4 hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(251,191,36,0.3)] hover:border-amber-500/40 hover:bg-zinc-900/50 transition-all duration-300 cursor-pointer border border-white/5">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex items-center gap-2">
             <Layers className="h-4.5 w-4.5 text-amber-400 animate-pulse" />
@@ -513,7 +513,7 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 pb-6">
         {/* VENTAS Y ASISTENCIAS POR SUCURSAL */}
-        <div className="lg:col-span-5 glass-card p-5.5 rounded-2xl shadow-2xl space-y-4">
+        <div className="lg:col-span-5 glass-card p-5.5 rounded-2xl shadow-2xl space-y-4 hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(251,191,36,0.3)] hover:border-amber-500/40 hover:bg-zinc-900/50 transition-all duration-300 cursor-pointer border border-white/5">
           <div className="flex items-center gap-2">
             <MapPin className="h-4 w-4 text-amber-400 animate-pulse" />
             <h4 className="font-black text-white text-xs uppercase tracking-wider font-display">Ventas y Asistencias por Sucursal</h4>
@@ -554,7 +554,7 @@ export default function ReportsView({ invoices, motorizados }: ReportsViewProps)
         </div>
 
         {/* TABLA DE TICKET DETALLES FILTRADOS */}
-        <div className="lg:col-span-7 glass-card p-5.5 rounded-2xl shadow-2xl space-y-4 flex flex-col justify-between">
+        <div className="lg:col-span-7 glass-card p-5.5 rounded-2xl shadow-2xl space-y-4 flex flex-col justify-between hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(251,191,36,0.3)] hover:border-amber-500/40 hover:bg-zinc-900/50 transition-all duration-300 cursor-pointer border border-white/5">
           <div>
             <h4 className="text-xs font-black uppercase text-amber-400 tracking-wider">Bitácora de Ventas Filtradas</h4>
             <p className="text-[11px] text-slate-400 mt-0.5 font-semibold">Historial directo de copias que cumplen con los filtros ({filteredInvoices.length})</p>

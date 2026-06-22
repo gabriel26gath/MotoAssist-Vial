@@ -2466,7 +2466,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
       ); })()}
 
       {/* Información del Período Calculado Automáticamente */}
-      <div className="flex flex-wrap items-center justify-between gap-4 glass-card p-5 border border-white/10 shadow-2xl text-white">
+      <div className="flex flex-wrap items-center justify-between gap-4 glass-card p-5 border border-white/10 shadow-2xl text-white hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(251,191,36,0.3)] hover:border-amber-500/40 hover:bg-zinc-900/50 transition-all duration-300 cursor-pointer">
         <div className="flex items-center gap-3">
           <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-2xl text-amber-400 shadow-md shrink-0">
             <Calendar className="h-5 w-5 text-amber-300" />
@@ -3237,7 +3237,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
             </div>
           </div>
           {/* SECCIÓN 3: INFORME DE ANÁLISIS DE DATOS IA EN VIVO (INTEGRADO EN PDF) */}
-          <div className="glass-card border border-white/10 rounded-2xl overflow-hidden shadow-2xl p-6">
+          <div className="glass-card border border-white/10 rounded-2xl overflow-hidden shadow-2xl p-6 hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(251,191,36,0.3)] hover:border-amber-500/40 hover:bg-zinc-900/50 transition-all duration-300 cursor-pointer">
             <div className="flex items-center justify-between border-b border-white/15 pb-3 mb-4">
               <div className="flex items-center gap-2.5">
                 <div className="p-2 bg-zinc-900 border border-white/15 rounded-lg text-amber-300">
@@ -3331,7 +3331,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
       </div>
 
       {/* Botones y controles de edición manual */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 glass-panel p-5 md:p-6 rounded-2xl border border-white/10 shadow-2xl text-white mt-10">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 glass-panel p-5 md:p-6 rounded-2xl border border-white/10 shadow-2xl text-white mt-10 hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(251,191,36,0.3)] hover:border-amber-500/40 hover:bg-zinc-900/50 transition-all duration-300 cursor-pointer">
         <div className="space-y-1">
           <h4 className="text-xs font-black uppercase text-amber-400 tracking-wider">Historial de Asistencias Manuales</h4>
           <p className="text-[10px] text-zinc-300 font-bold uppercase tracking-wide">Consolide y edite los valores de asistencias del histórico comparativo</p>

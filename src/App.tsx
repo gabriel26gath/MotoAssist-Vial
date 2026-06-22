@@ -917,7 +917,6 @@ export default function App() {
             </div>
             <div>
               <h1 className="text-xl font-display font-black tracking-tight text-white uppercase">MotoAssist Vial</h1>
-              <p className="text-[10px] text-slate-350 font-bold uppercase tracking-wide mt-1">Control de Fletes & Facturas IA</p>
             </div>
           </div>
 
