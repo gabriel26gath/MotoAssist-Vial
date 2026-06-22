@@ -1135,23 +1135,23 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
 
       // Maquetación de cada bloque dinámico
       const kpisHtml = `
-        <div style="margin-bottom: ${sectionSizes.kpis === 'grande' ? '35px' : '22px'};">
-          <h2 style="font-size: ${sectionSizes.kpis === 'grande' ? '15px' : '13px'};">${sectionTitles.kpis}</h2>
+        <div style="margin-bottom: ${sectionSizes.kpis === 'grande' ? '30px' : '20px'};">
+          <h2>${sectionTitles.kpis}</h2>
           <div class="grid-kpi">
-            <div class="kpi-card" style="border-top-color: ${accent.primary}; ${sectionSizes.kpis === 'grande' ? 'padding: 22px;' : ''}">
-              <div class="kpi-val" style="font-size: ${sectionSizes.kpis === 'grande' ? '28px' : '22px'}; color: ${accent.primary};">${total2026YTD}</div>
+            <div class="kpi-card ${sectionSizes.kpis === 'grande' ? 'kpi-card-grande' : ''}" style="border-top-color: ${accent.primary};">
+              <div class="kpi-val" style="color: ${accent.primary};">${total2026YTD}</div>
               <div class="kpi-lbl">Total Asistencias YTD (2026)</div>
             </div>
-            <div class="kpi-card" style="border-top-color: #10b981; ${sectionSizes.kpis === 'grande' ? 'padding: 22px;' : ''}">
-              <div class="kpi-val" style="font-size: ${sectionSizes.kpis === 'grande' ? '28px' : '22px'}; color: #10b981;">${topMediaPercentage.toFixed(1)}%</div>
+            <div class="kpi-card ${sectionSizes.kpis === 'grande' ? 'kpi-card-grande' : ''}" style="border-top-color: #10b981;">
+              <div class="kpi-val" style="color: #10b981;">${topMediaPercentage.toFixed(1)}%</div>
               <div class="kpi-lbl">Medio Líder (${topMediaName})</div>
             </div>
-            <div class="kpi-card" style="border-top-color: #3b82f6; ${sectionSizes.kpis === 'grande' ? 'padding: 22px;' : ''}">
-              <div class="kpi-val" style="font-size: ${sectionSizes.kpis === 'grande' ? '28px' : '22px'}; color: #3b82f6;">${diffVsPrevMonthPct >= 0 ? "+" : ""}${diffVsPrevMonthPct.toFixed(1)}%</div>
+            <div class="kpi-card ${sectionSizes.kpis === 'grande' ? 'kpi-card-grande' : ''}" style="border-top-color: #3b82f6;">
+              <div class="kpi-val" style="color: #3b82f6;">${diffVsPrevMonthPct >= 0 ? "+" : ""}${diffVsPrevMonthPct.toFixed(1)}%</div>
               <div class="kpi-lbl">vs Mes Anterior</div>
             </div>
-            <div class="kpi-card" style="border-top-color: #f59e0b; ${sectionSizes.kpis === 'grande' ? 'padding: 22px;' : ''}">
-              <div class="kpi-val" style="font-size: ${sectionSizes.kpis === 'grande' ? '28px' : '22px'}; color: #f59e0b;">${variationVsPriorYearPct >= 0 ? "+" : ""}${variationVsPriorYearPct.toFixed(1)}%</div>
+            <div class="kpi-card ${sectionSizes.kpis === 'grande' ? 'kpi-card-grande' : ''}" style="border-top-color: #f59e0b;">
+              <div class="kpi-val" style="color: #f59e0b;">${variationVsPriorYearPct >= 0 ? "+" : ""}${variationVsPriorYearPct.toFixed(1)}%</div>
               <div class="kpi-lbl">vs Histórico YTD</div>
             </div>
           </div>
@@ -1159,40 +1159,40 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
       `;
 
       const kpiYtdHtml = `
-        <div style="margin-bottom: 12px;">
-          <h2 style="font-size: 11px; margin-bottom: 5px;">${sectionTitles.kpi_ytd || "Asistencias YTD"}</h2>
-          <div class="kpi-card" style="min-height: 55px; border-top-color: ${accent.primary};">
-            <div class="kpi-val" style="font-size: 21px; color: ${accent.primary};">${total2026YTD}</div>
+        <div style="margin-bottom: 20px;">
+          <h2>${sectionTitles.kpi_ytd || "Asistencias YTD"}</h2>
+          <div class="kpi-card" style="border-top-color: ${accent.primary};">
+            <div class="kpi-val" style="color: ${accent.primary};">${total2026YTD}</div>
             <div class="kpi-lbl">Total Servicios Realizados (YTD)</div>
           </div>
         </div>
       `;
 
       const kpiLeaderHtml = `
-        <div style="margin-bottom: 12px;">
-          <h2 style="font-size: 11px; margin-bottom: 5px;">${sectionTitles.kpi_leader || "Canal Líder"}</h2>
-          <div class="kpi-card" style="border-top-color: #10b981; min-height: 55px;">
-            <div class="kpi-val" style="font-size: 21px; color: #10b981;">${topMediaPercentage.toFixed(1)}%</div>
+        <div style="margin-bottom: 20px;">
+          <h2>${sectionTitles.kpi_leader || "Canal Líder"}</h2>
+          <div class="kpi-card" style="border-top-color: #10b981;">
+            <div class="kpi-val" style="color: #10b981;">${topMediaPercentage.toFixed(1)}%</div>
             <div class="kpi-lbl">Medio Líder (${topMediaName})</div>
           </div>
         </div>
       `;
 
       const kpiChangeHtml = `
-        <div style="margin-bottom: 12px;">
-          <h2 style="font-size: 11px; margin-bottom: 5px;">${sectionTitles.kpi_change || "Cambio Mensual"}</h2>
-          <div class="kpi-card" style="border-top-color: #3b82f6; min-height: 55px;">
-            <div class="kpi-val" style="font-size: 21px; color: #3b82f6;">${diffVsPrevMonthPct >= 0 ? "+" : ""}${diffVsPrevMonthPct.toFixed(1)}%</div>
+        <div style="margin-bottom: 20px;">
+          <h2>${sectionTitles.kpi_change || "Cambio Mensual"}</h2>
+          <div class="kpi-card" style="border-top-color: #3b82f6;">
+            <div class="kpi-val" style="color: #3b82f6;">${diffVsPrevMonthPct >= 0 ? "+" : ""}${diffVsPrevMonthPct.toFixed(1)}%</div>
             <div class="kpi-lbl">vs Mes Anterior</div>
           </div>
         </div>
       `;
 
       const kpiYoyHtml = `
-        <div style="margin-bottom: 12px;">
-          <h2 style="font-size: 11px; margin-bottom: 5px;">${sectionTitles.kpi_yoy || "Acumulado YoY"}</h2>
-          <div class="kpi-card" style="border-top-color: #f59e0b; min-height: 55px;">
-            <div class="kpi-val" style="font-size: 21px; color: #f59e0b;">${variationVsPriorYearPct >= 0 ? "+" : ""}${variationVsPriorYearPct.toFixed(1)}%</div>
+        <div style="margin-bottom: 20px;">
+          <h2>${sectionTitles.kpi_yoy || "Acumulado YoY"}</h2>
+          <div class="kpi-card" style="border-top-color: #f59e0b;">
+            <div class="kpi-val" style="color: #f59e0b;">${variationVsPriorYearPct >= 0 ? "+" : ""}${variationVsPriorYearPct.toFixed(1)}%</div>
             <div class="kpi-lbl">vs Histórico YTD</div>
           </div>
         </div>
@@ -1200,7 +1200,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
 
       const barTrendHtml = `
         <div style="margin-bottom: 25px;">
-          <h2 style="font-size: 13px;">${sectionTitles.bar_trend}</h2>
+          <h2>${sectionTitles.bar_trend}</h2>
           <div class="chart-box" style="padding: 18px; height: auto; min-height: ${sectionSizes.charts === 'grande' ? '280px' : '205px'}; display: flex; flex-direction: column; justify-content: space-between;">
             <div style="display: flex; gap: 14px; margin-bottom: 14px; font-size: 9px; font-weight: 800; font-family: 'Inter', sans-serif;">
               <div style="display: flex; align-items: center; gap: 5px;">
@@ -1222,7 +1222,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
 
       const lineTrendHtml = `
         <div style="margin-bottom: 25px;">
-          <h2 style="font-size: 13px;">${sectionTitles.line_trend}</h2>
+          <h2>${sectionTitles.line_trend}</h2>
           <div class="chart-box" style="padding: 16px 20px; height: auto; background-color: white; box-sizing: border-box;">
             <div style="display: flex; gap: 14px; margin-bottom: 12px; font-size: 9px; font-weight: 800; font-family: 'Inter', sans-serif;">
               <div style="display: flex; align-items: center; gap: 5px;">
@@ -1243,7 +1243,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
 
       const branchPartHtml = `
         <div style="margin-bottom: 25px;">
-          <h2 style="font-size: 13px;">${sectionTitles.branch_part}</h2>
+          <h2>${sectionTitles.branch_part}</h2>
           <div class="chart-box" style="padding: 20px; min-height: 140px; background: linear-gradient(180deg, #ffffff 0%, #fcfdfe 100%);">
             <div style="display: flex; flex-direction: column; justify-content: center;">
               ${sucursalProgressHtml}
@@ -1254,8 +1254,15 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
 
       const compareTabHtml = `
         <div style="margin-bottom: 25px; font-size: ${sectionSizes.tables === 'grande' ? '12.5px' : '11px'};">
-          <h2 style="font-size: 13px;">${sectionTitles.compare_tab}</h2>
-          <table>
+          <h2>${sectionTitles.compare_tab}</h2>
+          <table style="table-layout: fixed; width: 100%; border-collapse: collapse; overflow: hidden;">
+            <colgroup>
+              <col style="width: 20%;" />
+              <col style="width: 20%;" />
+              <col style="width: 20%;" />
+              <col style="width: 20%;" />
+              <col style="width: 20%;" />
+            </colgroup>
             <thead>
               <tr>
                 <th style="background: ${accent.light}35; color: #0f172a;">Mes</th>
@@ -1274,13 +1281,13 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
 
       const monthlySucHtml = `
         <div style="margin-bottom: 25px; font-size: ${sectionSizes.tables === 'grande' ? '12.5px' : '11px'};">
-          <h2 style="font-size: 13px;">${sectionTitles.monthly_suc}</h2>
-          <table>
+          <h2>${sectionTitles.monthly_suc}</h2>
+          <table style="table-layout: fixed; width: 100%; border-collapse: collapse; overflow: hidden;">
             <thead>
               <tr>
-                <th style="background: ${accent.light}35; color: #0f172a;">Sucursal</th>
-                ${MESES_ABR.map(m => `<th style="text-align: center; background: ${accent.light}35; color: #0f172a;">${m}</th>`).join("")}
-                <th style="text-align: right; background: ${accent.light}35; color: #0f172a;">Total YTD</th>
+                <th style="background: ${accent.light}35; color: #0f172a; width: 14%;">Sucursal</th>
+                ${MESES_ABR.map(m => `<th style="text-align: center; background: ${accent.light}35; color: #0f172a; width: calc(76% / 12);">${m}</th>`).join("")}
+                <th style="text-align: right; background: ${accent.light}35; color: #0f172a; width: 10%;">Total YTD</th>
               </tr>
             </thead>
             <tbody>
@@ -1292,7 +1299,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
 
       const analysisHtml = `
         <div style="margin-bottom: 25px; font-size: ${sectionSizes.analysis === 'grande' ? '13px' : '11.5px'};">
-          <h2 style="font-size: 13px;">${sectionTitles.analysis}</h2>
+          <h2>${sectionTitles.analysis}</h2>
           <div class="analysis-box">
             ${analysisContent ? analysisContent.replace(/\n/g, "<br>") : "Cargando análisis inteligente..."}
           </div>
@@ -1316,22 +1323,25 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
           else if (sec.id === "monthly_suc") sectionContent = monthlySucHtml;
           else if (sec.id === "analysis") sectionContent = analysisHtml;
 
-          // Estilos de dimensiones interactivas aplicados a la forma
+          // Estilos de dimensiones interactivas aplicados a la forma con alineación flex de alta proporción
           const isQuarter = sec.width === "25%";
           const isThird = sec.width === "33%";
           const isHalf = sec.width === "50%";
           const isTwoThirds = sec.width === "66%";
-          let widthCss = "width: 100%; display: block; clear: both;";
-          if (isHalf) widthCss = "width: 49.5%; display: inline-block; vertical-align: top; box-sizing: border-box;";
-          else if (isThird) widthCss = "width: 32.8%; display: inline-block; vertical-align: top; box-sizing: border-box;";
-          else if (isTwoThirds) widthCss = "width: 66.2%; display: inline-block; vertical-align: top; box-sizing: border-box;";
-          else if (isQuarter) widthCss = "width: 24.2%; display: inline-block; vertical-align: top; box-sizing: border-box;";
+          let widthCss = "width: 100%; min-width: 100%; flex-grow: 1; flex-shrink: 0;";
+          if (isHalf) widthCss = "width: calc(50% - 10px); flex-grow: 0; flex-shrink: 0;";
+          else if (isThird) widthCss = "width: calc(33.33% - 14px); flex-grow: 0; flex-shrink: 0;";
+          else if (isTwoThirds) widthCss = "width: calc(66.66% - 10px); flex-grow: 0; flex-shrink: 0;";
+          else if (isQuarter) widthCss = "width: calc(25% - 15px); flex-grow: 0; flex-shrink: 0;";
+
+          if (sec.isPageBreakBefore) {
+            widthCss = "width: 100%; min-width: 100%; flex-grow: 1; flex-shrink: 0; page-break-before: always; padding-top: 10px;";
+          }
 
           const scaleCss = sec.scale ? `zoom: ${sec.scale};` : "";
-          const pageBreakCss = sec.isPageBreakBefore ? "page-break-before: always; padding-top: 10px;" : "";
 
           return `
-            <div style="${widthCss} ${pageBreakCss} box-sizing: border-box; margin-bottom: 25px;">
+            <div style="${widthCss} box-sizing: border-box; margin-bottom: 25px;">
               <div style="${scaleCss}">
                 ${sectionContent}
               </div>
@@ -1379,6 +1389,15 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
               margin-top: 4px;
             }
             
+            /* CONTENEDOR DE REPORTES MULTI-COLUMNA DE ALTA PROPORCIÓN */
+            .report-grid-container {
+              display: flex;
+              flex-wrap: wrap;
+              gap: 20px;
+              width: 100%;
+              box-sizing: border-box;
+            }
+
             /* BARRA DE METADATOS EJECUTIVOS PREMIUM */
             .metadata-bar {
               display: grid;
@@ -1394,6 +1413,8 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
               font-weight: bold;
               background: #f8fafc;
               border-radius: 8px;
+              width: 100%;
+              box-sizing: border-box;
             }
             .metadata-item span {
               display: block;
@@ -1414,22 +1435,35 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
               grid-template-columns: repeat(4, 1fr); 
               gap: 16px; 
               margin-bottom: 25px; 
+              width: 100%;
             }
             .kpi-card { 
               border: 1px solid #e2e8f0; 
-              padding: 16px; 
+              padding: 14px; 
               border-radius: 12px; 
               background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); 
               border-top: 4px solid ${accent.primary}; 
               box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03), 0 2px 4px -1px rgba(0, 0, 0, 0.01);
+              box-sizing: border-box;
+              display: flex;
+              flex-direction: column;
+              justify-content: center;
+              min-height: 85px;
+            }
+            .kpi-card-grande {
+              padding: 22px;
+              min-height: 110px;
             }
             .kpi-val { 
-              font-size: 26px; 
+              font-size: 22px; 
               font-weight: 950; 
               font-family: 'JetBrains Mono', monospace; 
               color: #0f172a; 
               margin-bottom: 2px;
               letter-spacing: -1px;
+            }
+            .kpi-card-grande .kpi-val {
+              font-size: 28px;
             }
             .kpi-lbl { 
               font-size: 8.5px; 
@@ -1437,20 +1471,22 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
               color: #64748b; 
               font-weight: 800; 
               letter-spacing: 0.6px; 
+              line-height: 1.3;
             }
             
             h2 { 
               font-family: 'Inter', sans-serif;
-              font-size: 13.5px; 
+              font-size: 13px; 
               text-transform: uppercase; 
               border-bottom: 2px solid ${accent.light}; 
               padding-bottom: 6px; 
-              margin-top: 35px; 
-              margin-bottom: 15px; 
+              margin-top: 15px; 
+              margin-bottom: 12px; 
               color: #0f172a; 
               font-weight: 900; 
               letter-spacing: 0.8px; 
               position: relative;
+              width: 100%;
             }
             h2::after {
               content: '';
@@ -1522,14 +1558,9 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
         <body>
           <!-- CABECERA CORPORATIVA DE ULTRA LUJO -->
           <div style="display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 22px; border-bottom: 2.5px solid ${accent.primary}; padding-bottom: 18px;">
-            <div style="display: flex; align-items: center; gap: 14px;">
-              <div style="width: 44px; height: 44px; background: linear-gradient(135deg, ${accent.primary} 0%, ${accent.hover} 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 900; font-family: 'Inter', sans-serif; font-size: 18px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); letter-spacing: -0.5px;">
-                SAI
-              </div>
-              <div>
-                <h1>${pdfTitle}</h1>
-                <div class="subtitle">${pdfSubtitle}</div>
-              </div>
+            <div>
+              <h1>${pdfTitle}</h1>
+              <div class="subtitle">${pdfSubtitle}</div>
             </div>
             <button class="no-print" onclick="window.print()" style="padding: 10px 18px; background: ${accent.primary}; border: none; font-weight: bold; border-radius: 8px; cursor: pointer; color: ${pdfAccentColor === 'amber' ? 'black' : 'white'}; font-size: 11px; text-transform: uppercase; shrink-0; box-shadow: 0 3px 6px rgba(0,0,0,0.05); font-family: 'Inter', sans-serif;">Imprimir PDF</button>
           </div>
@@ -1554,7 +1585,10 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
             </div>
           </div>
 
-          ${customReportContent}
+          <!-- CONTENEDOR DE REPORTES GRILLA UNIFICADA -->
+          <div class="report-grid-container">
+            ${customReportContent}
+          </div>
 
           <!-- BLOQUE DE FIRMAS CORPORATIVAS Y CONTROL DE CALIDAD -->
           <div style="margin-top: 55px; border-top: 2px solid #cbd5e1; padding-top: 25px; margin-bottom: 20px; page-break-inside: avoid;">
@@ -3597,16 +3631,7 @@ Durante el mes de **${monthName} ${activeYear}**, se registraron un total de **$
                 <Edit3 className="h-4 w-4" />
                 Editar Historial Manual
               </button>
-              <button
-                type="button"
-                onClick={resetToImageDefaults}
-                className="flex items-center justify-center gap-2 h-10 px-3.5 text-[11px] font-black uppercase tracking-wider rounded-xl transition-all duration-300 shadow-md hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] cursor-pointer border bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border-white/10 hover:text-white w-full md:w-auto"
-                title="Regresa a los números exactos de la foto"
-              >
-                <RotateCcw className="h-4 w-4" />
-                Sincronizar Captura
-              </button>
-              
+
               {/* Botón para abrir el diseñador de formas y maqueta PDF */}
               <button
                 type="button"
